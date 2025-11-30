@@ -33,9 +33,10 @@ DEBUG = False
 # IMPORTANT: Add your PythonAnywhere domain here
 # Example: ['yourusername.pythonanywhere.com', 'www.safeletstays.co.uk']
 ALLOWED_HOSTS = [
-    'yourusername.pythonanywhere.com',  # Replace with your actual PythonAnywhere username
-    'www.safeletstays.co.uk',            # Your custom domain (if applicable)
-    'safeletstays.co.uk',                # Your custom domain without www
+    'slpm-webflareuk.pythonanywhere.com',
+    'SLPM-WebFlareUK.pythonanywhere.com',
+    'www.safeletstays.co.uk',
+    'safeletstays.co.uk',
     'localhost',
     '127.0.0.1',
 ]
