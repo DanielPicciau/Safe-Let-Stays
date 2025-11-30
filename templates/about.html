@@ -1,0 +1,86 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Us | {{ site_name }}</title>
+    <link rel="stylesheet" href="{% static 'yourapp/css/homepage.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- HEADER -->
+    <header class="header" id="header">
+        <div class="container header__inner">
+            <a href="/" aria-label="{{ site_name }} — Home" class="logo-link">
+                <span class="logo-text">{{ site_name }}</span>
+            </a>
+            
+            <button class="mobile-menu-toggle" aria-label="Toggle menu" aria-expanded="false">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+
+            <nav class="header__nav" id="header-nav">
+                <ul class="nav-list">
+                    <li><a href="/" class="nav-link">Home</a></li>
+                    <li><a href="/properties" class="nav-link">Properties</a></li>
+                    <li><a href="/hosts" class="nav-link">Hosts</a></li>
+                    <li><a href="/reviews" class="nav-link">Reviews</a></li>
+                    <li><a href="/about" class="nav-link active">About</a></li>
+                    <li><a href="javascript:void(0)" class="nav-link" id="open-contact-modal">Contact</a></li>
+                </ul>
+                <div class="header__ctas">
+                    <a href="tel:{{ contact_phone }}" class="btn btn--outline">
+                        <span>{{ contact_phone }}</span>
+                    </a>
+                    <a href="/" class="btn btn--primary">
+                        Book Now
+                    </a>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main id="main-content" style="padding-top: 80px;">
+        <section class="section benefits-section" id="about">
+            <div class="container">
+                <div class="section-header text-center">
+                    <span class="section-subtitle">The Safe Let Stays Difference</span>
+                    <h2 class="section-title">Why Book Direct?</h2>
+                    <p class="section-desc">Experience the benefits of booking directly with Sheffield's premier accommodation provider.</p>
+                </div>
+                
+                <div class="benefits-grid">
+                    <div class="benefit-item">
+                        <div class="benefit-icon">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                        </div>
+                        <h3>Best Price Guarantee</h3>
+                        <p>Avoid third-party commissions and get the best rates by booking directly with us.</p>
+                    </div>
+                    <div class="benefit-item">
+                        <div class="benefit-icon">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                        </div>
+                        <h3>Verified Quality</h3>
+                        <p>Every property is personally inspected and managed to ensure high standards.</p>
+                    </div>
+                    <div class="benefit-item">
+                        <div class="benefit-icon">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                        </div>
+                        <h3>Flexible Terms</h3>
+                        <p>Perfect for long-term corporate stays or short weekend getaways.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- FOOTER -->
+    {% include 'footer.html' %}
+    <script src="{% static 'yourapp/js/homepage.js' %}"></script>
+</body>
+</html>

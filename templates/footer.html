@@ -1,0 +1,51 @@
+<footer class="footer compact-footer">
+    <div class="container">
+        <div class="footer__inner">
+            <div class="footer__top">
+                <div class="footer__brand">
+                    <span class="footer__logo">{{ site_name }}</span>
+                </div>
+                <div class="footer__mobile-actions">
+                    <a href="/" class="btn btn--primary btn--sm">Book Now</a>
+                </div>
+            </div>
+            
+            <div class="footer__nav-wrapper">
+                <!-- Mobile Accordion -->
+                <details class="footer__accordion">
+                    <summary>
+                        <span>Navigation</span>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+                    </summary>
+                    <nav class="footer__nav">
+                        <a href="/">Home</a>
+                        <a href="/properties">Properties</a>
+                        <a href="/hosts">Hosts</a>
+                        <a href="/reviews">Reviews</a>
+                        <a href="/about">About Us</a>
+                    </nav>
+                </details>
+
+                <!-- Desktop Nav -->
+                <nav class="footer__nav desktop">
+                    <a href="/">Home</a>
+                    <a href="/properties">Properties</a>
+                    <a href="/hosts">Hosts</a>
+                    <a href="/reviews">Reviews</a>
+                    <a href="/about">About Us</a>
+                </nav>
+            </div>
+
+            <div class="footer__bottom-row">
+                <div class="footer__contact-inline">
+                    <a href="tel:{{ contact_phone }}">{{ contact_phone }}</a>
+                    <span class="divider">|</span>
+                    <a href="mailto:{{ contact_email }}">{{ contact_email }}</a>
+                </div>
+                <div class="footer__copyright">
+                    &copy; {% now "Y" %} {{ site_name }}
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>

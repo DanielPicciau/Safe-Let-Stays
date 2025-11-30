@@ -1,0 +1,81 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reviews | {{ site_name }}</title>
+    <link rel="stylesheet" href="{% static 'yourapp/css/homepage.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- HEADER -->
+    <header class="header" id="header">
+        <div class="container header__inner">
+            <a href="/" aria-label="{{ site_name }} — Home" class="logo-link">
+                <span class="logo-text">{{ site_name }}</span>
+            </a>
+            
+            <button class="mobile-menu-toggle" aria-label="Toggle menu" aria-expanded="false">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+
+            <nav class="header__nav" id="header-nav">
+                <ul class="nav-list">
+                    <li><a href="/" class="nav-link">Home</a></li>
+                    <li><a href="/properties" class="nav-link">Properties</a></li>
+                    <li><a href="/hosts" class="nav-link">Hosts</a></li>
+                    <li><a href="/reviews" class="nav-link active">Reviews</a></li>
+                    <li><a href="/about" class="nav-link">About</a></li>
+                    <li><a href="javascript:void(0)" class="nav-link" id="open-contact-modal">Contact</a></li>
+                </ul>
+                <div class="header__ctas">
+                    <a href="tel:{{ contact_phone }}" class="btn btn--outline">
+                        <span>{{ contact_phone }}</span>
+                    </a>
+                    <a href="/" class="btn btn--primary">
+                        Book Now
+                    </a>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main id="main-content" style="padding-top: 80px;">
+        <section class="section reviews-section bg-light" id="reviews">
+            <div class="container">
+                <div class="section-header text-center">
+                    <span class="section-subtitle">Guest Experiences</span>
+                    <h2 class="section-title">What Our Guests Say</h2>
+                </div>
+                <div class="reviews-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+                    <div class="review-card" style="background: white; padding: 2rem; border-radius: var(--radius-lg); box-shadow: var(--shadow-sm);">
+                        <div style="color: #FFD700; margin-bottom: 1rem;">★★★★★</div>
+                        <p style="font-style: italic; margin-bottom: 1.5rem;">"Absolutely fantastic stay! The apartment was spotless and in a great location. Highly recommended for business trips."</p>
+                        <div style="font-weight: 600;">- Michael T.</div>
+                        <div style="font-size: 0.875rem; color: var(--text-light);">Corporate Traveller</div>
+                    </div>
+                    <div class="review-card" style="background: white; padding: 2rem; border-radius: var(--radius-lg); box-shadow: var(--shadow-sm);">
+                        <div style="color: #FFD700; margin-bottom: 1rem;">★★★★★</div>
+                        <p style="font-style: italic; margin-bottom: 1.5rem;">"Better than a hotel. We had everything we needed and the booking process was so smooth."</p>
+                        <div style="font-weight: 600;">- Sarah L.</div>
+                        <div style="font-size: 0.875rem; color: var(--text-light);">Weekend Visitor</div>
+                    </div>
+                    <div class="review-card" style="background: white; padding: 2rem; border-radius: var(--radius-lg); box-shadow: var(--shadow-sm);">
+                        <div style="color: #FFD700; margin-bottom: 1rem;">★★★★★</div>
+                        <p style="font-style: italic; margin-bottom: 1.5rem;">"The team at Safe Let Stays went above and beyond to accommodate our requests. Will definitely book again."</p>
+                        <div style="font-weight: 600;">- David R.</div>
+                        <div style="font-size: 0.875rem; color: var(--text-light);">Contractor</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- FOOTER -->
+    {% include 'footer.html' %}
+    <script src="{% static 'yourapp/js/homepage.js' %}"></script>
+</body>
+</html>

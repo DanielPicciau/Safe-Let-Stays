@@ -1,0 +1,312 @@
+{% load static %}
+{% comment %}
+================================================================================
+SAFE LET STAYS — HOMEPAGE TEMPLATE (REVOLUTIONIZED)
+================================================================================
+{% endcomment %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ featured_property.title }} | {{ site_name }} — Sheffield Accommodation</title>
+    <meta name="description" content="Book {{ featured_property.title }} directly with {{ site_name }}. Premium, reliable stays for corporates, contractors and stadium visitors in Sheffield.">
+    <link rel="canonical" href="{{ request.build_absolute_uri }}">
+    
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="{{ featured_property.title }} | {{ site_name }}">
+    <meta property="og:description" content="Direct bookings for longer stays in Sheffield. Premium accommodation for corporates and visitors.">
+    <meta property="og:image" content="{{ featured_property.image.url }}">
+    <meta property="og:url" content="{{ request.build_absolute_uri }}">
+    <meta property="og:site_name" content="{{ site_name }}">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="{% static 'yourapp/css/homepage.css' %}">
+    
+    <!-- JSON-LD -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "LocalBusiness",
+        "name": "{{ site_name }}",
+        "description": "Direct bookings for longer stays in Sheffield.",
+        "url": "{{ request.build_absolute_uri }}",
+        "telephone": "{{ contact_phone }}",
+        "email": "{{ contact_email }}",
+        "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "{{ business_address }}"
+        },
+        "priceRange": "££"
+    }
+    </script>
+</head>
+<body>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+    
+    <!-- HEADER -->
+    <header class="header" id="header">
+        <div class="container header__inner">
+            <a href="/" aria-label="{{ site_name }} — Home" class="logo-link">
+                <span class="logo-text">{{ site_name }}</span>
+            </a>
+            
+            <button class="mobile-menu-toggle" aria-label="Toggle menu" aria-expanded="false">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+
+            <nav class="header__nav" id="header-nav">
+                <ul class="nav-list">
+                    <li><a href="/" class="nav-link active">Home</a></li>
+                    <li><a href="/properties" class="nav-link">Properties</a></li>
+                    <li><a href="/hosts" class="nav-link">Hosts</a></li>
+                    <li><a href="/reviews" class="nav-link">Reviews</a></li>
+                    <li><a href="/about" class="nav-link">About</a></li>
+                    <li><a href="javascript:void(0)" class="nav-link" id="open-contact-modal">Contact</a></li>
+                </ul>
+                <div class="header__ctas">
+                    <a href="tel:{{ contact_phone }}" class="btn btn--outline">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                        <span>{{ contact_phone }}</span>
+                    </a>
+                    <a href="#hero" class="btn btn--primary">
+                        Book Now
+                    </a>
+                </div>
+            </nav>
+        </div>
+    </header>
+    
+    <!-- HERO -->
+    <section class="hero" id="hero">
+        <video class="hero__bg-video" autoplay muted loop playsinline>
+            <source src="{% static 'yourapp/videos/One Minute Real Estate Video Tour.mp4' %}" type="video/mp4">
+        </video>
+        <div class="hero__overlay"></div>
+        
+        <div class="container hero__layout">
+            <div class="hero__content fade-in-up">
+                <span class="hero__label">Sheffield's Premier Accommodation</span>
+                <h1>Experience Comfort,<br>Book Directly.</h1>
+                <p class="hero__subhead">Save on commission fees with our premium properties for corporates, contractors, and visitors.</p>
+                <div class="hero__actions">
+                    <a href="/properties" class="btn btn--white btn--lg">Explore Stays</a>
+                </div>
+            </div>
+
+            <div class="hero__search-wrapper">
+                <form class="search-bar" id="availability-form" action="/properties/" method="GET">
+                    <div class="search-bar__group">
+                        <label for="check-in">Check-in</label>
+                        <input type="date" placeholder="Add date" id="check-in" name="check_in" min="{% now 'Y-m-d' %}" required>
+                    </div>
+                    
+                    <div class="search-bar__group">
+                        <label for="check-out">Check-out</label>
+                        <input type="date" placeholder="Add date" id="check-out" name="check_out" required>
+                    </div>
+                    
+                    <div class="search-bar__group">
+                        <label for="guests">Guests</label>
+                        <select id="guests" name="guests" required>
+                            <option value="1">1 Guest</option>
+                            <option value="2">2 Guests</option>
+                            <option value="3">3 Guests</option>
+                            <option value="4">4 Guests</option>
+                            <option value="5">5 Guests</option>
+                            <option value="6">6+ Guests</option>
+                        </select>
+                    </div>
+                    
+                    <button type="submit" class="search-bar__btn">
+                        <span>Find your perfect match</span>
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    </button>
+                </form>
+                
+                <!-- Booking Summary Output -->
+                <div class="booking-summary" id="booking-summary" hidden>
+                    <div class="booking-summary__content">
+                        <h3>Your Itinerary</h3>
+                        <pre id="booking-summary-text"></pre>
+                        <button type="button" class="btn btn--primary btn--sm" id="copy-summary">
+                            Copy to Clipboard
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <main id="main-content">
+
+            <!-- WHY CHOOSE US -->
+        <section class="section benefits-section">
+            <div class="container">
+                <div class="section-header text-center">
+                    <span class="section-subtitle">The Safe Let Stays Difference</span>
+                    <h2 class="section-title">Why Choose Us?</h2>
+                    <p class="section-desc">We go above and beyond to ensure every stay is exceptional.</p>
+                </div>
+                
+                <div class="benefits-grid">
+                    <div class="benefit-item reveal-on-scroll">
+                        <div class="benefit-icon">
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+                        </div>
+                        <h3>Verified Properties</h3>
+                        <p>Every property is personally inspected and verified to meet our high standards for quality, cleanliness, and safety.</p>
+                    </div>
+                    
+                    <div class="benefit-item reveal-on-scroll" style="transition-delay: 0.1s;">
+                        <div class="benefit-icon">
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                        </div>
+                        <h3>24/7 Support</h3>
+                        <p>Our dedicated team is available around the clock to assist with any questions or concerns during your stay.</p>
+                    </div>
+                    
+                    <div class="benefit-item reveal-on-scroll" style="transition-delay: 0.2s;">
+                        <div class="benefit-icon">
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                        </div>
+                        <h3>Best Price Guarantee</h3>
+                        <p>Book direct with us for the best rates. No hidden fees, no middlemen—just transparent pricing every time.</p>
+                    </div>
+                    
+                    <div class="benefit-item reveal-on-scroll" style="transition-delay: 0.3s;">
+                        <div class="benefit-icon">
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                        </div>
+                        <h3>Flexible Booking</h3>
+                        <p>Life happens. Enjoy flexible cancellation policies and easy rebooking options for peace of mind.</p>
+                    </div>
+                    
+                    <div class="benefit-item reveal-on-scroll" style="transition-delay: 0.4s;">
+                        <div class="benefit-icon">
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                        </div>
+                        <h3>Premium Locations</h3>
+                        <p>All our properties are situated in prime Sheffield locations, close to transport, amenities, and attractions.</p>
+                    </div>
+                    
+                    <div class="benefit-item reveal-on-scroll" style="transition-delay: 0.5s;">
+                        <div class="benefit-icon">
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                        </div>
+                        <h3>5-Star Experience</h3>
+                        <p>From fresh linens to complimentary essentials, we ensure every detail is perfect for a memorable stay.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+    
+        
+        <!-- WELCOME / OVERVIEW -->
+        <section class="section" id="welcome">
+            <div class="container">
+                <div class="section-header text-center">
+                    <span class="section-subtitle">Welcome to {{ site_name }}</span>
+                    <h2 class="section-title">Your Home Away From Home</h2>
+                    <p class="section-desc">Whether you're visiting for business, leisure, or a long-term stay, we provide the perfect base in Sheffield.</p>
+                </div>
+
+                <div class="properties-grid">
+                    <!-- Card 1: Properties -->
+                    <article class="property-card reveal-on-scroll">
+                        <div class="property-card__image">
+                            <img src="{{ featured_property.image.url }}" alt="Our Properties" class="placeholder-image" style="object-fit: cover;">
+                        </div>
+                        <div class="property-card__content">
+                            <h3>Our Properties</h3>
+                            <p>Explore our handpicked selection of premium apartments and houses across Sheffield.</p>
+                            <a href="/properties" class="btn btn--text">
+                                View Collection <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                            </a>
+                        </div>
+                    </article>
+
+                    <!-- Card 2: Hosts -->
+                    <article class="property-card reveal-on-scroll" style="transition-delay: 0.1s;">
+                        <div class="property-card__image">
+                            <img src="{% static 'yourapp/images/management/mia-jack.png' %}" alt="Meet Your Hosts" class="placeholder-image" style="object-fit: cover;">
+                        </div>
+                        <div class="property-card__content">
+                            <h3>Meet Your Hosts</h3>
+                            <p>Dedicated to ensuring your stay is comfortable, seamless, and memorable.</p>
+                            <a href="/hosts" class="btn btn--text">
+                                Learn More <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                            </a>
+                        </div>
+                    </article>
+
+                    <!-- Card 3: Reviews -->
+                    <article class="property-card reveal-on-scroll" style="transition-delay: 0.2s;">
+                        <div class="property-card__image" style="background: #e0e0e0; display: flex; align-items: center; justify-content: center;">
+                            <img src="{% static 'yourapp/images/assets/reviews.jpg' %}" alt="Read our reviews" class="placeholder-image" style="object-fit: cover;">
+                        </div>
+                        <div class="property-card__content">
+                            <h3>Guest Reviews</h3>
+                            <p>See what our guests have to say about their experiences with Safe Let Stays.</p>
+                            <a href="/reviews" class="btn btn--text">
+                                Read Reviews <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                            </a>
+                        </div>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        
+    <!-- FOOTER -->
+    {% include 'footer.html' %}
+    <div class="modal-overlay" id="contact-modal" aria-hidden="true">
+        <div class="modal" role="dialog" aria-modal="true">
+            <button class="modal__close" id="close-contact-modal" aria-label="Close">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            <div class="modal__header">
+                <h2>Get in Touch</h2>
+                <p>We'll get back to you as soon as possible.</p>
+            </div>
+            <form class="contact-form" id="contact-form">
+                <div class="form-group">
+                    <label for="contact-name">Name</label>
+                    <input type="text" id="contact-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="contact-email">Email</label>
+                    <input type="email" id="contact-email" required>
+                </div>
+                <div class="form-group">
+                    <label for="contact-subject">Subject</label>
+                    <select id="contact-subject" required>
+                        <option value="Booking Enquiry">Booking Enquiry</option>
+                        <option value="General Question">General Question</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="contact-message">Message</label>
+                    <textarea id="contact-message" rows="4" required></textarea>
+                </div>
+                <button type="submit" class="btn btn--primary btn--full">Send Message</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Flatpickr JS -->
+    </div>
+    
+    <script src="{% static 'yourapp/js/homepage.js' %}"></script>
+</body>
+</html>

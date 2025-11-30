@@ -1,0 +1,73 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hosts | {{ site_name }}</title>
+    <link rel="stylesheet" href="{% static 'yourapp/css/homepage.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- HEADER -->
+    <header class="header" id="header">
+        <div class="container header__inner">
+            <a href="/" aria-label="{{ site_name }} — Home" class="logo-link">
+                <span class="logo-text">{{ site_name }}</span>
+            </a>
+            
+            <button class="mobile-menu-toggle" aria-label="Toggle menu" aria-expanded="false">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+
+            <nav class="header__nav" id="header-nav">
+                <ul class="nav-list">
+                    <li><a href="/" class="nav-link">Home</a></li>
+                    <li><a href="/properties" class="nav-link">Properties</a></li>
+                    <li><a href="/hosts" class="nav-link active">Hosts</a></li>
+                    <li><a href="/reviews" class="nav-link">Reviews</a></li>
+                    <li><a href="/about" class="nav-link">About</a></li>
+                    <li><a href="javascript:void(0)" class="nav-link" id="open-contact-modal">Contact</a></li>
+                </ul>
+                <div class="header__ctas">
+                    <a href="tel:{{ contact_phone }}" class="btn btn--outline">
+                        <span>{{ contact_phone }}</span>
+                    </a>
+                    <a href="/" class="btn btn--primary">
+                        Book Now
+                    </a>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main id="main-content" style="padding-top: 80px;">
+        <section class="section hosts-section" id="hosts">
+            <div class="container">
+                <div class="section-header text-center">
+                    <span class="section-subtitle">Meet the Team</span>
+                    <h2 class="section-title">Your Hosts</h2>
+                    <p class="section-desc">Dedicated to making your stay in Sheffield exceptional.</p>
+                </div>
+                <div class="hosts-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; text-align: center;">
+                    <!-- Placeholder for Host 1 -->
+                    <div class="host-card">
+                        <div style="width: 120px; height: 120px; background: #e0e0e0; border-radius: 50%; margin: 0 auto 1.5rem; display: flex; align-items: center; justify-content: center; font-size: 2rem; color: #757575;">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        </div>
+                        <h3>The Safe Let Team</h3>
+                        <p style="color: var(--text-light);">Property Managers</p>
+                        <p style="margin-top: 1rem;">"We love welcoming guests to our home city and ensuring every stay is perfect."</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- FOOTER -->
+    {% include 'footer.html' %}
+    <script src="{% static 'yourapp/js/homepage.js' %}"></script>
+</body>
+</html>

@@ -1,0 +1,552 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} — Safe Let Stays</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2E7D32;
+            --primary-dark: #1B5E20;
+            --primary-light: #4CAF50;
+            --danger: #dc3545;
+            --text-main: #1a1a1a;
+            --text-light: #666;
+            --bg-light: #f8f9fa;
+            --border: #e5e7eb;
+            --white: #ffffff;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-light);
+            color: var(--text-main);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 260px;
+            background: var(--text-main);
+            color: var(--white);
+            padding: 2rem 0;
+            overflow-y: auto;
+        }
+        
+        .sidebar__logo {
+            padding: 0 1.5rem 2rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 1.5rem;
+        }
+        
+        .sidebar__logo h2 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--white);
+        }
+        
+        .sidebar__logo span {
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.5);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .sidebar__nav {
+            list-style: none;
+        }
+        
+        .sidebar__nav li a {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.875rem 1.5rem;
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .sidebar__nav li a:hover,
+        .sidebar__nav li a.active {
+            background: rgba(255,255,255,0.1);
+            color: var(--white);
+        }
+        
+        .sidebar__nav li a.active {
+            border-left: 3px solid var(--primary-light);
+        }
+        
+        .sidebar__nav li a svg {
+            width: 20px;
+            height: 20px;
+            opacity: 0.7;
+        }
+        
+        .sidebar__footer {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 1.5rem;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .sidebar__footer a {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: rgba(255,255,255,0.5);
+            text-decoration: none;
+            font-size: 0.875rem;
+        }
+        
+        .sidebar__footer a:hover {
+            color: var(--white);
+        }
+        
+        /* Main Content */
+        .main-content {
+            margin-left: 260px;
+            padding: 2rem;
+            min-height: 100vh;
+        }
+        
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        
+        .page-header h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+        
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+        }
+        
+        .breadcrumb a {
+            color: var(--text-light);
+            text-decoration: none;
+        }
+        
+        .breadcrumb a:hover {
+            color: var(--primary);
+        }
+        
+        .breadcrumb span {
+            color: var(--text-light);
+        }
+        
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9375rem;
+            text-decoration: none;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+        
+        .btn--primary {
+            background: var(--primary);
+            color: var(--white);
+        }
+        
+        .btn--primary:hover {
+            background: var(--primary-dark);
+        }
+        
+        .btn--outline {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-main);
+        }
+        
+        .btn--outline:hover {
+            background: var(--bg-light);
+        }
+        
+        /* Form Card */
+        .form-card {
+            background: var(--white);
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            overflow: hidden;
+            max-width: 900px;
+        }
+        
+        .form-card__header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .form-card__header h2 {
+            font-size: 1.125rem;
+            font-weight: 600;
+        }
+        
+        .form-card__body {
+            padding: 2rem;
+        }
+        
+        .form-card__footer {
+            padding: 1.5rem 2rem;
+            background: var(--bg-light);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+        }
+        
+        /* Form Elements */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+        }
+        
+        .form-grid--full {
+            grid-column: 1 / -1;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .form-group label {
+            font-weight: 500;
+            color: var(--text-main);
+            margin-bottom: 0.5rem;
+            font-size: 0.9375rem;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 0.9375rem;
+            color: var(--text-main);
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1);
+        }
+        
+        textarea.form-control {
+            min-height: 120px;
+            resize: vertical;
+        }
+        
+        .form-group--checkbox {
+            flex-direction: row;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .form-group--checkbox input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            accent-color: var(--primary);
+            cursor: pointer;
+        }
+        
+        .form-group--checkbox label {
+            margin-bottom: 0;
+            cursor: pointer;
+        }
+        
+        .help-text {
+            font-size: 0.8125rem;
+            color: var(--text-light);
+            margin-top: 0.375rem;
+        }
+        
+        .error-text {
+            font-size: 0.8125rem;
+            color: var(--danger);
+            margin-top: 0.375rem;
+        }
+        
+        /* Section Divider */
+        .form-section {
+            margin-bottom: 2rem;
+        }
+        
+        .form-section__title {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-light);
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .sidebar {
+                width: 80px;
+                padding: 1rem 0;
+            }
+            
+            .sidebar__logo h2,
+            .sidebar__logo span,
+            .sidebar__nav li a span,
+            .sidebar__footer span {
+                display: none;
+            }
+            
+            .sidebar__nav li a {
+                justify-content: center;
+                padding: 1rem;
+            }
+            
+            .main-content {
+                margin-left: 80px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                display: none;
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar__logo">
+            <h2>Safe Let Stays</h2>
+            <span>Staff Panel</span>
+        </div>
+        
+        <ul class="sidebar__nav">
+            <li>
+                <a href="{% url 'staff_panel' %}" class="active">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                    <span>Properties</span>
+                </a>
+            </li>
+            <li>
+                <a href="#">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    <span>Bookings</span>
+                </a>
+            </li>
+            <li>
+                <a href="#">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    <span>Guests</span>
+                </a>
+            </li>
+            <li>
+                <a href="#">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    <span>Reviews</span>
+                </a>
+            </li>
+            <li>
+                <a href="#">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                    <span>Settings</span>
+                </a>
+            </li>
+        </ul>
+        
+        <div class="sidebar__footer">
+            <a href="/">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                <span>Back to Website</span>
+            </a>
+        </div>
+    </aside>
+    
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Page Header -->
+        <div class="page-header">
+            <div>
+                <div class="breadcrumb">
+                    <a href="{% url 'staff_panel' %}">Properties</a>
+                    <span>/</span>
+                    <span>{{ title }}</span>
+                </div>
+                <h1>{{ title }}</h1>
+            </div>
+        </div>
+        
+        <!-- Form Card -->
+        <div class="form-card">
+            <div class="form-card__header">
+                <h2>Property Details</h2>
+            </div>
+            
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <div class="form-card__body">
+                    <!-- Basic Information -->
+                    <div class="form-section">
+                        <div class="form-section__title">Basic Information</div>
+                        <div class="form-grid">
+                            <div class="form-group form-grid--full">
+                                <label for="{{ form.title.id_for_label }}">Property Title</label>
+                                {{ form.title }}
+                                {% if form.title.errors %}<div class="error-text">{{ form.title.errors.0 }}</div>{% endif %}
+                            </div>
+                            
+                            <div class="form-group form-grid--full">
+                                <label for="{{ form.short_description.id_for_label }}">Short Description</label>
+                                {{ form.short_description }}
+                                <div class="help-text">Brief tagline shown on property cards (max 150 chars)</div>
+                                {% if form.short_description.errors %}<div class="error-text">{{ form.short_description.errors.0 }}</div>{% endif %}
+                            </div>
+                            
+                            <div class="form-group form-grid--full">
+                                <label for="{{ form.description.id_for_label }}">Full Description</label>
+                                {{ form.description }}
+                                {% if form.description.errors %}<div class="error-text">{{ form.description.errors.0 }}</div>{% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Property Details -->
+                    <div class="form-section">
+                        <div class="form-section__title">Property Details</div>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="{{ form.price_from.id_for_label }}">Price Per Night (£)</label>
+                                {{ form.price_from }}
+                                {% if form.price_from.errors %}<div class="error-text">{{ form.price_from.errors.0 }}</div>{% endif %}
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="{{ form.capacity.id_for_label }}">Maximum Guests</label>
+                                {{ form.capacity }}
+                                {% if form.capacity.errors %}<div class="error-text">{{ form.capacity.errors.0 }}</div>{% endif %}
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="{{ form.beds.id_for_label }}">Bedrooms</label>
+                                {{ form.beds }}
+                                {% if form.beds.errors %}<div class="error-text">{{ form.beds.errors.0 }}</div>{% endif %}
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="{{ form.baths.id_for_label }}">Bathrooms</label>
+                                {{ form.baths }}
+                                {% if form.baths.errors %}<div class="error-text">{{ form.baths.errors.0 }}</div>{% endif %}
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="{{ form.parking.id_for_label }}">Parking Spaces</label>
+                                {{ form.parking }}
+                                {% if form.parking.errors %}<div class="error-text">{{ form.parking.errors.0 }}</div>{% endif %}
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="{{ form.distance_to_stadium_mins.id_for_label }}">Distance to Stadium (mins)</label>
+                                {{ form.distance_to_stadium_mins }}
+                                {% if form.distance_to_stadium_mins.errors %}<div class="error-text">{{ form.distance_to_stadium_mins.errors.0 }}</div>{% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Media -->
+                    <div class="form-section">
+                        <div class="form-section__title">Media</div>
+                        <div class="form-grid">
+                            <div class="form-group form-grid--full">
+                                <label for="{{ form.image.id_for_label }}">Property Image</label>
+                                {{ form.image }}
+                                <div class="help-text">Upload a high-quality image (recommended 1200x800)</div>
+                                {% if form.image.errors %}<div class="error-text">{{ form.image.errors.0 }}</div>{% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- SEO & Tags -->
+                    <div class="form-section">
+                        <div class="form-section__title">Tags & SEO</div>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="{{ form.tags.id_for_label }}">Tags</label>
+                                {{ form.tags }}
+                                <div class="help-text">Comma-separated (e.g., "luxury, city centre, modern")</div>
+                                {% if form.tags.errors %}<div class="error-text">{{ form.tags.errors.0 }}</div>{% endif %}
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="{{ form.keywords.id_for_label }}">Keywords</label>
+                                {{ form.keywords }}
+                                <div class="help-text">For search (comma-separated)</div>
+                                {% if form.keywords.errors %}<div class="error-text">{{ form.keywords.errors.0 }}</div>{% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Settings -->
+                    <div class="form-section" style="margin-bottom: 0;">
+                        <div class="form-section__title">Settings</div>
+                        <div class="form-group form-group--checkbox">
+                            {{ form.is_featured }}
+                            <label for="{{ form.is_featured.id_for_label }}">Feature this property on homepage</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-card__footer">
+                    <a href="{% url 'staff_panel' %}" class="btn btn--outline">Cancel</a>
+                    <button type="submit" class="btn btn--primary">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                        Save Property
+                    </button>
+                </div>
+            </form>
+        </div>
+    </main>
+</body>
+</html>
