@@ -39,6 +39,8 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'safeletstays.settings_production'
 
 # If you want to use environment variables for secrets, uncomment and set these:
 # os.environ['DJANGO_SECRET_KEY'] = 'your-secret-key-here'
+# os.environ['STRIPE_PUBLISHABLE_KEY'] = 'pk_test_...'
+# os.environ['STRIPE_SECRET_KEY'] = 'sk_test_...'
 # os.environ['GUESTY_API_KEY'] = 'your-guesty-api-key'
 # os.environ['GUESTY_API_SECRET'] = 'your-guesty-api-secret'
 
