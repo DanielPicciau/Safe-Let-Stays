@@ -15,14 +15,25 @@ document.addEventListener('DOMContentLoaded', () => {
 // Sticky Header & Scroll Effects
 function initHeader() {
     const header = document.getElementById('header');
+    if (!header) return;
+
+    // If header has 'header--static' class, force scrolled state and skip scroll listener
+    if (header.classList.contains('header--static')) {
+        header.classList.add('scrolled');
+        return;
+    }
     
-    window.addEventListener('scroll', () => {
+    const handleScroll = () => {
         if (window.scrollY > 50) {
             header.classList.add('scrolled');
         } else {
             header.classList.remove('scrolled');
         }
-    });
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    // Initial check
+    handleScroll();
 }
 
 // Mobile Menu Toggle

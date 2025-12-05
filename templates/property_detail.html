@@ -458,6 +458,25 @@
             box-shadow: 0 4px 24px rgba(0,0,0,0.08);
             padding: 1.5rem;
             border: 1px solid #e5e7eb;
+            max-height: calc(100vh - 120px);
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #ccc #f1f1f1;
+        }
+
+        .booking-card::-webkit-scrollbar {
+            width: 6px;
+        }
+        .booking-card::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 8px;
+        }
+        .booking-card::-webkit-scrollbar-thumb {
+            background: #ccc;
+            border-radius: 8px;
+        }
+        .booking-card::-webkit-scrollbar-thumb:hover {
+            background: #bbb;
         }
         
         .booking-card__price {
@@ -790,7 +809,7 @@
     <a href="#main-content" class="skip-link">Skip to main content</a>
     
     <!-- HEADER -->
-    <header class="header" id="header">
+    <header class="header header--static" id="header">
         <div class="container header__inner">
             <a href="/" aria-label="{{ site_name }} — Home" class="logo-link">
                 <span class="logo-text">{{ site_name }}</span>
@@ -805,7 +824,7 @@
             <nav class="header__nav" id="header-nav">
                 <ul class="nav-list">
                     <li><a href="/" class="nav-link">Home</a></li>
-                    <li><a href="/properties" class="nav-link">Properties</a></li>
+                    <li><a href="/properties" class="nav-link active">Properties</a></li>
                     <li><a href="/about" class="nav-link">About</a></li>
                     <li><a href="/my-bookings" class="nav-link">My Bookings</a></li>
                 </ul>

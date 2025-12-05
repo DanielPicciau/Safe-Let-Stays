@@ -108,6 +108,11 @@
             <a href="/" aria-label="{{ site_name }} — Home" class="logo-link">
                 <span class="logo-text">{{ site_name }}</span>
             </a>
+            <button class="mobile-menu-toggle" aria-label="Toggle menu" aria-expanded="false">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
             <nav class="header__nav" id="header-nav">
                 <ul class="nav-list">
                     <li><a href="/" class="nav-link">Home</a></li>
@@ -157,5 +162,6 @@
     </main>
 
     {% include 'footer.html' %}
+    <script src="{% static 'yourapp/js/homepage.js' %}"></script>
 </body>
 </html>
