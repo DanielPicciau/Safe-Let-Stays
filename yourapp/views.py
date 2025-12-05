@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView
 from django.contrib.auth.forms import AuthenticationForm
@@ -118,16 +119,24 @@ def staff_panel_view(request):
     }
     return render(request, 'staff/panel.html', context)
 
+@staff_member_required
 def add_property_view(request):
     if request.method == 'POST':
         form = PropertyForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
             return redirect('staff_panel')
+        else:
+            print("Form errors:", form.errors)
     else:
         form = PropertyForm()
-    return render(request, 'staff/property_form.html', {'form': form, 'title': 'Add Property'})
+    
+    return render(request, 'staff/property_form.html', {
+        'form': form,
+        'title': 'Add New Property'
+    })
 
+@staff_member_required
 def edit_property_view(request, pk):
     property_obj = get_object_or_404(Property, pk=pk)
     if request.method == 'POST':
@@ -135,10 +144,13 @@ def edit_property_view(request, pk):
         if form.is_valid():
             form.save()
             return redirect('staff_panel')
+        else:
+            print("Edit Form errors:", form.errors)
     else:
         form = PropertyForm(instance=property_obj)
     return render(request, 'staff/property_form.html', {'form': form, 'title': 'Edit Property'})
 
+@staff_member_required
 def delete_property_view(request, pk):
     from django.contrib import messages
     property_obj = get_object_or_404(Property, pk=pk)

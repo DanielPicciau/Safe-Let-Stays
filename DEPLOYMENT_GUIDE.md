@@ -1,5 +1,27 @@
 # Safe Let Stays - PythonAnywhere Deployment Guide
-
+./update_site.sh
+./update_site.sh./update_site.sh
+./update_site.sh./update_site.sh
+./update_site.sh./update_site.sh
+./update_site.sh./update_site.sh
+./update_site.sh./update_site.sh
+./update_site.sh./update_site.sh
+./update_site.sh./update_site.sh
+./update_site.sh./update_site.sh
+./update_site.sh./update_site.sh
+./update_site.sh./update_site.sh
+./update_site.sh./update_site.sh
+./update_site.sh./update_site.sh
+./update_site.sh./update_site.sh
+./update_site.sh./update_site.sh
+./update_site.sh./update_site.sh
+./update_site.sh./update_site.sh
+./update_site.sh./update_site.sh
+./update_site.sh./update_site.sh
+./update_site.sh./update_site.sh
+./update_site.sh./update_site.sh
+./update_site.sh./update_site.sh
+./update_site.sh
 ## 📋 Pre-Deployment Checklist
 
 Before deploying, make sure you have:
