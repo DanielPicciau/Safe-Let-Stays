@@ -35,10 +35,8 @@
                 <ul class="nav-list">
                     <li><a href="/" class="nav-link">Home</a></li>
                     <li><a href="/properties" class="nav-link active">Properties</a></li>
-                    <li><a href="/hosts" class="nav-link">Hosts</a></li>
-                    <li><a href="/reviews" class="nav-link">Reviews</a></li>
                     <li><a href="/about" class="nav-link">About</a></li>
-                    <li><a href="javascript:void(0)" class="nav-link" id="open-contact-modal">Contact</a></li>
+                    <li><a href="/my-bookings" class="nav-link">My Bookings</a></li>
                 </ul>
                 <div class="header__ctas">
                     <a href="tel:{{ contact_phone }}" class="btn btn--outline">
@@ -136,7 +134,7 @@
                 <div class="properties-grid">
                     {% for property in properties %}
                     <article class="property-card reveal-on-scroll">
-                        <a href="{{ property.get_absolute_url }}" style="text-decoration: none; color: inherit; display: block;">
+                        <a href="{{ property.get_absolute_url }}?{{ request.GET.urlencode }}" style="text-decoration: none; color: inherit; display: block;">
                             <div class="property-card__image">
                                 {% if property.image %}
                                 <img src="{{ property.image.url }}" alt="{{ property.title }}" class="placeholder-image" style="object-fit: cover;">
@@ -175,8 +173,8 @@
                             </div>
                         </a>
                         <div class="property-card__footer" style="padding: 0 1.5rem 1.5rem;">
-                            <a href="{{ property.get_absolute_url }}" class="btn btn--primary btn--sm">View Details</a>
-                            <a href="{{ property.get_absolute_url }}" class="btn btn--outline btn--sm">Book Now</a>
+                            <a href="{{ property.get_absolute_url }}?{{ request.GET.urlencode }}" class="btn btn--primary btn--sm">View Details</a>
+                            <a href="{{ property.get_absolute_url }}?{{ request.GET.urlencode }}" class="btn btn--outline btn--sm">Book Now</a>
                         </div>
                     </article>
                     {% empty %}

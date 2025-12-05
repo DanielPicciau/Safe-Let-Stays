@@ -1,0 +1,356 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | {{ site_name }}</title>
+    <link rel="stylesheet" href="{% static 'yourapp/css/homepage.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: var(--bg-light);
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        
+        /* Video Background */
+        .video-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+        #bg-video {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            min-width: 100%;
+            min-height: 100%;
+            width: auto;
+            height: auto;
+            transform: translate(-50%, -50%);
+            object-fit: cover;
+        }
+        .video-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.7) 100%);
+            z-index: -1;
+        }
+
+        .login-main {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 120px 20px 40px; /* Increased top padding to clear navbar */
+            position: relative;
+            z-index: 1;
+            background-color: transparent !important; /* Override homepage.css */
+        }
+        .login-card {
+            background: rgba(255, 255, 255, 0.95); /* Slightly transparent white */
+            backdrop-filter: blur(10px);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-xl);
+            padding: 0;
+            width: 100%;
+            max-width: 450px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            overflow: hidden;
+            transition: max-width 0.5s ease, height 0.5s ease;
+            position: relative;
+        }
+        
+        .login-card.expanded {
+            max-width: 550px;
+        }
+
+        .auth-section {
+            padding: 2.5rem;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        .auth-section.hidden {
+            display: none;
+            opacity: 0;
+            transform: translateX(20px);
+        }
+
+        .login-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            text-align: center;
+            color: var(--text-main);
+        }
+        
+        .login-subtitle {
+            text-align: center;
+            color: var(--text-light);
+            margin-bottom: 2rem;
+            font-size: 0.95rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text-main);
+            font-size: 0.9rem;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            font-size: 1rem;
+            transition: var(--transition);
+            background-color: rgba(255, 255, 255, 0.8);
+            box-sizing: border-box;
+        }
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1);
+            background-color: var(--white);
+        }
+        .btn-block {
+            width: 100%;
+            margin-top: 1rem;
+            padding: 0.875rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: var(--radius-md);
+            transition: background-color 0.2s;
+        }
+        .btn-block:hover {
+            background-color: var(--primary-dark);
+        }
+        
+        .error-list {
+            color: #d32f2f;
+            list-style: none;
+            padding: 0.75rem;
+            margin-bottom: 1.25rem;
+            font-size: 0.875rem;
+            background: #ffebee;
+            border-radius: var(--radius-md);
+            border: 1px solid #ffcdd2;
+        }
+        
+        .auth-switch {
+            text-align: center;
+            margin-top: 1.5rem;
+            font-size: 0.9375rem;
+            color: var(--text-light);
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border);
+        }
+        .auth-switch button {
+            background: none;
+            border: none;
+            color: var(--primary);
+            font-weight: 600;
+            cursor: pointer;
+            padding: 0;
+            font-size: inherit;
+            text-decoration: none;
+        }
+        .auth-switch button:hover {
+            text-decoration: underline;
+            color: var(--primary-dark);
+        }
+        
+        .helptext {
+            display: block;
+            font-size: 0.75rem;
+            color: var(--text-light);
+            margin-top: 0.25rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Video Background -->
+    <div class="video-background">
+        <video autoplay muted loop playsinline id="bg-video">
+            <source src="{% static 'yourapp/videos/One Minute Real Estate Video Tour.mp4' %}" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+        <div class="video-overlay"></div>
+    </div>
+
+    <!-- HEADER -->
+    <header class="header" id="header">
+        <div class="container header__inner">
+            <a href="/" aria-label="{{ site_name }} — Home" class="logo-link">
+                <span class="logo-text">{{ site_name }}</span>
+            </a>
+            <nav class="header__nav" id="header-nav">
+                <ul class="nav-list">
+                    <li><a href="/" class="nav-link">Home</a></li>
+                    <li><a href="/properties" class="nav-link">Properties</a></li>
+                    <li><a href="/about" class="nav-link">About</a></li>
+                    <li><a href="/my-bookings" class="nav-link">My Bookings</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="login-main">
+        <div class="login-card {% if show_signup %}expanded{% endif %}" id="loginCard">
+            
+            <!-- LOGIN SECTION -->
+            <div id="loginSection" class="auth-section {% if show_signup %}hidden{% endif %}">
+                <h1 class="login-title">Welcome Back</h1>
+                <p class="login-subtitle">Sign in to manage your bookings</p>
+                
+                {% if form.errors and not show_signup %}
+                    <ul class="error-list">
+                        {% for field in form %}
+                            {% for error in field.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        {% endfor %}
+                        {% for error in form.non_field_errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+
+                <form method="post" action="{% url 'login' %}">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="id_username">Email</label>
+                        <input type="text" name="username" autofocus autocapitalize="none" autocomplete="username" maxlength="150" required id="id_username">
+                    </div>
+                    <div class="form-group">
+                        <label for="id_password">Password</label>
+                        <input type="password" name="password" autocomplete="current-password" required id="id_password">
+                    </div>
+                    <button type="submit" class="btn-block">Sign In</button>
+                    <input type="hidden" name="next" value="{{ next }}">
+                </form>
+                
+                <div class="auth-switch">
+                    Don't have an account? <button onclick="toggleAuth('signup')">Create Account</button>
+                </div>
+            </div>
+
+            <!-- SIGNUP SECTION -->
+            <div id="signupSection" class="auth-section {% if not show_signup %}hidden{% endif %}">
+                <h1 class="login-title">Create Account</h1>
+                <p class="login-subtitle">Join us to book your next stay</p>
+
+                {% if signup_form.errors and show_signup %}
+                    <ul class="error-list">
+                        {% for field in signup_form %}
+                            {% for error in field.errors %}
+                                <li>{{ field.label }}: {{ error }}</li>
+                            {% endfor %}
+                        {% endfor %}
+                        {% for error in signup_form.non_field_errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+
+                <form method="post" action="{% url 'signup' %}">
+                    {% csrf_token %}
+                    {% for field in signup_form %}
+                    <div class="form-group">
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.help_text %}
+                        <span class="helptext">{{ field.help_text }}</span>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                    <button type="submit" class="btn-block">Create Account</button>
+                </form>
+                
+                <div class="auth-switch">
+                    Already have an account? <button onclick="toggleAuth('login')">Sign In</button>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    {% include 'footer.html' %}
+
+    <script>
+        function toggleAuth(mode) {
+            const loginCard = document.getElementById('loginCard');
+            const loginSection = document.getElementById('loginSection');
+            const signupSection = document.getElementById('signupSection');
+
+            if (mode === 'signup') {
+                // Expand card
+                loginCard.classList.add('expanded');
+                
+                // Hide login, show signup
+                loginSection.style.opacity = '0';
+                loginSection.style.transform = 'translateX(-20px)';
+                
+                setTimeout(() => {
+                    loginSection.classList.add('hidden');
+                    signupSection.classList.remove('hidden');
+                    // Trigger reflow
+                    void signupSection.offsetWidth;
+                    
+                    signupSection.style.opacity = '1';
+                    signupSection.style.transform = 'translateX(0)';
+                }, 300);
+                
+            } else {
+                // Shrink card
+                loginCard.classList.remove('expanded');
+                
+                // Hide signup, show login
+                signupSection.style.opacity = '0';
+                signupSection.style.transform = 'translateX(20px)';
+                
+                setTimeout(() => {
+                    signupSection.classList.add('hidden');
+                    loginSection.classList.remove('hidden');
+                    // Trigger reflow
+                    void loginSection.offsetWidth;
+                    
+                    loginSection.style.opacity = '1';
+                    loginSection.style.transform = 'translateX(0)';
+                }, 300);
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => {
+             const loginSection = document.getElementById('loginSection');
+             const signupSection = document.getElementById('signupSection');
+             
+             if (!loginSection.classList.contains('hidden')) {
+                 loginSection.style.opacity = '1';
+                 loginSection.style.transform = 'translateX(0)';
+             }
+             if (!signupSection.classList.contains('hidden')) {
+                 signupSection.style.opacity = '1';
+                 signupSection.style.transform = 'translateX(0)';
+             }
+        });
+    </script>
+</body>
+</html>

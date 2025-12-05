@@ -98,6 +98,55 @@
             color: #2E7D32;
         }
         
+        /* Guest Checkout Styles */
+        .guest-options {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            text-align: center;
+            border: 1px solid #e5e7eb;
+        }
+        .guest-prompt {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 0.75rem;
+        }
+        .guest-buttons {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .guest-details {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #eee;
+            animation: fadeIn 0.3s ease;
+        }
+        .guest-details h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #1a1a1a;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .btn-guest-continue {
+            background: none;
+            border: none;
+            color: #666;
+            text-decoration: underline;
+            cursor: pointer;
+            font-size: 0.875rem;
+            padding: 0.5rem;
+        }
+        .btn-guest-continue:hover {
+            color: #1a1a1a;
+        }
+        
         .property-action-btn.active svg {
             fill: #e53935;
             stroke: #e53935;
@@ -757,10 +806,8 @@
                 <ul class="nav-list">
                     <li><a href="/" class="nav-link">Home</a></li>
                     <li><a href="/properties" class="nav-link">Properties</a></li>
-                    <li><a href="/hosts" class="nav-link">Hosts</a></li>
-                    <li><a href="/reviews" class="nav-link">Reviews</a></li>
                     <li><a href="/about" class="nav-link">About</a></li>
-                    <li><a href="javascript:void(0)" class="nav-link" id="open-contact-modal">Contact</a></li>
+                    <li><a href="/my-bookings" class="nav-link">My Bookings</a></li>
                 </ul>
                 <div class="header__ctas">
                     <a href="tel:{{ contact_phone }}" class="btn btn--outline">
@@ -1066,34 +1113,85 @@
                                 <span class="booking-card__rating-count">· 12 reviews</span>
                             </div>
                             
-                            <form class="booking-form">
+                            <form class="booking-form" action="{% url 'create_checkout_session' property.id %}" method="POST">
+                                {% csrf_token %}
                                 <div class="booking-form__dates">
                                     <div class="booking-form__field">
                                         <label for="booking-checkin">Check-in</label>
-                                        <input type="date" id="booking-checkin" min="{% now 'Y-m-d' %}">
+                                        <input type="date" id="booking-checkin" name="checkin" min="{% now 'Y-m-d' %}" value="{{ request.GET.check_in|default:'' }}">
                                     </div>
                                     <div class="booking-form__field">
                                         <label for="booking-checkout">Checkout</label>
-                                        <input type="date" id="booking-checkout">
+                                        <input type="date" id="booking-checkout" name="checkout" value="{{ request.GET.check_out|default:'' }}">
                                     </div>
                                 </div>
                                 
                                 <div class="booking-form__guests">
                                     <div class="booking-form__field">
                                         <label for="booking-guests">Guests</label>
-                                        <select id="booking-guests">
+                                        <select id="booking-guests" name="guests">
                                             {% for i in "123456789"|make_list %}
                                             {% if forloop.counter <= property.capacity %}
-                                            <option value="{{ forloop.counter }}">{{ forloop.counter }} guest{{ forloop.counter|pluralize }}</option>
+                                            <option value="{{ forloop.counter }}" {% if request.GET.guests == forloop.counter|stringformat:"s" %}selected{% endif %}>{{ forloop.counter }} guest{{ forloop.counter|pluralize }}</option>
                                             {% endif %}
                                             {% endfor %}
                                         </select>
                                     </div>
                                 </div>
                                 
-                                <button type="button" class="booking-btn" id="open-contact-modal-booking">
-                                    Request to Book
+                                {% if not user.is_authenticated %}
+                                <div id="guest-checkout-options" class="guest-options">
+                                    <p class="guest-prompt">Log in to manage your booking & download receipts</p>
+                                    <div class="guest-buttons">
+                                        <a href="{% url 'login' %}?next={{ request.path }}" class="booking-btn" style="text-decoration: none; display: inline-block; width: auto; padding: 0.5rem 1rem; font-size: 0.9rem; margin-bottom: 0.5rem;">Log In / Sign Up</a>
+                                        <button type="button" class="btn-guest-continue" onclick="showGuestForm()">Book as Guest</button>
+                                    </div>
+                                </div>
+
+                                <div id="guest-details-form" class="guest-details" style="display: none;">
+                                    <h4>Guest Details</h4>
+                                    <div class="booking-form__field">
+                                        <label for="guest-name">Full Name</label>
+                                        <input type="text" id="guest-name" name="guest_name" class="form-control">
+                                    </div>
+                                    <div class="booking-form__field">
+                                        <label for="guest-email">Email Address</label>
+                                        <input type="email" id="guest-email" name="guest_email" class="form-control">
+                                    </div>
+                                    <div class="booking-form__field">
+                                        <label for="guest-phone">Phone Number</label>
+                                        <input type="tel" id="guest-phone" name="guest_phone" class="form-control">
+                                    </div>
+                                </div>
+
+                                <button type="submit" class="booking-btn" id="submit-booking-btn" style="display: none;">
+                                    Book Now
                                 </button>
+
+                                <script>
+                                function showGuestForm() {
+                                    document.getElementById('guest-checkout-options').style.display = 'none';
+                                    document.getElementById('guest-details-form').style.display = 'block';
+                                    document.getElementById('guest-name').required = true;
+                                    document.getElementById('guest-email').required = true;
+                                    document.getElementById('guest-phone').required = true;
+                                    
+                                    // Show the submit button
+                                    const submitBtn = document.getElementById('submit-booking-btn');
+                                    submitBtn.style.display = 'block';
+                                    
+                                    // Ensure the form is visible by scrolling if needed
+                                    // Use a small timeout to allow display:block to render
+                                    setTimeout(() => {
+                                        submitBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                                    }, 100);
+                                }
+                                </script>
+                                {% else %}
+                                <button type="submit" class="booking-btn">
+                                    Book Now
+                                </button>
+                                {% endif %}
                             </form>
                             
                             <p class="booking-card__note">You won't be charged yet</p>
@@ -1120,7 +1218,7 @@
                 <div class="properties-grid">
                     {% for prop in similar_properties %}
                     <article class="property-card reveal-on-scroll">
-                        <a href="{{ prop.get_absolute_url }}" style="text-decoration: none; color: inherit;">
+                        <a href="{{ prop.get_absolute_url }}?{{ request.GET.urlencode }}" style="text-decoration: none; color: inherit;">
                             <div class="property-card__image">
                                 {% if prop.image %}
                                 <img src="{{ prop.image.url }}" alt="{{ prop.title }}" class="placeholder-image" style="object-fit: cover;">
@@ -1231,6 +1329,86 @@
         // Favorite button toggle
         document.getElementById('favorite-btn')?.addEventListener('click', function() {
             this.classList.toggle('active');
+        });
+
+        // Date picker logic to ensure checkout is always after checkin
+        document.addEventListener('DOMContentLoaded', function() {
+            const checkinInput = document.getElementById('booking-checkin');
+            const checkoutInput = document.getElementById('booking-checkout');
+            const bookingForm = document.querySelector('.booking-form');
+            
+            function updateCheckout() {
+                if (checkinInput.value) {
+                    // Create date object from the input value (YYYY-MM-DD)
+                    // We append T00:00:00 to ensure local time parsing consistency or handle it as UTC
+                    // Best way to avoid timezone issues with simple date addition:
+                    const parts = checkinInput.value.split('-');
+                    const year = parseInt(parts[0]);
+                    const month = parseInt(parts[1]) - 1; // Months are 0-indexed
+                    const day = parseInt(parts[2]);
+                    
+                    const checkinDate = new Date(year, month, day);
+                    const nextDay = new Date(checkinDate);
+                    nextDay.setDate(checkinDate.getDate() + 1);
+                    
+                    // Format back to YYYY-MM-DD
+                    const nextYear = nextDay.getFullYear();
+                    const nextMonth = String(nextDay.getMonth() + 1).padStart(2, '0');
+                    const nextDate = String(nextDay.getDate()).padStart(2, '0');
+                    const nextDayStr = `${nextYear}-${nextMonth}-${nextDate}`;
+                    
+                    checkoutInput.min = nextDayStr;
+                    
+                    // If checkout is empty or less than or equal to checkin, update it
+                    if (!checkoutInput.value || checkoutInput.value <= checkinInput.value) {
+                        checkoutInput.value = nextDayStr;
+                    }
+                }
+            }
+
+            if (checkinInput && checkoutInput) {
+                checkinInput.addEventListener('change', updateCheckout);
+                checkinInput.addEventListener('input', updateCheckout);
+                
+                // Run on load in case of pre-filled values
+                updateCheckout();
+                
+                // Pre-fill contact modal dates if available
+                const contactDatesInput = document.getElementById('contact-dates');
+                if (contactDatesInput) {
+                     function updateContactDates() {
+                        if (checkinInput.value && checkoutInput.value) {
+                            contactDatesInput.value = `${checkinInput.value} to ${checkoutInput.value}`;
+                        }
+                     }
+                     // Update initially
+                     updateContactDates();
+                     
+                     // Update when dates change
+                     checkinInput.addEventListener('change', updateContactDates);
+                     checkoutInput.addEventListener('change', updateContactDates);
+                }
+            }
+            
+            if (bookingForm) {
+                bookingForm.addEventListener('submit', function(e) {
+                    if (!checkinInput.value || !checkoutInput.value) {
+                        e.preventDefault();
+                        alert('Please select both check-in and check-out dates.');
+                        return;
+                    }
+                    if (checkoutInput.value <= checkinInput.value) {
+                        e.preventDefault();
+                        // Try to fix it automatically
+                        updateCheckout();
+                        // If still invalid (shouldn't happen), stop
+                        if (checkoutInput.value <= checkinInput.value) {
+                            alert('Check-out date must be after check-in date.');
+                            return;
+                        }
+                    }
+                });
+            }
         });
     </script>
 </body>

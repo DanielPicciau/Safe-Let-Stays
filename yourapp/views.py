@@ -1,7 +1,15 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.views import LoginView
+from django.contrib.auth.forms import AuthenticationForm
 from django.db.models import Q
-from .models import Property
+from django.conf import settings
+from django.http import JsonResponse
+import stripe
+from datetime import datetime
+from .models import Property, Booking
 from .forms import PropertyForm
+from .utils import generate_receipt_pdf, send_receipt_email
 
 def get_common_context():
     return {
@@ -363,3 +371,213 @@ def delete_property_view(request, pk):
 #         })
 # 
 # =============================================================================
+
+# =============================================================================
+# STRIPE PAYMENT VIEWS
+# =============================================================================
+
+def create_checkout_session(request, property_id):
+    if request.method == 'POST':
+        property_obj = get_object_or_404(Property, pk=property_id)
+        stripe.api_key = settings.STRIPE_SECRET_KEY
+        
+        # Calculate nights and get details
+        checkin_str = request.POST.get('checkin')
+        checkout_str = request.POST.get('checkout')
+        guests = request.POST.get('guests', '1')
+        nights = 1
+        description_parts = []
+        
+        if checkin_str and checkout_str:
+            try:
+                checkin = datetime.strptime(checkin_str, '%Y-%m-%d')
+                checkout = datetime.strptime(checkout_str, '%Y-%m-%d')
+                delta = checkout - checkin
+                nights = delta.days
+                if nights < 1:
+                    nights = 1
+                
+                # Format dates for description
+                date_range = f"{checkin.strftime('%d %b %Y')} - {checkout.strftime('%d %b %Y')}"
+                description_parts.append(date_range)
+            except ValueError:
+                pass
+        
+        description_parts.append(f"{nights} Night{'s' if nights > 1 else ''}")
+        description_parts.append(f"{guests} Guest{'s' if guests != '1' else ''}")
+        
+        full_description = " • ".join(description_parts)
+        
+        # Get guest details
+        if request.user.is_authenticated:
+            guest_name = request.user.get_full_name() or request.user.username
+            guest_email = request.user.email
+            guest_phone = getattr(request.user.profile, 'phone_number', '') if hasattr(request.user, 'profile') else ''
+        else:
+            guest_name = request.POST.get('guest_name', 'Guest')
+            guest_email = request.POST.get('guest_email', 'pending@example.com')
+            guest_phone = request.POST.get('guest_phone', '')
+
+        try:
+            # Create pending booking
+            booking = Booking.objects.create(
+                property=property_obj,
+                user=request.user if request.user.is_authenticated else None,
+                guest_name=guest_name,
+                guest_email=guest_email,
+                guest_phone=guest_phone,
+                check_in=checkin,
+                check_out=checkout,
+                guests=int(guests),
+                total_price=property_obj.price_from * nights,
+                status='awaiting_payment'
+            )
+
+            # Construct image URL if available
+            images = []
+            if property_obj.image:
+                image_url = request.build_absolute_uri(property_obj.image.url)
+                # Only add image if it's likely accessible (not localhost)
+                if 'localhost' not in image_url and '127.0.0.1' not in image_url:
+                    images = [image_url]
+
+            checkout_session = stripe.checkout.Session.create(
+                payment_method_types=['card'],
+                line_items=[
+                    {
+                        'price_data': {
+                            'currency': 'gbp',
+                            'unit_amount': int(property_obj.price_from * nights * 100),
+                            'product_data': {
+                                'name': f"Stay at {property_obj.title}",
+                                'description': full_description,
+                                'images': images,
+                            },
+                        },
+                        'quantity': 1,
+                    },
+                ],
+                mode='payment',
+                success_url=request.build_absolute_uri('/payment-success/') + f"?booking_id={booking.id}",
+                cancel_url=request.build_absolute_uri('/payment-cancel/') + f"?booking_id={booking.id}",
+                client_reference_id=str(booking.id),
+                metadata={
+                    'booking_id': booking.id,
+                    'property_id': property_id,
+                    'checkin': checkin_str,
+                    'checkout': checkout_str,
+                    'guests': guests,
+                    'nights': nights
+                }
+            )
+            
+            # Update booking with session ID
+            booking.stripe_session_id = checkout_session.id
+            booking.save()
+            
+            return redirect(checkout_session.url, code=303)
+        except Exception as e:
+            return JsonResponse({'error': str(e)})
+    return redirect('homepage')
+
+def payment_success(request):
+    booking_id = request.GET.get('booking_id')
+    if booking_id:
+        try:
+            booking = Booking.objects.get(id=booking_id)
+            # Only confirm if it was awaiting payment
+            if booking.status == 'awaiting_payment':
+                booking.status = 'confirmed'
+                booking.save()
+                
+                # Generate Receipt PDF and Send Email
+                try:
+                    send_receipt_email(booking)
+                except Exception as e:
+                    print(f"Error sending receipt email: {e}")
+                    
+        except Booking.DoesNotExist:
+            pass
+            
+    context = get_common_context()
+    return render(request, 'payment_success.html', context)
+
+def payment_cancel(request):
+    booking_id = request.GET.get('booking_id')
+    if booking_id:
+        try:
+            booking = Booking.objects.get(id=booking_id)
+            # Only cancel if it was awaiting payment
+            if booking.status == 'awaiting_payment':
+                booking.status = 'canceled'
+                booking.save()
+        except Booking.DoesNotExist:
+            pass
+
+    context = get_common_context()
+    return render(request, 'payment_cancel.html', context)
+
+@login_required
+def booking_receipt(request, booking_id):
+    context = get_common_context()
+    booking = get_object_or_404(Booking, id=booking_id)
+    
+    # Security check: ensure user owns this booking
+    if booking.user != request.user and booking.guest_email != request.user.email:
+        return redirect('my_bookings')
+        
+    # Generate PDF if it doesn't exist
+    if not booking.receipt_pdf:
+        try:
+            generate_receipt_pdf(booking)
+        except Exception as e:
+            print(f"Error generating receipt PDF: {e}")
+        
+    context['booking'] = booking
+    return render(request, 'receipt.html', context)
+
+@login_required
+def my_bookings_view(request):
+    context = get_common_context()
+    # Find bookings linked to user OR matching their email
+    bookings = Booking.objects.filter(
+        Q(user=request.user) | Q(guest_email=request.user.email)
+    ).exclude(status='awaiting_payment').order_by('-check_in')
+    
+    context['bookings'] = bookings
+    return render(request, 'my_bookings.html', context)
+
+from django.contrib.auth import login
+from .forms import SignUpForm
+
+class CustomLoginView(LoginView):
+    template_name = 'registration/login.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['signup_form'] = SignUpForm()
+        context.update(get_common_context())
+        return context
+
+def signup(request):
+    if request.method == 'POST':
+        form = SignUpForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            return redirect('homepage')
+        else:
+            login_form = AuthenticationForm()
+            context = get_common_context()
+            context['form'] = login_form
+            context['signup_form'] = form
+            context['show_signup'] = True
+            return render(request, 'registration/login.html', context)
+    else:
+        form = SignUpForm()
+        login_form = AuthenticationForm()
+        context = get_common_context()
+        context['form'] = login_form
+        context['signup_form'] = form
+        context['show_signup'] = True
+        return render(request, 'registration/login.html', context)

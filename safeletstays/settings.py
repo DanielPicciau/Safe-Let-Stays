@@ -5,6 +5,9 @@ Minimal configuration for development preview.
 
 import os
 from pathlib import Path
+from dotenv import load_dotenv
+
+load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -132,3 +135,29 @@ MEDIA_ROOT = BASE_DIR / 'media'
 #     },
 # }
 # =============================================================================
+
+# =============================================================================
+# STRIPE INTEGRATION
+# =============================================================================
+STRIPE_PUBLISHABLE_KEY = os.environ.get('STRIPE_PUBLISHABLE_KEY')
+STRIPE_SECRET_KEY = os.environ.get('STRIPE_SECRET_KEY')
+
+LOGIN_REDIRECT_URL = '/my-bookings/'
+LOGOUT_REDIRECT_URL = '/'
+
+# =============================================================================
+# EMAIL CONFIGURATION
+# =============================================================================
+# Default to console backend for development (prints emails to terminal)
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+# For production, set these environment variables:
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
+# EMAIL_PORT = int(os.environ.get('EMAIL_PORT', 587))
+# EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True') == 'True'
+# EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
+# EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
+
+DEFAULT_FROM_EMAIL = 'Safe Let Stays <hello@safeletstays.co.uk>'
+SERVER_EMAIL = 'admin@safeletstays.co.uk'
