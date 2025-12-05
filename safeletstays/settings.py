@@ -161,3 +161,4 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 DEFAULT_FROM_EMAIL = 'Safe Let Stays <hello@safeletstays.co.uk>'
 SERVER_EMAIL = 'admin@safeletstays.co.uk'
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
