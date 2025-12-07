@@ -8,8 +8,11 @@
 # Configuration
 PROJECT_DIR=~/safeletstays
 VENV_DIR=.venv
-SMTP_USER="MS_iVD2OS@test-q3enl6k617542vwr.mlsender.net"
-SMTP_PASS="mssp.N8fF1dI.v69oxl55n8kl785k.QAXEdbo"
+
+# Credentials should NOT be hardcoded in this script if it is committed to version control.
+# We will prompt for them if they are not set in the environment.
+SMTP_USER=${MAILERSEND_SMTP_USERNAME:-""}
+SMTP_PASS=${MAILERSEND_SMTP_PASSWORD:-""}
 
 echo "🚀 Starting Update and SMTP Verification..."
 
@@ -39,6 +42,23 @@ ENV_FILE=".env"
 if [ ! -f "$ENV_FILE" ]; then
     touch "$ENV_FILE"
     echo "Created new .env file"
+fi
+
+# Prompt for credentials if not set
+if [ -z "$SMTP_USER" ]; then
+    echo "Enter your MailerSend SMTP Username:"
+    read SMTP_USER
+fi
+
+if [ -z "$SMTP_PASS" ]; then
+    echo "Enter your MailerSend SMTP Password:"
+    read -s SMTP_PASS
+    echo "" # Newline after silent input
+fi
+
+if [ -z "$SMTP_USER" ] || [ -z "$SMTP_PASS" ]; then
+    echo "❌ Error: SMTP credentials are required."
+    exit 1
 fi
 
 # Function to update or add a key-value pair safely
