@@ -242,7 +242,21 @@ The Safe Let Stays Team
         api_key = os.environ.get('MAILERSEND_API_KEY')
 
     if not api_key:
-        print("Error: MAILERSEND_API_KEY not configured in settings or environment.")
+        # Fallback to Django's default email backend (SMTP, Console, etc.)
+        print("MAILERSEND_API_KEY not found. Falling back to Django EmailBackend.")
+        try:
+            email = EmailMessage(
+                subject=subject,
+                body=body_text,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                to=[booking.guest_email],
+                bcc=[settings.SERVER_EMAIL] if hasattr(settings, 'SERVER_EMAIL') and settings.SERVER_EMAIL else None,
+            )
+            email.attach(f"receipt_{booking.id}.pdf", pdf_content, 'application/pdf')
+            email.send()
+            print(f"Email sent successfully via Django Backend to {booking.guest_email}")
+        except Exception as e:
+            print(f"Error sending email via Django Backend: {e}")
         return
 
     url = "https://api.mailersend.com/v1/email"
@@ -294,6 +308,8 @@ The Safe Let Stays Team
         response = requests.post(url, headers=headers, json=payload)
         if response.status_code != 202:
             print(f"MailerSend Error: {response.status_code} - {response.text}")
+            if response.status_code == 422:
+                 print("Tip: Check if you have reached your plan limits or if the data is invalid.")
             print(f"Please ensure the sender email '{from_email}' is verified in MailerSend.")
         else:
             print(f"Email sent successfully to {booking.guest_email}")

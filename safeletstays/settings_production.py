@@ -194,12 +194,25 @@ STRIPE_PUBLISHABLE_KEY = os.environ.get('STRIPE_PUBLISHABLE_KEY', '')
 STRIPE_SECRET_KEY = os.environ.get('STRIPE_SECRET_KEY', '')
 
 # =============================================================================
-# EMAIL SETTINGS (MailerSend)
+# EMAIL SETTINGS (MailerSend SMTP & API)
 # =============================================================================
 
-DEFAULT_FROM_EMAIL = 'Safe Let Stays <info@test-q3enl6k617542vwr.mlsender.net>'
-SERVER_EMAIL = 'daniel@webflare.studio'
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'Safe Let Stays <info@test-q3enl6k617542vwr.mlsender.net>')
+SERVER_EMAIL = os.environ.get('SERVER_EMAIL', 'daniel@webflare.studio')
 MAILERSEND_API_KEY = os.environ.get('MAILERSEND_API_KEY')
+
+# SMTP Configuration (Compatible with MailerSend SMTP Guide)
+# If you want to use SMTP instead of the API directly:
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.mailersend.net')
+EMAIL_PORT = int(os.environ.get('EMAIL_PORT', 587))
+EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True') == 'True'
+
+# MailerSend SMTP Username (e.g., your verified domain email)
+EMAIL_HOST_USER = os.environ.get('MAILERSEND_SMTP_USERNAME', os.environ.get('EMAIL_HOST_USER', ''))
+
+# MailerSend SMTP Password is the API Key
+EMAIL_HOST_PASSWORD = os.environ.get('MAILERSEND_API_KEY', os.environ.get('EMAIL_HOST_PASSWORD', ''))
 
 # =============================================================================
 # LOGGING
