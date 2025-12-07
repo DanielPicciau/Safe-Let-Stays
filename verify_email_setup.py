@@ -21,11 +21,11 @@ def create_and_test():
         property_obj = Property.objects.create(
             title="Test Property",
             description="A test property for email verification",
+            short_description="A short description for the test property",
             price_from=100,
             capacity=2,
             beds=1,
-            baths=1,
-            location="Test Location"
+            baths=1
         )
     
     print(f"   Using Property: {property_obj.title}")
