@@ -494,21 +494,30 @@ def create_checkout_session(request, property_id):
 
 def payment_success(request):
     booking_id = request.GET.get('booking_id')
+    import sys
+    print(f"DEBUG: payment_success view reached. Booking ID: {booking_id}", file=sys.stderr)
+    
     if booking_id:
         try:
             booking = Booking.objects.get(id=booking_id)
+            print(f"DEBUG: Booking found: {booking}. Status: {booking.status}", file=sys.stderr)
+            
             # Only confirm if it was awaiting payment
             if booking.status == 'awaiting_payment':
                 booking.status = 'confirmed'
                 booking.save()
+                print(f"DEBUG: Booking confirmed. Sending receipt...", file=sys.stderr)
                 
                 # Generate Receipt PDF and Send Email
                 try:
                     send_receipt_email(booking)
                 except Exception as e:
-                    print(f"Error sending receipt email: {e}")
+                    print(f"Error sending receipt email: {e}", file=sys.stderr)
+            else:
+                print(f"DEBUG: Booking status was not awaiting_payment. Skipping confirmation.", file=sys.stderr)
                     
         except Booking.DoesNotExist:
+            print(f"DEBUG: Booking with ID {booking_id} does not exist.", file=sys.stderr)
             pass
             
     context = get_common_context()

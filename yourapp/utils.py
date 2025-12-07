@@ -236,6 +236,13 @@ The Safe Let Stays Team
 
     print(f"Attempting to send email to {booking.guest_email} via SMTP...")
     
+    # Debug: Print credentials status (masked)
+    import sys
+    user = settings.EMAIL_HOST_USER
+    pwd = settings.EMAIL_HOST_PASSWORD
+    print(f"DEBUG: SMTP User configured: {'Yes' if user else 'No'}", file=sys.stderr)
+    print(f"DEBUG: SMTP Password configured: {'Yes' if pwd else 'No'}", file=sys.stderr)
+    
     try:
         email = EmailMessage(
             subject=subject,
@@ -248,10 +255,10 @@ The Safe Let Stays Team
         email.send()
         print(f"Email sent successfully to {booking.guest_email}")
     except Exception as e:
-        print(f"Error sending email: {e}")
+        print(f"Error sending email: {e}", file=sys.stderr)
         # Fallback or detailed error logging
         if "ConnectionRefusedError" in str(e):
-            print("Tip: Check if your firewall or ISP blocks port 587.")
+            print("Tip: Check if your firewall or ISP blocks port 587.", file=sys.stderr)
         if "AuthenticationError" in str(e) or "535" in str(e):
-            print("Tip: Check your SMTP username and password.")
+            print("Tip: Check your SMTP username and password.", file=sys.stderr)
 

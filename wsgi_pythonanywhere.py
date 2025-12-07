@@ -20,6 +20,7 @@ INSTRUCTIONS:
 
 import os
 import sys
+from dotenv import load_dotenv
 
 # =============================================================================
 # PATH CONFIGURATION
@@ -27,9 +28,12 @@ import sys
 # =============================================================================
 
 # Add your project directory to the sys.path
-project_home = '/home/YOUR_USERNAME/safeletstays'  # <-- CHANGE YOUR_USERNAME
+project_home = '/home/WebFlareUK/safeletstays'
 if project_home not in sys.path:
     sys.path.insert(0, project_home)
+
+# Load .env file explicitly
+load_dotenv(os.path.join(project_home, '.env'))
 
 # =============================================================================
 # ENVIRONMENT VARIABLES (Optional - for secret key, API keys, etc.)
