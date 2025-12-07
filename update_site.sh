@@ -28,6 +28,15 @@ pip install -r requirements.txt
 # 4. Run migrations
 echo "🗄️ Running database migrations..."
 python manage.py migrate
+if [ $? -ne 0 ]; then
+    echo "⚠️  Migration conflict detected. Attempting to merge..."
+    python manage.py makemigrations --merge --noinput
+    python manage.py migrate
+    if [ $? -ne 0 ]; then
+        echo "❌ Error: Migrations failed even after merge attempt."
+        exit 1
+    fi
+fi
 
 # 5. Collect static files
 echo "🎨 Collecting static files..."
