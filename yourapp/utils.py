@@ -236,8 +236,13 @@ The Safe Let Stays Team
 
     # MailerSend API configuration
     api_key = getattr(settings, 'MAILERSEND_API_KEY', None)
+    
+    # Fallback to environment variable directly if settings fails (common in some deployment setups)
     if not api_key:
-        print("Error: MAILERSEND_API_KEY not configured in settings.")
+        api_key = os.environ.get('MAILERSEND_API_KEY')
+
+    if not api_key:
+        print("Error: MAILERSEND_API_KEY not configured in settings or environment.")
         return
 
     url = "https://api.mailersend.com/v1/email"

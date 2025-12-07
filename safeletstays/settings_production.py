@@ -15,12 +15,20 @@ INSTRUCTIONS:
 
 import os
 from pathlib import Path
+from dotenv import load_dotenv
+
+# Build paths inside the project like this: BASE_DIR / 'subdir'.
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Load .env file explicitly
+load_dotenv(BASE_DIR / '.env')
 
 # =============================================================================
 # CORE SETTINGS
 # =============================================================================
 
-BASE_DIR = Path(__file__).resolve().parent.parent
+# BASE_DIR is defined above
+
 
 # SECURITY: Generate a new secret key for production!
 # Run this in Python: 
@@ -184,6 +192,14 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 STRIPE_PUBLISHABLE_KEY = os.environ.get('STRIPE_PUBLISHABLE_KEY', '')
 STRIPE_SECRET_KEY = os.environ.get('STRIPE_SECRET_KEY', '')
+
+# =============================================================================
+# EMAIL SETTINGS (MailerSend)
+# =============================================================================
+
+DEFAULT_FROM_EMAIL = 'Safe Let Stays <info@test-q3enl6k617542vwr.mlsender.net>'
+SERVER_EMAIL = 'admin@test-q3enl6k617542vwr.mlsender.net'
+MAILERSEND_API_KEY = os.environ.get('MAILERSEND_API_KEY')
 
 # =============================================================================
 # LOGGING
