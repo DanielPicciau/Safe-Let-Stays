@@ -160,7 +160,7 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 # EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
 
 DEFAULT_FROM_EMAIL = 'Safe Let Stays <info@test-q3enl6k617542vwr.mlsender.net>'
-SERVER_EMAIL = 'admin@test-q3enl6k617542vwr.mlsender.net'
+SERVER_EMAIL = 'daniel@webflare.studio'
 
 # MailerSend API Key
 MAILERSEND_API_KEY = os.environ.get('MAILERSEND_API_KEY')

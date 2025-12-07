@@ -198,7 +198,7 @@ STRIPE_SECRET_KEY = os.environ.get('STRIPE_SECRET_KEY', '')
 # =============================================================================
 
 DEFAULT_FROM_EMAIL = 'Safe Let Stays <info@test-q3enl6k617542vwr.mlsender.net>'
-SERVER_EMAIL = 'admin@test-q3enl6k617542vwr.mlsender.net'
+SERVER_EMAIL = 'daniel@webflare.studio'
 MAILERSEND_API_KEY = os.environ.get('MAILERSEND_API_KEY')
 
 # =============================================================================
