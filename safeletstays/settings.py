@@ -149,15 +149,18 @@ LOGOUT_REDIRECT_URL = '/'
 # EMAIL CONFIGURATION
 # =============================================================================
 # Default to console backend for development (prints emails to terminal)
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
-# For production, set these environment variables:
-# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-# EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
-# EMAIL_PORT = int(os.environ.get('EMAIL_PORT', 587))
-# EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True') == 'True'
-# EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
-# EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
+# Use SMTP if configured in .env, otherwise console
+if os.environ.get('MAILERSEND_SMTP_USERNAME'):
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_HOST = 'smtp.mailersend.net'
+    EMAIL_PORT = 587
+    EMAIL_USE_TLS = True
+    EMAIL_HOST_USER = os.environ.get('MAILERSEND_SMTP_USERNAME')
+    EMAIL_HOST_PASSWORD = os.environ.get('MAILERSEND_SMTP_PASSWORD')
+else:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 DEFAULT_FROM_EMAIL = 'Safe Let Stays <info@test-q3enl6k617542vwr.mlsender.net>'
 SERVER_EMAIL = 'daniel@webflare.studio'

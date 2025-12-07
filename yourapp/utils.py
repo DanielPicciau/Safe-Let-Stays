@@ -200,7 +200,7 @@ def generate_receipt_pdf(booking):
 
 def send_receipt_email(booking):
     """
-    Send the receipt email to the guest and a copy to admin using MailerSend.
+    Send the receipt email to the guest and a copy to admin using Django's EmailMessage (SMTP).
     """
     if not booking.receipt_pdf:
         generate_receipt_pdf(booking)
@@ -224,95 +224,34 @@ Best regards,
 The Safe Let Stays Team
     """
     
-    # Convert PDF to base64
+    # Convert PDF to base64 (not needed for EmailMessage, but keeping logic if we revert)
+    # For EmailMessage we need bytes
     try:
         booking.receipt_pdf.open('rb')
         pdf_content = booking.receipt_pdf.read()
-        pdf_base64 = base64.b64encode(pdf_content).decode('utf-8')
         booking.receipt_pdf.close()
     except Exception as e:
         print(f"Error reading PDF for email: {e}")
         return
 
-    # MailerSend API configuration
-    api_key = getattr(settings, 'MAILERSEND_API_KEY', None)
+    print(f"Attempting to send email to {booking.guest_email} via SMTP...")
     
-    # Fallback to environment variable directly if settings fails (common in some deployment setups)
-    if not api_key:
-        api_key = os.environ.get('MAILERSEND_API_KEY')
-
-    if not api_key:
-        # Fallback to Django's default email backend (SMTP, Console, etc.)
-        print("MAILERSEND_API_KEY not found. Falling back to Django EmailBackend.")
-        try:
-            email = EmailMessage(
-                subject=subject,
-                body=body_text,
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                to=[booking.guest_email],
-                bcc=[settings.SERVER_EMAIL] if hasattr(settings, 'SERVER_EMAIL') and settings.SERVER_EMAIL else None,
-            )
-            email.attach(f"receipt_{booking.id}.pdf", pdf_content, 'application/pdf')
-            email.send()
-            print(f"Email sent successfully via Django Backend to {booking.guest_email}")
-        except Exception as e:
-            print(f"Error sending email via Django Backend: {e}")
-        return
-
-    url = "https://api.mailersend.com/v1/email"
-    
-    headers = {
-        "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json",
-        "X-Requested-With": "XMLHttpRequest",
-    }
-    
-    # Parse DEFAULT_FROM_EMAIL
-    from_email = settings.DEFAULT_FROM_EMAIL
-    from_name = "Safe Let Stays"
-    if '<' in from_email and '>' in from_email:
-        parts = from_email.split('<')
-        from_name = parts[0].strip()
-        from_email = parts[1].strip('>')
-        
-    payload = {
-        "from": {
-            "email": from_email,
-            "name": from_name
-        },
-        "to": [
-            {
-                "email": booking.guest_email,
-                "name": booking.guest_name
-            }
-        ],
-        "subject": subject,
-        "text": body_text,
-        "html": body_text.replace('\n', '<br>'),
-        "attachments": [
-            {
-                "filename": f"receipt_{booking.id}.pdf",
-                "content": pdf_base64,
-                "disposition": "attachment"
-            }
-        ]
-    }
-    
-    # Add BCC to admin
-    if hasattr(settings, 'SERVER_EMAIL') and settings.SERVER_EMAIL:
-         payload["bcc"] = [
-             {"email": settings.SERVER_EMAIL, "name": "Admin"}
-         ]
-
     try:
-        response = requests.post(url, headers=headers, json=payload)
-        if response.status_code != 202:
-            print(f"MailerSend Error: {response.status_code} - {response.text}")
-            if response.status_code == 422:
-                 print("Tip: Check if you have reached your plan limits or if the data is invalid.")
-            print(f"Please ensure the sender email '{from_email}' is verified in MailerSend.")
-        else:
-            print(f"Email sent successfully to {booking.guest_email}")
-    except requests.exceptions.RequestException as e:
-        print(f"Error sending email via MailerSend: {e}")
+        email = EmailMessage(
+            subject=subject,
+            body=body_text,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=[booking.guest_email],
+            bcc=[settings.SERVER_EMAIL] if hasattr(settings, 'SERVER_EMAIL') and settings.SERVER_EMAIL else None,
+        )
+        email.attach(f"receipt_{booking.id}.pdf", pdf_content, 'application/pdf')
+        email.send()
+        print(f"Email sent successfully to {booking.guest_email}")
+    except Exception as e:
+        print(f"Error sending email: {e}")
+        # Fallback or detailed error logging
+        if "ConnectionRefusedError" in str(e):
+            print("Tip: Check if your firewall or ISP blocks port 587.")
+        if "AuthenticationError" in str(e) or "535" in str(e):
+            print("Tip: Check your SMTP username and password.")
 

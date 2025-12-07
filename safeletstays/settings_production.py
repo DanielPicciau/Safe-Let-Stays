@@ -211,8 +211,8 @@ EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True') == 'True'
 # MailerSend SMTP Username (e.g., your verified domain email)
 EMAIL_HOST_USER = os.environ.get('MAILERSEND_SMTP_USERNAME', os.environ.get('EMAIL_HOST_USER', ''))
 
-# MailerSend SMTP Password is the API Key
-EMAIL_HOST_PASSWORD = os.environ.get('MAILERSEND_API_KEY', os.environ.get('EMAIL_HOST_PASSWORD', ''))
+# MailerSend SMTP Password
+EMAIL_HOST_PASSWORD = os.environ.get('MAILERSEND_SMTP_PASSWORD', os.environ.get('EMAIL_HOST_PASSWORD', ''))
 
 # =============================================================================
 # LOGGING
