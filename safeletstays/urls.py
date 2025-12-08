@@ -28,7 +28,7 @@ urlpatterns = [
     path('create-checkout-session/<int:property_id>/', views.create_checkout_session, name='create_checkout_session'),
     path('payment-success/', views.payment_success, name='payment_success'),
     path('payment-cancel/', views.payment_cancel, name='payment_cancel'),
-    path('debug-mail/', views.debug_mail, name='debug_mail'),
+]
     
     # =========================================================================
     # GUESTY API ENDPOINTS (Uncomment when ready to use)
