@@ -256,10 +256,9 @@ def send_receipt_email(booking):
     try:
         mailjet = Client(auth=(api_key, api_secret), version='v3.1')
         encoded_pdf = base64.b64encode(pdf_content).decode('utf-8')
-              "Subject": subject,
-              "TextPart": body_text,
-              "HTMLPart": body_html,
-              "Attachments": [
+        
+        data = {
+          'Messages': [
             {
               "From": {
                 "Email": settings.DEFAULT_FROM_EMAIL,
@@ -273,6 +272,7 @@ def send_receipt_email(booking):
               ],
               "Subject": subject,
               "TextPart": body_text,
+              "HTMLPart": body_html,
               "Attachments": [
                 {
                   "ContentType": "application/pdf",
