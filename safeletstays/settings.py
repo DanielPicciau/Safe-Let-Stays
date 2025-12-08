@@ -148,23 +148,14 @@ LOGOUT_REDIRECT_URL = '/'
 # =============================================================================
 # EMAIL CONFIGURATION
 # =============================================================================
-# Default to console backend for development (prints emails to terminal)
-# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# EMAIL CONFIGURATION (Mailjet API)
+# =============================================================================
 
-# Use SMTP if configured in .env, otherwise console
-if os.environ.get('MAILERSEND_SMTP_USERNAME'):
-    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-    EMAIL_HOST = 'smtp.mailersend.net'
-    EMAIL_PORT = 587
-    EMAIL_USE_TLS = True
-    EMAIL_HOST_USER = os.environ.get('MAILERSEND_SMTP_USERNAME')
-    EMAIL_HOST_PASSWORD = os.environ.get('MAILERSEND_SMTP_PASSWORD')
-else:
-    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# Mailjet API Configuration
+MAILJET_API_KEY = os.environ.get('MAILJET_API_KEY')
+MAILJET_API_SECRET = os.environ.get('MAILJET_API_SECRET')
 
-DEFAULT_FROM_EMAIL = 'Safe Let Stays <info@test-q3enl6k617542vwr.mlsender.net>'
-SERVER_EMAIL = 'daniel@webflare.studio'
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'Safe Let Stays <daniel@webflare.studio>')
+SERVER_EMAIL = os.environ.get('SERVER_EMAIL', 'daniel@webflare.studio')
 
-# MailerSend API Key
-MAILERSEND_API_KEY = os.environ.get('MAILERSEND_API_KEY')
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
