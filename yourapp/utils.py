@@ -54,7 +54,7 @@ def generate_receipt_pdf(booking):
     company_info = [
         Paragraph("<b>Safe Let Stays</b>", styles['Heading2']),
         Paragraph("123 Sheffield Street<br/>Sheffield, S1 1AA<br/>United Kingdom", styles['Normal']),
-        Paragraph("<br/>hello@safeletstays.co.uk<br/>+44 114 123 4567", styles['Normal'])
+        Paragraph("<br/>daniel@webflare.studio<br/>+44 114 123 4567", styles['Normal'])
     ]
 
     # Construct Header Table
@@ -219,6 +219,20 @@ def send_receipt_email(booking):
     subject = f"Booking Confirmation - Reference #{booking.id}"
     body_text = f"Dear {booking.guest_name},\n\nThank you for booking with Safe Let Stays!\n\nYour booking for {booking.property.title} has been confirmed.\nPlease find your receipt and invoice attached to this email.\n\nBooking Reference: BOOK-{booking.id}\nCheck-in: {booking.check_in.strftime('%d %b %Y')}\nCheck-out: {booking.check_out.strftime('%d %b %Y')}\n\nWe look forward to hosting you.\n\nBest regards,\nThe Safe Let Stays Team"
     
+    body_html = f"""
+    <h3>Booking Confirmation</h3>
+    <p>Dear {booking.guest_name},</p>
+    <p>Thank you for booking with Safe Let Stays!</p>
+    <p>Your booking for <strong>{booking.property.title}</strong> has been confirmed.<br>
+    Please find your receipt and invoice attached to this email.</p>
+    <p><strong>Booking Reference:</strong> BOOK-{booking.id}<br>
+    <strong>Check-in:</strong> {booking.check_in.strftime('%d %b %Y')}<br>
+    <strong>Check-out:</strong> {booking.check_out.strftime('%d %b %Y')}</p>
+    <p>We look forward to hosting you.</p>
+    <p>Best regards,<br>
+    The Safe Let Stays Team</p>
+    """
+    
     # Read PDF content
     try:
         print(f"DEBUG: [send_receipt_email] Reading PDF file...", file=sys.stderr)
@@ -242,9 +256,10 @@ def send_receipt_email(booking):
     try:
         mailjet = Client(auth=(api_key, api_secret), version='v3.1')
         encoded_pdf = base64.b64encode(pdf_content).decode('utf-8')
-        
-        data = {
-          'Messages': [
+              "Subject": subject,
+              "TextPart": body_text,
+              "HTMLPart": body_html,
+              "Attachments": [
             {
               "From": {
                 "Email": settings.DEFAULT_FROM_EMAIL,
