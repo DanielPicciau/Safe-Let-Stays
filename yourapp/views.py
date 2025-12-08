@@ -494,6 +494,9 @@ def create_checkout_session(request, property_id):
 
 def payment_success(request):
     booking_id = request.GET.get('booking_id')
+    error_message = None
+    success_message = None
+    
     import sys
     print(f"DEBUG: payment_success view reached. Booking ID: {booking_id}", file=sys.stderr)
     
@@ -511,16 +514,23 @@ def payment_success(request):
                 # Generate Receipt PDF and Send Email
                 try:
                     send_receipt_email(booking)
+                    success_message = "Receipt sent successfully!"
                 except Exception as e:
                     print(f"Error sending receipt email: {e}", file=sys.stderr)
+                    error_message = f"Booking confirmed, but failed to send email: {str(e)}"
             else:
                 print(f"DEBUG: Booking status was not awaiting_payment. Skipping confirmation.", file=sys.stderr)
+                if booking.status == 'confirmed':
+                     success_message = "Booking already confirmed."
                     
         except Booking.DoesNotExist:
             print(f"DEBUG: Booking with ID {booking_id} does not exist.", file=sys.stderr)
+            error_message = "Booking not found."
             pass
             
     context = get_common_context()
+    context['error_message'] = error_message
+    context['success_message'] = success_message
     return render(request, 'payment_success.html', context)
 
 def payment_cancel(request):
