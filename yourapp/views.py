@@ -426,6 +426,7 @@ def create_checkout_session(request, property_id):
             guest_email = request.user.email
             guest_phone = getattr(request.user.profile, 'phone_number', '') if hasattr(request.user, 'profile') else ''
         else:
+            # Fallback to session data if available, or defaults
             guest_name = request.POST.get('guest_name', 'Guest')
             guest_email = request.POST.get('guest_email', 'pending@example.com')
             guest_phone = request.POST.get('guest_phone', '')
@@ -522,7 +523,9 @@ def payment_success(request):
                 print(f"DEBUG: Booking status was not awaiting_payment. Skipping confirmation.", file=sys.stderr)
                 if booking.status == 'confirmed':
                      success_message = "Booking already confirmed."
-                    
+                     # Optional: Resend receipt if requested or if it failed previously?
+                     # For now, we assume if it's confirmed, it's done.
+                     
         except Booking.DoesNotExist:
             print(f"DEBUG: Booking with ID {booking_id} does not exist.", file=sys.stderr)
             error_message = "Booking not found."
