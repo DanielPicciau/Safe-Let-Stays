@@ -28,23 +28,4 @@ urlpatterns = [
     path('create-checkout-session/<int:property_id>/', views.create_checkout_session, name='create_checkout_session'),
     path('payment-success/', views.payment_success, name='payment_success'),
     path('payment-cancel/', views.payment_cancel, name='payment_cancel'),
-    
-    # =========================================================================
-    # GUESTY API ENDPOINTS (Uncomment when ready to use)
-    # =========================================================================
-    # These endpoints provide availability data from Guesty
-    # 
-    # path('api/properties/<int:property_id>/availability/', 
-    #      views.api_property_availability, 
-    #      name='api_property_availability'),
-    # 
-    # path('api/properties/<int:property_id>/check-availability/', 
-    #      views.api_check_availability, 
-    #      name='api_check_availability'),
-    # 
-    # path('api/webhooks/guesty/', 
-    #      views.guesty_webhook, 
-    #      name='guesty_webhook'),
-    # =========================================================================
-    
 ] + static(settings.STATIC_URL, document_root=settings.STATICFILES_DIRS[0]) + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
