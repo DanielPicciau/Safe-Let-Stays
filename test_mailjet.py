@@ -8,7 +8,7 @@ from mailjet_rest import Client
 # Replace these with your ACTUAL keys if running locally
 API_KEY = os.environ.get('MAILJET_API_KEY', 'YOUR_API_KEY_HERE')
 API_SECRET = os.environ.get('MAILJET_API_SECRET', 'YOUR_SECRET_KEY_HERE')
-SENDER_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'hello@safeletstays.co.uk')
+SENDER_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'daniel@webflare.studio')
 RECIPIENT_EMAIL = 'danieljunior.business@gmail.com' # Change if needed
 
 def test_mailjet():

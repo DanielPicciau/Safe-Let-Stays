@@ -197,7 +197,7 @@ STRIPE_SECRET_KEY = os.environ.get('STRIPE_SECRET_KEY', '')
 # EMAIL SETTINGS (MailerSend SMTP & API)
 # =============================================================================
 
-DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'Safe Let Stays <hello@safeletstays.co.uk>')
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'Safe Let Stays <daniel@webflare.studio>')
 SERVER_EMAIL = os.environ.get('SERVER_EMAIL', 'daniel@webflare.studio')
 
 # Mailjet API Configuration
