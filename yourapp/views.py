@@ -6,6 +6,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.db.models import Q
 from django.conf import settings
 from django.http import JsonResponse, HttpResponse
+from django.views.decorators.csrf import csrf_exempt
 import stripe
 from datetime import datetime
 from .models import Property, Booking
@@ -500,18 +501,31 @@ def payment_success(request):
     
     import sys
     print(f"DEBUG: payment_success view reached. Booking ID: {booking_id}", file=sys.stderr)
+    print(f"DEBUG: MAILJET_API_KEY present: {bool(settings.MAILJET_API_KEY)}", file=sys.stderr)
     
     if booking_id:
         try:
             booking = Booking.objects.get(id=booking_id)
             print(f"DEBUG: Booking found: {booking}. Status: {booking.status}", file=sys.stderr)
             
+            should_send_email = False
+            
             # Only confirm if it was awaiting payment
             if booking.status == 'awaiting_payment':
                 booking.status = 'confirmed'
                 booking.save()
-                print(f"DEBUG: Booking confirmed. Sending receipt...", file=sys.stderr)
-                
+                should_send_email = True
+                print(f"DEBUG: Booking confirmed via view.", file=sys.stderr)
+            elif booking.status == 'confirmed':
+                # If confirmed but no receipt PDF, try sending again
+                if not booking.receipt_pdf:
+                    should_send_email = True
+                    print(f"DEBUG: Booking already confirmed but PDF missing. Retrying email.", file=sys.stderr)
+                else:
+                    success_message = "Booking confirmed. Receipt already sent."
+
+            if should_send_email:
+                print(f"DEBUG: Sending receipt email...", file=sys.stderr)
                 # Generate Receipt PDF and Send Email
                 try:
                     send_receipt_email(booking)
@@ -519,12 +533,6 @@ def payment_success(request):
                 except Exception as e:
                     print(f"Error sending receipt email: {e}", file=sys.stderr)
                     error_message = f"Booking confirmed, but failed to send email: {str(e)}"
-            else:
-                print(f"DEBUG: Booking status was not awaiting_payment. Skipping confirmation.", file=sys.stderr)
-                if booking.status == 'confirmed':
-                     success_message = "Booking already confirmed."
-                     # Optional: Resend receipt if requested or if it failed previously?
-                     # For now, we assume if it's confirmed, it's done.
                      
         except Booking.DoesNotExist:
             print(f"DEBUG: Booking with ID {booking_id} does not exist.", file=sys.stderr)
@@ -615,3 +623,43 @@ def signup(request):
         context['signup_form'] = form
         context['show_signup'] = True
         return render(request, 'registration/login.html', context)
+
+@csrf_exempt
+def stripe_webhook(request):
+    payload = request.body
+    sig_header = request.META.get('HTTP_STRIPE_SIGNATURE')
+    event = None
+
+    try:
+        event = stripe.Webhook.construct_event(
+            payload, sig_header, settings.STRIPE_WEBHOOK_SECRET
+        )
+    except ValueError as e:
+        return HttpResponse(status=400)
+    except stripe.error.SignatureVerificationError as e:
+        return HttpResponse(status=400)
+
+    if event['type'] == 'checkout.session.completed':
+        session = event['data']['object']
+        booking_id = session.get('client_reference_id')
+        
+        if booking_id:
+            try:
+                booking = Booking.objects.get(id=booking_id)
+                # Confirm if not already confirmed
+                if booking.status == 'awaiting_payment':
+                    booking.status = 'confirmed'
+                    booking.save()
+                    
+                # Send receipt if not already generated (heuristic)
+                if not booking.receipt_pdf:
+                    try:
+                        send_receipt_email(booking)
+                    except Exception as e:
+                        import sys
+                        print(f"Error sending email in webhook: {e}", file=sys.stderr)
+                        
+            except Booking.DoesNotExist:
+                pass
+
+    return HttpResponse(status=200)

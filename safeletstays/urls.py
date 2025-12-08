@@ -28,4 +28,5 @@ urlpatterns = [
     path('create-checkout-session/<int:property_id>/', views.create_checkout_session, name='create_checkout_session'),
     path('payment-success/', views.payment_success, name='payment_success'),
     path('payment-cancel/', views.payment_cancel, name='payment_cancel'),
+    path('webhook/stripe/', views.stripe_webhook, name='stripe_webhook'),
 ] + static(settings.STATIC_URL, document_root=settings.STATICFILES_DIRS[0]) + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
