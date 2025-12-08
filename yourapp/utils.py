@@ -197,11 +197,14 @@ def generate_receipt_pdf(booking):
     
     return booking.receipt_pdf
 
+from mailjet_rest import Client
+import base64
+import sys
+
 def send_receipt_email(booking):
     """
-    Send the receipt email to the guest and a copy to admin using Django's EmailMessage (SMTP).
+    Send the receipt email to the guest using Mailjet API.
     """
-    import sys
     print(f"DEBUG: [send_receipt_email] Called for Booking ID {booking.id}", file=sys.stderr)
 
     if not booking.receipt_pdf:
@@ -214,23 +217,7 @@ def send_receipt_email(booking):
             raise e
         
     subject = f"Booking Confirmation - Reference #{booking.id}"
-    body_text = f"""
-Dear {booking.guest_name},
-
-Thank you for booking with Safe Let Stays!
-
-Your booking for {booking.property.title} has been confirmed.
-Please find your receipt and invoice attached to this email.
-
-Booking Reference: BOOK-{booking.id}
-Check-in: {booking.check_in.strftime('%d %b %Y')}
-Check-out: {booking.check_out.strftime('%d %b %Y')}
-
-We look forward to hosting you.
-
-Best regards,
-The Safe Let Stays Team
-    """
+    body_text = f"Dear {booking.guest_name},\n\nThank you for booking with Safe Let Stays!\n\nYour booking for {booking.property.title} has been confirmed.\nPlease find your receipt and invoice attached to this email.\n\nBooking Reference: BOOK-{booking.id}\nCheck-in: {booking.check_in.strftime('%d %b %Y')}\nCheck-out: {booking.check_out.strftime('%d %b %Y')}\n\nWe look forward to hosting you.\n\nBest regards,\nThe Safe Let Stays Team"
     
     # Read PDF content
     try:
@@ -243,32 +230,53 @@ The Safe Let Stays Team
         print(f"CRITICAL ERROR: [send_receipt_email] Error reading PDF: {e}", file=sys.stderr)
         raise e
 
-    print(f"DEBUG: [send_receipt_email] Preparing to send email to {booking.guest_email}...", file=sys.stderr)
+    print(f"DEBUG: [send_receipt_email] Preparing to send email to {booking.guest_email} via Mailjet API...", file=sys.stderr)
     
-    # Debug: Print credentials status (masked)
-    user = getattr(settings, 'EMAIL_HOST_USER', None)
-    pwd = getattr(settings, 'EMAIL_HOST_PASSWORD', None)
-    host = getattr(settings, 'EMAIL_HOST', None)
-    port = getattr(settings, 'EMAIL_PORT', None)
+    api_key = settings.MAILJET_API_KEY
+    api_secret = settings.MAILJET_API_SECRET
     
-    print(f"DEBUG: [SMTP CONFIG] Host: {host}", file=sys.stderr)
-    print(f"DEBUG: [SMTP CONFIG] Port: {port}", file=sys.stderr)
-    print(f"DEBUG: [SMTP CONFIG] User: {user}", file=sys.stderr)
-    print(f"DEBUG: [SMTP CONFIG] Password Configured: {'YES' if pwd else 'NO'}", file=sys.stderr)
-    print(f"DEBUG: [SMTP CONFIG] From Email: {settings.DEFAULT_FROM_EMAIL}", file=sys.stderr)
-    
+    if not api_key or not api_secret:
+        print("CRITICAL ERROR: Mailjet API Key or Secret is missing in settings!", file=sys.stderr)
+        raise ValueError("Mailjet API credentials missing")
+
     try:
-        email = EmailMessage(
-            subject=subject,
-            body=body_text,
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            to=[booking.guest_email],
-            bcc=[settings.SERVER_EMAIL] if hasattr(settings, 'SERVER_EMAIL') and settings.SERVER_EMAIL else None,
-        )
-        email.attach(f"receipt_{booking.id}.pdf", pdf_content, 'application/pdf')
+        mailjet = Client(auth=(api_key, api_secret), version='v3.1')
+        encoded_pdf = base64.b64encode(pdf_content).decode('utf-8')
         
-        print(f"DEBUG: [send_receipt_email] Calling email.send()...", file=sys.stderr)
-        email.send(fail_silently=False)
+        data = {
+          'Messages': [
+            {
+              "From": {
+                "Email": settings.DEFAULT_FROM_EMAIL,
+                "Name": "Safe Let Stays"
+              },
+              "To": [
+                {
+                  "Email": booking.guest_email,
+                  "Name": booking.guest_name
+                }
+              ],
+              "Subject": subject,
+              "TextPart": body_text,
+              "Attachments": [
+                {
+                  "ContentType": "application/pdf",
+                  "Filename": f"receipt_{booking.id}.pdf",
+                  "Base64Content": encoded_pdf
+                }
+              ]
+            }
+          ]
+        }
+        
+        print(f"DEBUG: [send_receipt_email] Sending request to Mailjet...", file=sys.stderr)
+        result = mailjet.send.create(data=data)
+        print(f"DEBUG: [send_receipt_email] Mailjet Response Status: {result.status_code}", file=sys.stderr)
+        print(f"DEBUG: [send_receipt_email] Mailjet Response: {result.json()}", file=sys.stderr)
+        
+        if result.status_code != 200:
+             raise Exception(f"Mailjet API Error: {result.json()}")
+             
         print(f"SUCCESS: [send_receipt_email] Email sent to {booking.guest_email}", file=sys.stderr)
         
     except Exception as e:
