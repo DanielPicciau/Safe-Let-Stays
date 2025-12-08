@@ -202,8 +202,17 @@ def send_receipt_email(booking):
     """
     Send the receipt email to the guest and a copy to admin using Django's EmailMessage (SMTP).
     """
+    import sys
+    print(f"DEBUG: [send_receipt_email] Called for Booking ID {booking.id}", file=sys.stderr)
+
     if not booking.receipt_pdf:
-        generate_receipt_pdf(booking)
+        print(f"DEBUG: [send_receipt_email] PDF missing, generating...", file=sys.stderr)
+        try:
+            generate_receipt_pdf(booking)
+            print(f"DEBUG: [send_receipt_email] PDF generated successfully.", file=sys.stderr)
+        except Exception as e:
+            print(f"CRITICAL ERROR: [send_receipt_email] PDF generation failed: {e}", file=sys.stderr)
+            raise e
         
     subject = f"Booking Confirmation - Reference #{booking.id}"
     body_text = f"""
@@ -224,24 +233,30 @@ Best regards,
 The Safe Let Stays Team
     """
     
-    # Convert PDF to base64 (not needed for EmailMessage, but keeping logic if we revert)
-    # For EmailMessage we need bytes
+    # Read PDF content
     try:
+        print(f"DEBUG: [send_receipt_email] Reading PDF file...", file=sys.stderr)
         booking.receipt_pdf.open('rb')
         pdf_content = booking.receipt_pdf.read()
         booking.receipt_pdf.close()
+        print(f"DEBUG: [send_receipt_email] PDF read successfully ({len(pdf_content)} bytes).", file=sys.stderr)
     except Exception as e:
-        print(f"Error reading PDF for email: {e}")
-        return
+        print(f"CRITICAL ERROR: [send_receipt_email] Error reading PDF: {e}", file=sys.stderr)
+        raise e
 
-    print(f"Attempting to send email to {booking.guest_email} via SMTP...")
+    print(f"DEBUG: [send_receipt_email] Preparing to send email to {booking.guest_email}...", file=sys.stderr)
     
     # Debug: Print credentials status (masked)
-    import sys
-    user = settings.EMAIL_HOST_USER
-    pwd = settings.EMAIL_HOST_PASSWORD
-    print(f"DEBUG: SMTP User configured: {'Yes' if user else 'No'}", file=sys.stderr)
-    print(f"DEBUG: SMTP Password configured: {'Yes' if pwd else 'No'}", file=sys.stderr)
+    user = getattr(settings, 'EMAIL_HOST_USER', None)
+    pwd = getattr(settings, 'EMAIL_HOST_PASSWORD', None)
+    host = getattr(settings, 'EMAIL_HOST', None)
+    port = getattr(settings, 'EMAIL_PORT', None)
+    
+    print(f"DEBUG: [SMTP CONFIG] Host: {host}", file=sys.stderr)
+    print(f"DEBUG: [SMTP CONFIG] Port: {port}", file=sys.stderr)
+    print(f"DEBUG: [SMTP CONFIG] User: {user}", file=sys.stderr)
+    print(f"DEBUG: [SMTP CONFIG] Password Configured: {'YES' if pwd else 'NO'}", file=sys.stderr)
+    print(f"DEBUG: [SMTP CONFIG] From Email: {settings.DEFAULT_FROM_EMAIL}", file=sys.stderr)
     
     try:
         email = EmailMessage(
@@ -252,13 +267,14 @@ The Safe Let Stays Team
             bcc=[settings.SERVER_EMAIL] if hasattr(settings, 'SERVER_EMAIL') and settings.SERVER_EMAIL else None,
         )
         email.attach(f"receipt_{booking.id}.pdf", pdf_content, 'application/pdf')
-        email.send()
-        print(f"Email sent successfully to {booking.guest_email}")
+        
+        print(f"DEBUG: [send_receipt_email] Calling email.send()...", file=sys.stderr)
+        email.send(fail_silently=False)
+        print(f"SUCCESS: [send_receipt_email] Email sent to {booking.guest_email}", file=sys.stderr)
+        
     except Exception as e:
-        print(f"Error sending email: {e}", file=sys.stderr)
-        # Fallback or detailed error logging
-        if "ConnectionRefusedError" in str(e):
-            print("Tip: Check if your firewall or ISP blocks port 587.", file=sys.stderr)
-        if "AuthenticationError" in str(e) or "535" in str(e):
-            print("Tip: Check your SMTP username and password.", file=sys.stderr)
+        print(f"CRITICAL ERROR: [send_receipt_email] Failed to send email: {e}", file=sys.stderr)
+        import traceback
+        traceback.print_exc(file=sys.stderr)
+        raise e
 
