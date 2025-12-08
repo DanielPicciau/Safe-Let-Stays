@@ -199,7 +199,6 @@ STRIPE_SECRET_KEY = os.environ.get('STRIPE_SECRET_KEY', '')
 
 DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'Safe Let Stays <info@test-q3enl6k617542vwr.mlsender.net>')
 SERVER_EMAIL = os.environ.get('SERVER_EMAIL', 'daniel@webflare.studio')
-MAILERSEND_API_KEY = os.environ.get('MAILERSEND_API_KEY')
 
 # SMTP Configuration (Compatible with MailerSend SMTP Guide)
 # If you want to use SMTP instead of the API directly:

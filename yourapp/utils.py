@@ -10,7 +10,6 @@ from django.conf import settings
 from django.core.mail import EmailMessage
 import os
 from datetime import datetime
-import requests
 import base64
 
 def generate_receipt_pdf(booking):
