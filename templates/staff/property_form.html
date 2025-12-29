@@ -530,10 +530,20 @@
                     
                     <!-- Settings -->
                     <div class="form-section" style="margin-bottom: 0;">
-                        <div class="form-section__title">Settings</div>
+                        <div class="form-section__title">Display Settings</div>
                         <div class="form-group form-group--checkbox">
                             {{ form.is_featured }}
-                            <label for="{{ form.is_featured.id_for_label }}">Feature this property on homepage</label>
+                            <label for="{{ form.is_featured.id_for_label }}">Feature this property on homepage hero</label>
+                        </div>
+                        <div class="form-group form-group--checkbox" style="margin-top: 1rem;">
+                            {{ form.show_on_homepage }}
+                            <label for="{{ form.show_on_homepage.id_for_label }}">Show in Top Properties section</label>
+                        </div>
+                        <div class="form-group" style="margin-top: 1rem; max-width: 200px;">
+                            <label for="{{ form.homepage_order.id_for_label }}">Homepage Order</label>
+                            {{ form.homepage_order }}
+                            <div class="help-text">Lower numbers appear first (1, 2, 3...)</div>
+                            {% if form.homepage_order.errors %}<div class="error-text">{{ form.homepage_order.errors.0 }}</div>{% endif %}
                         </div>
                     </div>
                 </div>

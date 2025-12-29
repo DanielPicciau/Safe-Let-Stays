@@ -25,6 +25,8 @@ class Property(models.Model):
     keywords = models.TextField(blank=True, help_text="Keywords for search optimization")
     
     is_featured = models.BooleanField(default=False)
+    show_on_homepage = models.BooleanField(default=False, help_text="Display in Top Properties section on homepage")
+    homepage_order = models.IntegerField(default=0, help_text="Order in Top Properties section (lower numbers appear first)")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     

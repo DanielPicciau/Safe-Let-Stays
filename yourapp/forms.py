@@ -7,7 +7,8 @@ class PropertyForm(forms.ModelForm):
         fields = [
             'title', 'short_description', 'description', 'image',
             'price_from', 'beds', 'baths', 'capacity', 'parking',
-            'distance_to_stadium_mins', 'tags', 'keywords', 'is_featured'
+            'distance_to_stadium_mins', 'tags', 'keywords', 'is_featured',
+            'show_on_homepage', 'homepage_order'
         ]
         widgets = {
             'title': forms.TextInput(attrs={'class': 'form-control'}),
@@ -20,6 +21,7 @@ class PropertyForm(forms.ModelForm):
             'distance_to_stadium_mins': forms.NumberInput(attrs={'class': 'form-control'}),
             'tags': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. wifi, city-centre, luxury'}),
             'keywords': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
+            'homepage_order': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': '1, 2, 3...'}),
         }
 
 from django.contrib.auth.models import User

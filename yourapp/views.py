@@ -34,8 +34,13 @@ def homepage(request):
         featured = properties.first()
         
     context['featured_property'] = featured
-    # Exclude featured from the list if desired, or just show all
-    context['properties'] = properties[:3] # Show top 3 matches
+    
+    # Top Properties for homepage section (selected by staff)
+    top_properties = Property.objects.filter(show_on_homepage=True).order_by('homepage_order')[:3]
+    if top_properties.count() < 3:
+        # Fallback to first 3 properties if not enough are selected
+        top_properties = properties[:3]
+    context['top_properties'] = top_properties
     
     return render(request, 'homepage.html', context)
 
