@@ -502,6 +502,7 @@ def create_checkout_session(request, property_id):
                 },
             ],
             mode='payment',
+            customer_email=guest_email if guest_email and guest_email != 'pending@example.com' else None,
             success_url=request.build_absolute_uri('/payment-success/') + f"?booking_id={booking.id}",
             cancel_url=request.build_absolute_uri('/payment-cancel/') + f"?booking_id={booking.id}",
             client_reference_id=str(booking.id),
