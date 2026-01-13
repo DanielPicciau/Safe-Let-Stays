@@ -7,3 +7,9 @@ db.sqlite3
 media/
 staticfiles/
 *.DS_Store
+.csv
+*.log
+*.sqlite3
+.idea/
+.vscode/
+

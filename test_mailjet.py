@@ -1,5 +1,12 @@
 import os
 import sys
+from pathlib import Path
+from dotenv import load_dotenv
+
+# Load .env file
+env_path = Path(__file__).resolve().parent / '.env'
+load_dotenv(env_path)
+
 print("...Loading Mailjet Test Script...")
 import base64
 from mailjet_rest import Client

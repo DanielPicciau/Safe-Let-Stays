@@ -12,3 +12,6 @@ stripe==14.0.1
 typing_extensions==4.15.0
 urllib3==2.5.0
 mailjet-rest==1.3.4
+# Security packages
+bleach==6.1.0  # HTML sanitization
+defusedxml==0.7.1  # Safe XML parsing
