@@ -164,6 +164,42 @@ class SignUpForm(forms.ModelForm):
         widget=forms.PasswordInput(attrs={'autocomplete': 'new-password'}), 
         label="Confirm Password"
     )
+    
+    # Business account fields
+    is_business_account = forms.BooleanField(
+        required=False,
+        label="I'm creating an account for a business",
+        widget=forms.CheckboxInput(attrs={'class': 'business-toggle', 'id': 'id_is_business_account'})
+    )
+    company_name = forms.CharField(
+        max_length=200,
+        required=False,
+        label="Company Name",
+        widget=forms.TextInput(attrs={'maxlength': '200', 'class': 'business-field'})
+    )
+    company_address = forms.CharField(
+        required=False,
+        label="Company Address",
+        widget=forms.Textarea(attrs={'rows': 2, 'class': 'business-field', 'maxlength': '500'})
+    )
+    company_vat = forms.CharField(
+        max_length=50,
+        required=False,
+        label="VAT Number (optional)",
+        widget=forms.TextInput(attrs={'maxlength': '50', 'class': 'business-field', 'placeholder': 'GB123456789'})
+    )
+    company_registration_number = forms.CharField(
+        max_length=50,
+        required=False,
+        label="Company Registration Number (optional)",
+        widget=forms.TextInput(attrs={'maxlength': '50', 'class': 'business-field', 'placeholder': '12345678'})
+    )
+    job_title = forms.CharField(
+        max_length=100,
+        required=False,
+        label="Your Job Title",
+        widget=forms.TextInput(attrs={'maxlength': '100', 'class': 'business-field', 'placeholder': 'e.g. Site Manager, Project Lead'})
+    )
 
     class Meta:
         model = User
@@ -205,6 +241,34 @@ class SignUpForm(forms.ModelForm):
         if password and confirm_password and password != confirm_password:
             self.add_error('confirm_password', "Passwords do not match")
         
+        # Validate business fields if business account is selected
+        is_business = cleaned_data.get('is_business_account')
+        if is_business:
+            company_name = cleaned_data.get('company_name', '').strip()
+            if not company_name:
+                self.add_error('company_name', "Company name is required for business accounts.")
+            else:
+                validate_no_scripts(company_name)
+            
+            company_address = cleaned_data.get('company_address', '').strip()
+            if not company_address:
+                self.add_error('company_address', "Company address is required for business accounts.")
+            else:
+                validate_no_scripts(company_address)
+            
+            # Optional fields - just sanitize
+            company_vat = cleaned_data.get('company_vat', '')
+            if company_vat:
+                validate_no_scripts(company_vat)
+            
+            company_reg = cleaned_data.get('company_registration_number', '')
+            if company_reg:
+                validate_no_scripts(company_reg)
+            
+            job_title = cleaned_data.get('job_title', '')
+            if job_title:
+                validate_no_scripts(job_title)
+        
         return cleaned_data
 
     def save(self, commit=True):
@@ -216,17 +280,30 @@ class SignUpForm(forms.ModelForm):
         if commit:
             user.save()
             # Profile is created by signal, so we just update it
+            is_business = self.cleaned_data.get('is_business_account', False)
+            
+            profile_data = {
+                'phone_number': sanitize_text(self.cleaned_data['phone_number']),
+                'booking_purpose': self.cleaned_data['booking_purpose'],
+                'account_type': 'business' if is_business else 'personal',
+            }
+            
+            if is_business:
+                profile_data.update({
+                    'company_name': sanitize_text(self.cleaned_data.get('company_name', '')),
+                    'company_address': sanitize_text(self.cleaned_data.get('company_address', '')),
+                    'company_vat': sanitize_text(self.cleaned_data.get('company_vat', '')),
+                    'company_registration_number': sanitize_text(self.cleaned_data.get('company_registration_number', '')),
+                    'job_title': sanitize_text(self.cleaned_data.get('job_title', '')),
+                })
+            
             if hasattr(user, 'profile'):
-                user.profile.phone_number = sanitize_text(self.cleaned_data['phone_number'])
-                user.profile.booking_purpose = self.cleaned_data['booking_purpose']
+                for key, value in profile_data.items():
+                    setattr(user.profile, key, value)
                 user.profile.save()
             else:
                 # Fallback if signal fails (shouldn't happen but good safety)
-                Profile.objects.create(
-                    user=user,
-                    phone_number=sanitize_text(self.cleaned_data['phone_number']),
-                    booking_purpose=self.cleaned_data['booking_purpose']
-                )
+                Profile.objects.create(user=user, **profile_data)
         return user
 
 
@@ -299,6 +376,40 @@ class CheckoutForm(forms.Form):
         max_length=20,
         validators=[phone_validator]
     )
+    
+    # Company booking fields
+    is_company_booking = forms.BooleanField(
+        required=False,
+        initial=False
+    )
+    company_name = forms.CharField(
+        required=False,
+        max_length=200
+    )
+    company_address = forms.CharField(
+        required=False,
+        max_length=500,
+        widget=forms.Textarea(attrs={'rows': 2})
+    )
+    company_vat = forms.CharField(
+        required=False,
+        max_length=50
+    )
+    
+    def clean_company_name(self):
+        name = sanitize_text(self.cleaned_data.get('company_name', ''))
+        validate_no_scripts(name)
+        return name
+    
+    def clean_company_address(self):
+        address = sanitize_text(self.cleaned_data.get('company_address', ''))
+        validate_no_scripts(address)
+        return address
+    
+    def clean_company_vat(self):
+        vat = sanitize_text(self.cleaned_data.get('company_vat', ''))
+        validate_no_scripts(vat)
+        return vat
     
     def clean_guest_name(self):
         name = sanitize_text(self.cleaned_data.get('guest_name', ''))

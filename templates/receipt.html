@@ -6,6 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Receipt #{{ booking.id }} - {{ site_name }}</title>
     <link rel="stylesheet" href="{% static 'yourapp/css/homepage.css' %}">
+    <link rel="stylesheet" href="{% static 'yourapp/css/react-components.css' %}">
+    
+    <!-- React 18 -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <style>
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -149,38 +155,18 @@
     </style>
 </head>
 <body>
-    <!-- HEADER -->
-    <header class="header no-print" id="header">
-        <div class="container header__inner">
-            <a href="/" aria-label="{{ site_name }} — Home" class="logo-link">
-                <span class="logo-text">{{ site_name }}</span>
-            </a>
-            
-            <button class="mobile-menu-toggle" aria-label="Toggle menu" aria-expanded="false">
-                <span></span>
-                <span></span>
-                <span></span>
-            </button>
-
-            <nav class="header__nav" id="header-nav">
-                <ul class="nav-list">
-                    <li><a href="/" class="nav-link">Home</a></li>
-                    <li><a href="/properties" class="nav-link">Properties</a></li>
-                    <li><a href="/about" class="nav-link">About</a></li>
-                    <li><a href="/my-bookings" class="nav-link">My Bookings</a></li>
-                </ul>
-                <div class="header__ctas">
-                    <a href="tel:{{ contact_phone }}" class="btn btn--outline">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-                        <span>{{ contact_phone }}</span>
-                    </a>
-                    <a href="/properties" class="btn btn--primary">
-                        Book Now
-                    </a>
-                </div>
-            </nav>
-        </div>
-    </header>
+    <!-- React Header (no-print) -->
+    <div id="react-header" class="no-print"></div>
+    
+    <!-- Site Data for React -->
+    <script>
+        window.SITE_DATA = {
+            siteName: '{{ site_name|default:"Safe Let Stays" }}',
+            isAuthenticated: {% if user.is_authenticated %}true{% else %}false{% endif %},
+            isStaff: {% if user.is_staff %}true{% else %}false{% endif %},
+            username: '{{ user.username|default:"" }}'
+        };
+    </script>
 
     <main class="receipt-container" style="padding-top: 120px;">
         <div class="no-print" style="text-align: right;">
@@ -238,6 +224,28 @@
             </div>
         </div>
 
+        {% if booking.is_company_booking %}
+        <div class="section">
+            <h2 class="section-title">Business Details</h2>
+            <div class="details-grid">
+                <div class="detail-item">
+                    <label>Company Name</label>
+                    <span>{{ booking.company_name }}</span>
+                </div>
+                {% if booking.company_vat %}
+                <div class="detail-item">
+                    <label>VAT Number</label>
+                    <span>{{ booking.company_vat }}</span>
+                </div>
+                {% endif %}
+                <div class="detail-item" style="grid-column: span 2;">
+                    <label>Company Address</label>
+                    <span>{{ booking.company_address|linebreaksbr }}</span>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
         <div class="section">
             <h2 class="section-title">Stay Details</h2>
             <div class="details-grid">
@@ -286,10 +294,11 @@
         </div>
     </main>
 
-    <!-- FOOTER -->
-    <div class="no-print">
-        {% include 'footer.html' %}
-    </div>
+    <!-- React Footer (no-print) -->
+    <div id="react-footer" class="no-print"></div>
+    
+    <!-- React Components -->
+    <script src="{% static 'yourapp/js/react/components.js' %}"></script>
     <script src="{% static 'yourapp/js/homepage.js' %}"></script>
 </body>
 </html>

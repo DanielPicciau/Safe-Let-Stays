@@ -1,0 +1,934 @@
+/**
+ * Safe Let Stays - React Components CSS
+ * ======================================
+ * Styles for all React components
+ */
+
+/* ============================================================================
+   PROPERTY CARD (REACT)
+   ============================================================================ */
+
+.property-card {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    transition: all 0.3s ease;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    text-decoration: none;
+    color: inherit;
+}
+
+.property-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(0,0,0,0.12);
+}
+
+.property-card__image-wrapper {
+    position: relative;
+    aspect-ratio: 4/3;
+    overflow: hidden;
+    background: #f0f0f0;
+}
+
+.property-card__image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+}
+
+.property-card:hover .property-card__image {
+    transform: scale(1.05);
+}
+
+.property-card__like {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: white;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    transition: all 0.2s;
+    z-index: 2;
+}
+
+.property-card__like:hover {
+    transform: scale(1.1);
+}
+
+.property-card__like.active {
+    background: #fff0f0;
+}
+
+.property-card__badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    padding: 6px 12px;
+    background: var(--primary, #2E7D32);
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.property-card__content {
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.property-card__location {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.8125rem;
+    color: #666;
+    margin-bottom: 0.5rem;
+}
+
+.property-card__location svg {
+    color: var(--primary, #2E7D32);
+}
+
+.property-card__title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-bottom: 0.5rem;
+    line-height: 1.3;
+}
+
+.property-card__features {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.8125rem;
+    color: #666;
+    padding: 0.75rem 0;
+    border-top: 1px solid #f0f0f0;
+    border-bottom: 1px solid #f0f0f0;
+    margin-bottom: 0.75rem;
+}
+
+.property-card__features span {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.property-card__rating {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.875rem;
+    margin-bottom: 0.75rem;
+}
+
+.property-card__rating span:first-of-type {
+    font-weight: 600;
+    color: #1a1a1a;
+}
+
+.property-card__reviews {
+    color: #999;
+    font-size: 0.8125rem;
+}
+
+.property-card__footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: auto;
+}
+
+.property-card__price {
+    display: flex;
+    align-items: baseline;
+    gap: 2px;
+}
+
+.property-card__price-amount {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--primary, #2E7D32);
+}
+
+.property-card__price-unit {
+    font-size: 0.8125rem;
+    color: #666;
+}
+
+.property-card__cta {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--primary, #2E7D32);
+    font-weight: 600;
+    font-size: 0.875rem;
+    transition: gap 0.2s;
+}
+
+.property-card:hover .property-card__cta {
+    gap: 8px;
+}
+
+/* Properties Grid Layouts */
+.properties-grid-3col {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+}
+
+.properties-grid-2col {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+}
+
+@media (max-width: 1024px) {
+    .properties-grid-3col {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 640px) {
+    .properties-grid-3col,
+    .properties-grid-2col {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ============================================================================
+   BOOKING WIDGET (REACT)
+   ============================================================================ */
+
+.booking-widget {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    border: 1px solid #e5e7eb;
+    position: sticky;
+    top: 100px;
+}
+
+.booking-widget__header {
+    margin-bottom: 1.5rem;
+}
+
+.booking-widget__price {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+}
+
+.booking-widget__price-amount {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #1a1a1a;
+}
+
+.booking-widget__price-unit {
+    font-size: 1rem;
+    color: #666;
+}
+
+.booking-widget__dates {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.booking-widget__field {
+    margin-bottom: 1rem;
+}
+
+.booking-widget__field label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: #666;
+    margin-bottom: 0.5rem;
+}
+
+.booking-widget__field input,
+.booking-widget__field select {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.2s;
+}
+
+.booking-widget__field input:focus,
+.booking-widget__field select:focus {
+    outline: none;
+    border-color: var(--primary, #2E7D32);
+}
+
+.booking-widget__error {
+    background: #fee2e2;
+    color: #dc2626;
+    padding: 0.75rem;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    margin-bottom: 1rem;
+}
+
+.booking-widget__summary {
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e5e7eb;
+}
+
+.booking-widget__row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    font-size: 0.9375rem;
+    color: #666;
+}
+
+.booking-widget__total {
+    font-weight: 700;
+    font-size: 1.125rem;
+    color: #1a1a1a;
+    border-top: 1px solid #e5e7eb;
+    margin-top: 0.5rem;
+    padding-top: 1rem;
+}
+
+/* ============================================================================
+   REVIEW CARD (REACT)
+   ============================================================================ */
+
+.review-card {
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    border: 1px solid #f0f0f0;
+    transition: all 0.3s;
+}
+
+.review-card:hover {
+    box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+}
+
+.review-card__stars {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 1rem;
+}
+
+.review-card__text {
+    font-style: italic;
+    color: #444;
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+    font-size: 1rem;
+}
+
+.review-card__author {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.review-card__author strong {
+    color: #1a1a1a;
+    font-weight: 600;
+}
+
+.review-card__author span {
+    font-size: 0.875rem;
+    color: #666;
+}
+
+/* ============================================================================
+   BENEFIT CARD (REACT)
+   ============================================================================ */
+
+.benefit-item {
+    text-align: center;
+    padding: 2rem;
+}
+
+.benefit-icon {
+    width: 64px;
+    height: 64px;
+    background: #e8f5e9;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.25rem;
+    color: var(--primary, #2E7D32);
+}
+
+.benefit-item h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-bottom: 0.75rem;
+}
+
+.benefit-item p {
+    color: #666;
+    line-height: 1.6;
+}
+
+.benefits-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+}
+
+@media (max-width: 768px) {
+    .benefits-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ============================================================================
+   IMAGE GALLERY (REACT)
+   ============================================================================ */
+
+.image-gallery {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.image-gallery__main {
+    aspect-ratio: 16/10;
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.image-gallery__main img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s;
+}
+
+.image-gallery__main:hover img {
+    transform: scale(1.02);
+}
+
+.image-gallery__thumbnails {
+    display: flex;
+    gap: 0.5rem;
+    overflow-x: auto;
+    padding-bottom: 0.5rem;
+}
+
+.image-gallery__thumb {
+    flex: 0 0 80px;
+    height: 60px;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s;
+    padding: 0;
+    background: none;
+}
+
+.image-gallery__thumb:hover,
+.image-gallery__thumb.active {
+    border-color: var(--primary, #2E7D32);
+}
+
+.image-gallery__thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Lightbox */
+.lightbox {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.95);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.lightbox img {
+    max-width: 90vw;
+    max-height: 85vh;
+    object-fit: contain;
+    border-radius: 8px;
+}
+
+.lightbox__close {
+    position: absolute;
+    top: 1.5rem;
+    right: 1.5rem;
+    background: white;
+    border: none;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s;
+}
+
+.lightbox__close:hover {
+    transform: scale(1.1);
+}
+
+.lightbox__nav {
+    position: absolute;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    background: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 30px;
+}
+
+.lightbox__nav button {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    line-height: 1;
+}
+
+.lightbox__nav span {
+    font-weight: 500;
+}
+
+/* ============================================================================
+   BOOKING CARD (MY BOOKINGS)
+   ============================================================================ */
+
+.booking-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    padding: 1.5rem;
+    display: flex;
+    gap: 1.5rem;
+    transition: all 0.3s ease;
+    border: 1px solid #e5e7eb;
+    cursor: pointer;
+}
+
+.booking-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(0,0,0,0.1);
+    border-color: var(--primary, #2E7D32);
+}
+
+.booking-image {
+    width: 140px;
+    height: 140px;
+    border-radius: 8px;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.booking-details {
+    flex: 1;
+    min-width: 0;
+}
+
+.booking-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.75rem;
+}
+
+.booking-header h3 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #1a1a1a;
+}
+
+.booking-status {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.booking-status--success {
+    background: #e8f5e9;
+    color: #2E7D32;
+}
+
+.booking-status--warning {
+    background: #fff3e0;
+    color: #ef6c00;
+}
+
+.booking-status--danger {
+    background: #ffebee;
+    color: #c62828;
+}
+
+.booking-status--info {
+    background: #e3f2fd;
+    color: #1565c0;
+}
+
+.booking-dates {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #666;
+    font-size: 0.9375rem;
+    margin-bottom: 0.75rem;
+}
+
+.booking-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.booking-info span {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    color: #666;
+    font-size: 0.875rem;
+}
+
+.booking-price {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--primary, #2E7D32);
+}
+
+@media (max-width: 640px) {
+    .booking-card {
+        flex-direction: column;
+    }
+    
+    .booking-image {
+        width: 100%;
+        height: 180px;
+    }
+}
+
+/* ============================================================================
+   SEARCH FILTER (REACT)
+   ============================================================================ */
+
+.filter-form {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    background: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.filter-form__group {
+    flex: 1;
+    min-width: 140px;
+}
+
+.filter-form__group label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: #666;
+    margin-bottom: 0.5rem;
+}
+
+.filter-form__group input,
+.filter-form__group select {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 0.9375rem;
+    transition: border-color 0.2s;
+}
+
+.filter-form__group input:focus,
+.filter-form__group select:focus {
+    outline: none;
+    border-color: var(--primary, #2E7D32);
+}
+
+.filter-form__submit {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    white-space: nowrap;
+}
+
+/* ============================================================================
+   LOADING SPINNER
+   ============================================================================ */
+
+.loading-spinner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 2rem;
+    color: #666;
+}
+
+.loading-spinner svg {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.loading-spinner--small {
+    padding: 0.5rem;
+}
+
+.loading-spinner--small svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* ============================================================================
+   TOAST NOTIFICATIONS
+   ============================================================================ */
+
+.toast-container {
+    position: fixed;
+    top: 100px;
+    right: 20px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.toast {
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    animation: slideIn 0.3s ease;
+    max-width: 350px;
+    font-weight: 500;
+}
+
+@keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+.toast--success {
+    background: #e8f5e9;
+    color: #2E7D32;
+    border-left: 4px solid #2E7D32;
+}
+
+.toast--error {
+    background: #ffebee;
+    color: #c62828;
+    border-left: 4px solid #c62828;
+}
+
+.toast--info {
+    background: #e3f2fd;
+    color: #1565c0;
+    border-left: 4px solid #1565c0;
+}
+
+.toast--warning {
+    background: #fff3e0;
+    color: #ef6c00;
+    border-left: 4px solid #ef6c00;
+}
+
+/* ============================================================================
+   MODAL (REACT)
+   ============================================================================ */
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 9998;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.modal {
+    background: white;
+    border-radius: 16px;
+    max-width: 500px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+    animation: modalSlide 0.3s ease;
+    padding: 2rem;
+}
+
+@keyframes modalSlide {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.modal__close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: #f5f5f5;
+    border: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.modal__close:hover {
+    background: #e0e0e0;
+}
+
+.modal h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.modal > p {
+    color: #666;
+    margin-bottom: 1.5rem;
+}
+
+.modal .form-group {
+    margin-bottom: 1.25rem;
+}
+
+.modal .form-group label {
+    display: block;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    font-size: 0.9375rem;
+}
+
+.modal .form-group input,
+.modal .form-group textarea,
+.modal .form-group select {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.2s;
+    font-family: inherit;
+}
+
+.modal .form-group input:focus,
+.modal .form-group textarea:focus,
+.modal .form-group select:focus {
+    outline: none;
+    border-color: var(--primary, #2E7D32);
+}
+
+/* ============================================================================
+   BUTTONS (EXTENDED)
+   ============================================================================ */
+
+.btn--block {
+    width: 100%;
+    justify-content: center;
+}
+
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.btn svg.animate-spin {
+    animation: spin 1s linear infinite;
+}
+
+/* ============================================================================
+   UTILITY ANIMATIONS
+   ============================================================================ */
+
+.fade-in-up {
+    animation: fadeInUp 0.6s ease both;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.reveal-on-scroll {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: all 0.6s ease;
+}
+
+.reveal-on-scroll.revealed {
+    opacity: 1;
+    transform: translateY(0);
+}

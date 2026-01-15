@@ -6,40 +6,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reviews | {{ site_name }}</title>
     <link rel="stylesheet" href="{% static 'yourapp/css/homepage.css' %}">
+    <link rel="stylesheet" href="{% static 'yourapp/css/react-components.css' %}">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- React 18 -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 </head>
 <body>
-    <!-- HEADER -->
-    <header class="header" id="header">
-        <div class="container header__inner">
-            <a href="/" aria-label="{{ site_name }} — Home" class="logo-link">
-                <span class="logo-text">{{ site_name }}</span>
-            </a>
-            
-            <button class="mobile-menu-toggle" aria-label="Toggle menu" aria-expanded="false">
-                <span></span>
-                <span></span>
-                <span></span>
-            </button>
-
-            <nav class="header__nav" id="header-nav">
-                <ul class="nav-list">
-                    <li><a href="/" class="nav-link">Home</a></li>
-                    <li><a href="/properties" class="nav-link">Properties</a></li>
-                    <li><a href="/about" class="nav-link">About</a></li>
-                    <li><a href="/my-bookings" class="nav-link">My Bookings</a></li>
-                </ul>
-                <div class="header__ctas">
-                    <a href="tel:{{ contact_phone }}" class="btn btn--outline">
-                        <span>{{ contact_phone }}</span>
-                    </a>
-                    <a href="/" class="btn btn--primary">
-                        Book Now
-                    </a>
-                </div>
-            </nav>
-        </div>
-    </header>
+    <!-- React Header -->
+    <div id="react-header"></div>
 
     <main id="main-content" style="padding-top: 80px;">
         <section class="section reviews-section bg-light" id="reviews">
@@ -47,33 +24,108 @@
                 <div class="section-header text-center">
                     <span class="section-subtitle">Guest Experiences</span>
                     <h2 class="section-title">What Our Guests Say</h2>
+                    <p class="section-desc">Real feedback from real guests who've stayed with Safe Let Stays.</p>
                 </div>
-                <div class="reviews-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
-                    <div class="review-card" style="background: white; padding: 2rem; border-radius: var(--radius-lg); box-shadow: var(--shadow-sm);">
-                        <div style="color: #FFD700; margin-bottom: 1rem;">★★★★★</div>
-                        <p style="font-style: italic; margin-bottom: 1.5rem;">"Absolutely fantastic stay! The apartment was spotless and in a great location. Highly recommended for business trips."</p>
-                        <div style="font-weight: 600;">- Michael T.</div>
-                        <div style="font-size: 0.875rem; color: var(--text-light);">Corporate Traveller</div>
-                    </div>
-                    <div class="review-card" style="background: white; padding: 2rem; border-radius: var(--radius-lg); box-shadow: var(--shadow-sm);">
-                        <div style="color: #FFD700; margin-bottom: 1rem;">★★★★★</div>
-                        <p style="font-style: italic; margin-bottom: 1.5rem;">"Better than a hotel. We had everything we needed and the booking process was so smooth."</p>
-                        <div style="font-weight: 600;">- Sarah L.</div>
-                        <div style="font-size: 0.875rem; color: var(--text-light);">Weekend Visitor</div>
-                    </div>
-                    <div class="review-card" style="background: white; padding: 2rem; border-radius: var(--radius-lg); box-shadow: var(--shadow-sm);">
-                        <div style="color: #FFD700; margin-bottom: 1rem;">★★★★★</div>
-                        <p style="font-style: italic; margin-bottom: 1.5rem;">"The team at Safe Let Stays went above and beyond to accommodate our requests. Will definitely book again."</p>
-                        <div style="font-weight: 600;">- David R.</div>
-                        <div style="font-size: 0.875rem; color: var(--text-light);">Contractor</div>
-                    </div>
-                </div>
+                
+                <div id="react-reviews-grid"></div>
+            </div>
+        </section>
+        
+        <!-- CTA Section -->
+        <section class="section" style="background: var(--primary, #2E7D32); color: white; text-align: center;">
+            <div class="container">
+                <h2 style="font-size: 2rem; margin-bottom: 1rem;">Experience It For Yourself</h2>
+                <p style="font-size: 1.125rem; margin-bottom: 2rem; opacity: 0.9;">
+                    Join our growing list of satisfied guests. Book your stay today!
+                </p>
+                <a href="/properties" class="btn btn--white btn--lg">Browse Properties</a>
             </div>
         </section>
     </main>
 
-    <!-- FOOTER -->
-    {% include 'footer.html' %}
+    <!-- React Footer -->
+    <div id="react-footer"></div>
+    
+    <!-- Site Data -->
+    <script>
+        window.SITE_DATA = {
+            siteName: "{{ site_name|default:'Safe Let Stays' }}",
+            contactPhone: "{{ contact_phone|default:'' }}",
+            contactEmail: "{{ contact_email|default:'' }}",
+            currentPath: "{{ request.path }}",
+            isAuthenticated: {{ user.is_authenticated|yesno:"true,false" }}
+        };
+        
+        // Reviews data
+        window.REVIEWS_DATA = [
+            {
+                rating: 5,
+                text: "Absolutely fantastic stay! The apartment was spotless and in a great location. Highly recommended for business trips.",
+                author: "Michael T.",
+                role: "Corporate Traveller"
+            },
+            {
+                rating: 5,
+                text: "Better than a hotel. We had everything we needed and the booking process was so smooth.",
+                author: "Sarah L.",
+                role: "Weekend Visitor"
+            },
+            {
+                rating: 5,
+                text: "The team at Safe Let Stays went above and beyond to accommodate our requests. Will definitely book again.",
+                author: "David R.",
+                role: "Contractor"
+            },
+            {
+                rating: 5,
+                text: "Perfect for our family trip to Sheffield. Spacious, clean, and well-equipped. The kids loved it!",
+                author: "Emma W.",
+                role: "Family Holiday"
+            },
+            {
+                rating: 5,
+                text: "Great communication from start to finish. The property was exactly as described. No surprises!",
+                author: "James M.",
+                role: "Business Trip"
+            },
+            {
+                rating: 5,
+                text: "Saved so much by booking direct. Same quality you'd expect from Airbnb but better value.",
+                author: "Lisa K.",
+                role: "Long-term Stay"
+            }
+        ];
+    </script>
+    
+    <script type="text/babel" src="{% static 'yourapp/js/react/components.js' %}"></script>
+    
+    <script type="text/babel">
+    {% verbatim %}
+        const { ReviewCard, Icons } = window.SafeLetComponents || {};
+        
+        const ReviewsGrid = () => {
+            const reviews = window.REVIEWS_DATA || [];
+            
+            return (
+                <div style={{ 
+                    display: 'grid', 
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', 
+                    gap: '2rem' 
+                }}>
+                    {reviews.map((review, index) => (
+                        <ReviewCard key={index} review={review} />
+                    ))}
+                </div>
+            );
+        };
+        
+        const reviewsRoot = document.getElementById('react-reviews-grid');
+        if (reviewsRoot && window.SafeLetComponents) {
+            ReactDOM.createRoot(reviewsRoot).render(<ReviewsGrid />);
+        }
+    {% endverbatim %}
+    </script>
+    
     <script src="{% static 'yourapp/js/homepage.js' %}"></script>
 </body>
 </html>

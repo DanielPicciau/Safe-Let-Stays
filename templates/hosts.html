@@ -6,40 +6,63 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hosts | {{ site_name }}</title>
     <link rel="stylesheet" href="{% static 'yourapp/css/homepage.css' %}">
+    <link rel="stylesheet" href="{% static 'yourapp/css/react-components.css' %}">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- React 18 -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <style>
+        .host-card {
+            background: white;
+            border-radius: 16px;
+            padding: 2.5rem;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+        }
+        
+        .host-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.12);
+        }
+        
+        .host-avatar {
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+            border-radius: 50%;
+            margin: 0 auto 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary, #2E7D32);
+        }
+        
+        .host-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            color: #1a1a1a;
+        }
+        
+        .host-role {
+            color: var(--primary, #2E7D32);
+            font-weight: 500;
+            margin-bottom: 1rem;
+        }
+        
+        .host-quote {
+            font-style: italic;
+            color: #666;
+            line-height: 1.7;
+        }
+    </style>
 </head>
 <body>
-    <!-- HEADER -->
-    <header class="header" id="header">
-        <div class="container header__inner">
-            <a href="/" aria-label="{{ site_name }} — Home" class="logo-link">
-                <span class="logo-text">{{ site_name }}</span>
-            </a>
-            
-            <button class="mobile-menu-toggle" aria-label="Toggle menu" aria-expanded="false">
-                <span></span>
-                <span></span>
-                <span></span>
-            </button>
-
-            <nav class="header__nav" id="header-nav">
-                <ul class="nav-list">
-                    <li><a href="/" class="nav-link">Home</a></li>
-                    <li><a href="/properties" class="nav-link">Properties</a></li>
-                    <li><a href="/about" class="nav-link">About</a></li>
-                    <li><a href="/my-bookings" class="nav-link">My Bookings</a></li>
-                </ul>
-                <div class="header__ctas">
-                    <a href="tel:{{ contact_phone }}" class="btn btn--outline">
-                        <span>{{ contact_phone }}</span>
-                    </a>
-                    <a href="/" class="btn btn--primary">
-                        Book Now
-                    </a>
-                </div>
-            </nav>
-        </div>
-    </header>
+    <!-- React Header -->
+    <div id="react-header"></div>
 
     <main id="main-content" style="padding-top: 80px;">
         <section class="section hosts-section" id="hosts">
@@ -49,23 +72,124 @@
                     <h2 class="section-title">Your Hosts</h2>
                     <p class="section-desc">Dedicated to making your stay in Sheffield exceptional.</p>
                 </div>
-                <div class="hosts-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; text-align: center;">
-                    <!-- Placeholder for Host 1 -->
-                    <div class="host-card">
-                        <div style="width: 120px; height: 120px; background: #e0e0e0; border-radius: 50%; margin: 0 auto 1.5rem; display: flex; align-items: center; justify-content: center; font-size: 2rem; color: #757575;">
-                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                        </div>
-                        <h3>The Safe Let Team</h3>
-                        <p style="color: var(--text-light);">Property Managers</p>
-                        <p style="margin-top: 1rem;">"We love welcoming guests to our home city and ensuring every stay is perfect."</p>
-                    </div>
+                
+                <div id="react-hosts-grid"></div>
+            </div>
+        </section>
+        
+        <!-- Values Section -->
+        <section class="section" style="background: #f8f9fa;">
+            <div class="container">
+                <div class="section-header text-center">
+                    <span class="section-subtitle">Our Values</span>
+                    <h2 class="section-title">What Drives Us</h2>
                 </div>
+                <div id="react-values-grid"></div>
             </div>
         </section>
     </main>
 
-    <!-- FOOTER -->
-    {% include 'footer.html' %}
+    <!-- React Footer -->
+    <div id="react-footer"></div>
+    
+    <!-- Site Data -->
+    <script>
+        window.SITE_DATA = {
+            siteName: "{{ site_name|default:'Safe Let Stays' }}",
+            contactPhone: "{{ contact_phone|default:'' }}",
+            contactEmail: "{{ contact_email|default:'' }}",
+            currentPath: "{{ request.path }}",
+            isAuthenticated: {{ user.is_authenticated|yesno:"true,false" }}
+        };
+        
+        // Hosts data
+        window.HOSTS_DATA = [
+            {
+                name: "The Safe Let Team",
+                role: "Property Managers",
+                quote: "We love welcoming guests to our home city and ensuring every stay is perfect. Sheffield has so much to offer, and we're passionate about sharing it with you."
+            }
+        ];
+        
+        // Values data
+        window.VALUES_DATA = [
+            { icon: "Heart", title: "Guest-First Approach", description: "Your comfort and satisfaction are our top priorities. We go the extra mile to ensure every stay exceeds expectations." },
+            { icon: "Verified", title: "Quality Standards", description: "We personally inspect every property to maintain consistent, high standards across our portfolio." },
+            { icon: "Money", title: "Transparency", description: "No hidden fees, no surprises. What you see is what you get—fair pricing for premium accommodation." }
+        ];
+    </script>
+    
+    <script type="text/babel" src="{% static 'yourapp/js/react/components.js' %}"></script>
+    
+    <script type="text/babel">
+    {% verbatim %}
+        const { BenefitCard, Icons } = window.SafeLetComponents || {};
+        
+        // Host Card Component
+        const HostCard = ({ host }) => (
+            <div className="host-card">
+                <div className="host-avatar">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                </div>
+                <h3>{host.name}</h3>
+                <p className="host-role">{host.role}</p>
+                <p className="host-quote">"{host.quote}"</p>
+            </div>
+        );
+        
+        // Hosts Grid
+        const HostsGrid = () => {
+            const hosts = window.HOSTS_DATA || [];
+            
+            return (
+                <div style={{ 
+                    display: 'grid', 
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', 
+                    gap: '2rem',
+                    maxWidth: '600px',
+                    margin: '0 auto'
+                }}>
+                    {hosts.map((host, index) => (
+                        <HostCard key={index} host={host} />
+                    ))}
+                </div>
+            );
+        };
+        
+        // Values Grid
+        const ValuesGrid = () => {
+            const values = window.VALUES_DATA || [];
+            
+            return (
+                <div className="benefits-grid">
+                    {values.map((value, index) => (
+                        <BenefitCard 
+                            key={index}
+                            icon={value.icon}
+                            title={value.title}
+                            description={value.description}
+                        />
+                    ))}
+                </div>
+            );
+        };
+        
+        // Mount components
+        const hostsRoot = document.getElementById('react-hosts-grid');
+        if (hostsRoot && window.SafeLetComponents) {
+            ReactDOM.createRoot(hostsRoot).render(<HostsGrid />);
+        }
+        
+        const valuesRoot = document.getElementById('react-values-grid');
+        if (valuesRoot && window.SafeLetComponents) {
+            ReactDOM.createRoot(valuesRoot).render(<ValuesGrid />);
+        }
+    {% endverbatim %}
+    </script>
+    
     <script src="{% static 'yourapp/js/homepage.js' %}"></script>
 </body>
 </html>

@@ -1,0 +1,58 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ site_name }}{% endblock %}</title>
+    {% block meta %}{% endblock %}
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="{% static 'yourapp/css/homepage.css' %}">
+    
+    {% block extra_css %}{% endblock %}
+    
+    <!-- React 18 Production -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel for JSX (development only - for production, pre-compile your JSX) -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+    
+    <!-- React Header Component Mount Point -->
+    <div id="react-header"></div>
+    
+    {% block content %}{% endblock %}
+    
+    <!-- React Footer Component Mount Point -->
+    <div id="react-footer"></div>
+    
+    <!-- Page Data for React -->
+    <script>
+        window.SITE_DATA = {
+            siteName: "{{ site_name|default:'Safe Let Stays' }}",
+            contactPhone: "{{ contact_phone|default:'' }}",
+            contactEmail: "{{ contact_email|default:'' }}",
+            currentPath: "{{ request.path }}",
+            isAuthenticated: {{ user.is_authenticated|yesno:"true,false" }},
+            {% block page_data %}{% endblock %}
+        };
+    </script>
+    
+    <!-- React Components -->
+    <script type="text/babel" src="{% static 'yourapp/js/react/components.js' %}"></script>
+    
+    <!-- Homepage JS for non-React functionality -->
+    <script src="{% static 'yourapp/js/homepage.js' %}"></script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

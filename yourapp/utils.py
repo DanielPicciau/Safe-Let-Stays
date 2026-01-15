@@ -86,6 +86,18 @@ def generate_receipt_pdf(booking):
     ]
     if booking.guest_phone:
         bill_to.append(Paragraph(f"{booking.guest_phone}", styles['Normal']))
+    
+    # Add company details if business booking
+    if booking.is_company_booking and booking.company_name:
+        bill_to.append(Spacer(1, 10))
+        bill_to.append(Paragraph("<b>BUSINESS DETAILS:</b>", styles['SectionHeader']))
+        bill_to.append(Paragraph(f"{booking.company_name}", styles['Normal']))
+        if booking.company_address:
+            # Replace newlines with <br/> for proper rendering
+            address_formatted = booking.company_address.replace('\n', '<br/>')
+            bill_to.append(Paragraph(f"{address_formatted}", styles['Normal']))
+        if booking.company_vat:
+            bill_to.append(Paragraph(f"VAT: {booking.company_vat}", styles['Normal']))
         
     invoice_details = [
         Paragraph("<b>RECEIPT DETAILS</b>", styles['SectionHeader']),

@@ -461,6 +461,12 @@ def create_checkout_session(request, property_id):
         guest_name = escape(form.cleaned_data.get('guest_name') or 'Guest')
         guest_email = form.cleaned_data.get('guest_email') or 'pending@example.com'
         guest_phone = form.cleaned_data.get('guest_phone') or ''
+    
+    # Get company details (for guest bookings)
+    is_company_booking = form.cleaned_data.get('is_company_booking', False)
+    company_name = escape(form.cleaned_data.get('company_name') or '')
+    company_address = escape(form.cleaned_data.get('company_address') or '')
+    company_vat = escape(form.cleaned_data.get('company_vat') or '')
 
     try:
         # Create pending booking
@@ -470,6 +476,10 @@ def create_checkout_session(request, property_id):
             guest_name=guest_name,
             guest_email=guest_email,
             guest_phone=guest_phone,
+            is_company_booking=is_company_booking,
+            company_name=company_name,
+            company_address=company_address,
+            company_vat=company_vat,
             check_in=checkin,
             check_out=checkout,
             guests=guests,
@@ -493,7 +503,7 @@ def create_checkout_session(request, property_id):
                         'currency': 'gbp',
                         'unit_amount': int(property_obj.price_from * nights * 100),
                         'product_data': {
-                            'name': f"Stay at {escape(property_obj.title)}",
+                            'name': f"Stay at {property_obj.title}",
                             'description': full_description,
                             'images': images,
                         },

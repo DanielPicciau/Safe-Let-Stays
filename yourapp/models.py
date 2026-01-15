@@ -133,6 +133,12 @@ class Booking(models.Model):
     guest_email = models.EmailField()
     guest_phone = models.CharField(max_length=50, blank=True)
     
+    # Company information (for business bookings)
+    is_company_booking = models.BooleanField(default=False)
+    company_name = models.CharField(max_length=200, blank=True)
+    company_address = models.TextField(blank=True)
+    company_vat = models.CharField(max_length=50, blank=True, help_text="VAT/Tax registration number")
+    
     # Booking dates
     check_in = models.DateField(db_index=True)
     check_out = models.DateField()
@@ -223,11 +229,46 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 class Profile(models.Model):
+    ACCOUNT_TYPE_CHOICES = [
+        ('personal', 'Personal'),
+        ('business', 'Business'),
+    ]
+    
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     phone_number = models.CharField(max_length=20, blank=True)
     booking_purpose = models.CharField(max_length=200, blank=True, help_text="What are you booking for?")
+    
+    # Business account fields
+    account_type = models.CharField(
+        max_length=20,
+        choices=ACCOUNT_TYPE_CHOICES,
+        default='personal'
+    )
+    company_name = models.CharField(max_length=200, blank=True)
+    company_address = models.TextField(blank=True)
+    company_vat = models.CharField(
+        max_length=50, 
+        blank=True, 
+        help_text="VAT/Tax registration number"
+    )
+    company_registration_number = models.CharField(
+        max_length=50,
+        blank=True,
+        help_text="Company registration number"
+    )
+    job_title = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text="Your role/job title at the company"
+    )
+    
+    @property
+    def is_business_account(self):
+        return self.account_type == 'business'
 
     def __str__(self):
+        if self.is_business_account and self.company_name:
+            return f"{self.user.username}'s Profile ({self.company_name})"
         return f"{self.user.username}'s Profile"
 
 @receiver(post_save, sender=User)

@@ -6,9 +6,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Bookings | {{ site_name }}</title>
     <link rel="stylesheet" href="{% static 'yourapp/css/homepage.css' %}">
+    <link rel="stylesheet" href="{% static 'yourapp/css/react-components.css' %}">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- React 18 -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
     <style>
-        /* Override homepage.css solid backgrounds */
         body, body > main {
             background-color: transparent !important;
         }
@@ -40,570 +46,248 @@
             text-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
         
-        /* Card Styles */
-        .booking-card {
-            background: var(--white);
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-sm);
-            padding: 1.5rem;
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        
+        .empty-state svg {
+            color: #ccc;
             margin-bottom: 1.5rem;
-            display: flex;
-            gap: 1.5rem;
-            transition: all 0.3s ease;
-            border: 1px solid var(--border);
-            cursor: pointer;
-            position: relative;
-            overflow: hidden;
         }
         
-        .booking-card:hover {
-            transform: translateY(-4px);
-            box-shadow: var(--shadow-lg);
-            border-color: var(--primary-light);
-        }
-
-        .booking-card::after {
-            content: 'View Details';
-            position: absolute;
-            bottom: 1.5rem;
-            right: 1.5rem;
-            font-size: 0.875rem;
-            font-weight: 600;
-            color: var(--primary);
-            opacity: 0;
-            transform: translateX(10px);
-            transition: all 0.3s ease;
-        }
-
-        .booking-card:hover::after {
-            opacity: 1;
-            transform: translateX(0);
+        .empty-state h3 {
+            font-size: 1.5rem;
+            margin-bottom: 0.75rem;
+            color: #1a1a1a;
         }
         
-        .booking-image {
-            width: 140px;
-            height: 140px;
-            border-radius: var(--radius-md);
-            object-fit: cover;
-            background: #f0f0f0;
-            flex-shrink: 0;
+        .empty-state p {
+            color: #666;
+            margin-bottom: 1.5rem;
         }
         
-        .booking-details {
-            flex: 1;
-            min-width: 0;
-        }
-        
-        .booking-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 0.5rem;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-        }
-        
-        .booking-title {
-            font-size: 1.25rem;
-            font-weight: 600;
-            color: var(--text-main);
-            margin: 0;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 100%;
-        }
-        
-        .booking-status {
-            padding: 0.35rem 0.85rem;
-            border-radius: 2rem;
-            font-size: 0.75rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.25rem;
-            white-space: nowrap;
-        }
-
-        .booking-status::before {
-            content: '';
-            display: block;
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            background-color: currentColor;
-        }
-        
-        .status-pending { background: #fff8e1; color: #f57c00; }
-        .status-confirmed { background: #e8f5e9; color: #2e7d32; }
-        .status-canceled { background: #ffebee; color: #c62828; }
-        .status-completed { background: #e3f2fd; color: #1565c0; }
-        
-        .booking-info-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            gap: 1rem;
-            margin-top: 1.25rem;
-            padding-top: 1.25rem;
-            border-top: 1px solid var(--border-light);
-        }
-        
-        .info-item label {
-            display: block;
-            font-size: 0.7rem;
-            color: var(--text-light);
-            margin-bottom: 0.25rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            font-weight: 600;
-        }
-        
-        .info-item span {
-            font-size: 0.95rem;
-            font-weight: 500;
-            color: var(--text-main);
-            display: block;
-        }
-
-        /* Modal Styles */
-        .modal-backdrop {
+        .booking-modal-overlay {
             position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(4px);
-            z-index: 99999; /* Extremely high z-index */
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s ease;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 1000;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 1rem; /* Reduced padding for mobile */
+            padding: 1rem;
         }
-
-        .modal-backdrop.active {
-            opacity: 1;
-            visibility: visible;
-        }
-
+        
         .booking-modal {
-            background: var(--white);
+            background: white;
+            border-radius: 16px;
+            max-width: 600px;
             width: 100%;
-            max-width: 600px; /* Reduced max-width */
-            border-radius: var(--radius-xl);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-            transform: translateY(20px);
-            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-            max-height: 85vh; /* Slightly reduced height */
+            max-height: 90vh;
             overflow-y: auto;
-            position: relative;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .modal-backdrop.active .booking-modal {
-            transform: translateY(0);
-        }
-
-        .modal-close {
-            position: absolute;
-            top: 1rem;
-            right: 1rem;
-            background: rgba(255, 255, 255, 0.9);
-            border: none;
-            width: 32px; /* Smaller close button */
-            height: 32px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            z-index: 10;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            transition: transform 0.2s;
-        }
-
-        .modal-close:hover {
-            transform: scale(1.1);
-        }
-
-        .modal-hero {
-            height: 200px; /* Reduced height */
-            width: 100%;
-            position: relative;
-            flex-shrink: 0;
-        }
-
-        .modal-hero img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .modal-content {
-            padding: 1.5rem; /* Reduced padding */
-            overflow-y: auto;
-        }
-
-        .modal-header {
-            margin-bottom: 1.5rem;
-            border-bottom: 1px solid var(--border-light);
-            padding-bottom: 1rem;
-        }
-
-        .modal-title {
-            font-size: 1.5rem; /* Smaller title */
-            font-weight: 700;
-            margin: 0 0 0.5rem 0;
-            color: var(--text-main);
-            line-height: 1.2;
-        }
-
-        .modal-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1.5rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .detail-group h4 {
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            color: var(--text-light);
-            margin-bottom: 0.75rem;
-            letter-spacing: 0.05em;
-        }
-
-        .detail-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 0.5rem 0;
-            border-bottom: 1px solid var(--border-light);
-            font-size: 0.9rem;
-        }
-
-        .detail-row:last-child {
-            border-bottom: none;
-        }
-
-        .detail-label {
-            color: var(--text-secondary);
-            font-weight: 500;
-        }
-
-        .detail-value {
-            font-weight: 600;
-            color: var(--text-main);
-        }
-
-        .modal-actions {
-            display: flex;
-            gap: 0.75rem;
-            margin-top: 1.5rem;
-            flex-wrap: wrap; /* Allow wrapping */
-        }
-
-        .btn-outline {
-            background: transparent;
-            border: 1px solid var(--border);
-            color: var(--text-main);
-            padding: 0.75rem 1rem;
-            border-radius: var(--radius-md);
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            flex: 1;
-            text-align: center;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.9rem;
-            min-width: 140px; /* Ensure buttons don't get too small */
-        }
-
-        .btn-outline:hover {
-            background: var(--bg-light);
-            border-color: var(--text-light);
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 6rem 2rem;
-            background: var(--white);
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-sm);
-        }
-
-        @media (max-width: 600px) {
-            .bookings-main {
-                padding-top: 100px;
-                padding-left: 1rem;
-                padding-right: 1rem;
-            }
-            .booking-card {
-                flex-direction: column;
-                gap: 1rem;
-                padding: 1rem;
-            }
-            .booking-image {
-                width: 100%;
-                height: 160px;
-            }
-            .modal-grid {
-                grid-template-columns: 1fr;
-                gap: 1rem;
-            }
-            .modal-actions {
-                flex-direction: column;
-            }
-            .modal-hero {
-                height: 160px;
-            }
-            .modal-content {
-                padding: 1.25rem;
-            }
-            .modal-title {
-                font-size: 1.25rem;
-            }
-            .btn-outline {
-                width: 100%;
-            }
+            padding: 2rem;
         }
     </style>
 </head>
 <body>
-    <video class="hero__bg-video" autoplay muted loop playsinline>
-        <source src="{% static 'yourapp/videos/One Minute Real Estate Video Tour.mp4' %}" type="video/mp4">
-    </video>
-    <div class="hero__overlay"></div>
-    
-    <!-- HEADER -->
-    <header class="header" id="header">
-        <div class="container header__inner">
-            <a href="/" aria-label="{{ site_name }} — Home" class="logo-link">
-                <span class="logo-text">{{ site_name }}</span>
-            </a>
-            
-            <button class="mobile-menu-toggle" aria-label="Toggle menu" aria-expanded="false">
-                <span></span>
-                <span></span>
-                <span></span>
-            </button>
+    <!-- Video Background -->
+    <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; overflow: hidden;">
+        <video autoplay muted loop playsinline style="position: absolute; top: 50%; left: 50%; min-width: 100%; min-height: 100%; transform: translate(-50%, -50%); object-fit: cover;">
+            <source src="{% static 'yourapp/videos/One Minute Real Estate Video Tour.mp4' %}" type="video/mp4">
+        </video>
+        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.7) 100%);"></div>
+    </div>
 
-            <nav class="header__nav" id="header-nav">
-                <ul class="nav-list">
-                    <li><a href="/" class="nav-link">Home</a></li>
-                    <li><a href="/properties" class="nav-link">Properties</a></li>
-                    <li><a href="/about" class="nav-link">About</a></li>
-                    <li><a href="/my-bookings" class="nav-link active">My Bookings</a></li>
-                </ul>
-                <div class="header__ctas">
-                    <a href="tel:{{ contact_phone }}" class="btn btn--outline">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-                        <span>{{ contact_phone }}</span>
-                    </a>
-                    <a href="/properties" class="btn btn--primary">
-                        Book Now
-                    </a>
-                    <form action="{% url 'logout' %}" method="post" style="display: inline;">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn--outline" style="width: 100%; cursor: pointer;">Log Out</button>
-                    </form>
-                </div>
-            </nav>
-        </div>
-    </header>
+    <!-- React Header -->
+    <div id="react-header" data-active-page="bookings"></div>
 
-    <main class="bookings-main">
+    <main class="bookings-main" id="main-content">
         <div class="bookings-container">
             <div class="page-header">
                 <h1 class="page-title">My Bookings</h1>
             </div>
             
-            {% if bookings %}
-                {% for booking in bookings %}
-                <!-- Card Item -->
-                <div class="booking-card" onclick="openModal('modal-{{ booking.id }}')">
-                    {% if booking.property.image %}
-                    <img src="{{ booking.property.image.url }}" alt="{{ booking.property.title }}" class="booking-image">
-                    {% else %}
-                    <div class="booking-image" style="display: flex; align-items: center; justify-content: center; color: #999; background: #eee;">
-                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                            <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                            <polyline points="21 15 16 10 5 21"></polyline>
-                        </svg>
-                    </div>
-                    {% endif %}
-                    
-                    <div class="booking-details">
-                        <div class="booking-header">
-                            <h2 class="booking-title">{{ booking.property.title }}</h2>
-                            <span class="booking-status status-{{ booking.status }}">{{ booking.status }}</span>
-                        </div>
-                        
-                        <div class="booking-info-grid">
-                            <div class="info-item">
-                                <label>Check In</label>
-                                <span>{{ booking.check_in|date:"M d, Y" }}</span>
-                            </div>
-                            <div class="info-item">
-                                <label>Check Out</label>
-                                <span>{{ booking.check_out|date:"M d, Y" }}</span>
-                            </div>
-                            <div class="info-item">
-                                <label>Total</label>
-                                <span>£{{ booking.total_price }}</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
-            {% else %}
-                <div class="empty-state">
-                    <div style="margin-bottom: 1.5rem; color: var(--text-light);">
-                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
-                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                            <line x1="16" y1="2" x2="16" y2="6"></line>
-                            <line x1="8" y1="2" x2="8" y2="6"></line>
-                            <line x1="3" y1="10" x2="21" y2="10"></line>
-                        </svg>
-                    </div>
-                    <h3>No bookings found</h3>
-                    <p style="color: var(--text-secondary); margin-bottom: 2rem;">You haven't made any bookings yet. Start your journey today.</p>
-                    <a href="{% url 'properties' %}" class="btn btn--primary">Browse Properties</a>
-                </div>
-            {% endif %}
+            <div id="react-bookings-list"></div>
         </div>
     </main>
 
-    <!-- Modals moved outside of main to avoid stacking context issues -->
-    {% if bookings %}
-        {% for booking in bookings %}
-        <div id="modal-{{ booking.id }}" class="modal-backdrop" onclick="closeModal(event, 'modal-{{ booking.id }}')">
-            <div class="booking-modal" onclick="event.stopPropagation()">
-                <button class="modal-close" onclick="closeModal(null, 'modal-{{ booking.id }}')">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <line x1="18" y1="6" x2="6" y2="18"></line>
-                        <line x1="6" y1="6" x2="18" y2="18"></line>
-                    </svg>
-                </button>
-                
-                <div class="modal-hero">
-                    {% if booking.property.image %}
-                    <img src="{{ booking.property.image.url }}" alt="{{ booking.property.title }}">
-                    {% else %}
-                    <div style="width: 100%; height: 100%; background: #eee; display: flex; align-items: center; justify-content: center;">
-                        No Image Available
-                    </div>
-                    {% endif %}
-                </div>
-
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                            <span class="booking-status status-{{ booking.status }}">{{ booking.status }}</span>
-                            <span style="color: var(--text-light); font-size: 0.875rem;">Ref: #{{ booking.id }}</span>
-                        </div>
-                        <h2 class="modal-title">{{ booking.property.title }}</h2>
-                        <p style="color: var(--text-secondary); margin: 0; font-size: 0.9rem;">{{ booking.property.short_description|truncatechars:100 }}</p>
-                    </div>
-
-                    <div class="modal-grid">
-                        <div class="detail-group">
-                            <h4>Reservation Details</h4>
-                            <div class="detail-row">
-                                <span class="detail-label">Check-in</span>
-                                <span class="detail-value">{{ booking.check_in|date:"D, M d, Y" }}</span>
-                            </div>
-                            <div class="detail-row">
-                                <span class="detail-label">Check-out</span>
-                                <span class="detail-value">{{ booking.check_out|date:"D, M d, Y" }}</span>
-                            </div>
-                            <div class="detail-row">
-                                <span class="detail-label">Guests</span>
-                                <span class="detail-value">{{ booking.guests }} Guest{{ booking.guests|pluralize }}</span>
-                            </div>
-                            <div class="detail-row">
-                                <span class="detail-label">Total Price</span>
-                                <span class="detail-value">£{{ booking.total_price }}</span>
-                            </div>
-                        </div>
-
-                        <div class="detail-group">
-                            <h4>Property Specs</h4>
-                            <div class="detail-row">
-                                <span class="detail-label">Beds</span>
-                                <span class="detail-value">{{ booking.property.beds }}</span>
-                            </div>
-                            <div class="detail-row">
-                                <span class="detail-label">Baths</span>
-                                <span class="detail-value">{{ booking.property.baths }}</span>
-                            </div>
-                            <div class="detail-row">
-                                <span class="detail-label">Parking</span>
-                                <span class="detail-value">{% if booking.property.parking %}Yes{% else %}No{% endif %}</span>
-                            </div>
-                            <div class="detail-row">
-                                <span class="detail-label">To Stadium</span>
-                                <span class="detail-value">{{ booking.property.distance_to_stadium_mins }} mins</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="modal-actions">
-                        <a href="mailto:{{ contact_email }}?subject=Question about Booking #{{ booking.id }}" class="btn btn--primary" style="flex: 1; text-align: center; text-decoration: none; display: flex; align-items: center; justify-content: center;">Message Host</a>
-                        <a href="{% url 'booking_receipt' booking.id %}" target="_blank" class="btn-outline" style="text-decoration: none; display: flex; align-items: center; justify-content: center;">Download Receipt</a>
-                        {% if booking.status == 'pending' or booking.status == 'confirmed' %}
-                        <a href="#" onclick="alert('To cancel this booking, please contact our support team at {{ contact_phone }}.'); return false;" class="btn-outline" style="color: var(--danger); border-color: var(--danger);">Cancel Booking</a>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-        </div>
-        {% endfor %}
-    {% endif %}
-
+    <!-- React Footer -->
+    <div id="react-footer"></div>
+    
+    <!-- Site Data -->
     <script>
-        function openModal(modalId) {
-            const modal = document.getElementById(modalId);
-            if (modal) {
-                modal.classList.add('active');
-                document.body.style.overflow = 'hidden'; // Prevent background scrolling
-            }
-        }
-
-        function closeModal(event, modalId) {
-            if (event && event.target !== event.currentTarget && !event.target.classList.contains('modal-close')) {
-                return;
-            }
-            const modal = document.getElementById(modalId);
-            if (modal) {
-                modal.classList.remove('active');
-                document.body.style.overflow = ''; // Restore scrolling
-            }
-        }
-
-        // Close modal on Escape key
-        document.addEventListener('keydown', function(event) {
-            if (event.key === 'Escape') {
-                const activeModal = document.querySelector('.modal-backdrop.active');
-                if (activeModal) {
-                    activeModal.classList.remove('active');
-                    document.body.style.overflow = '';
-                }
-            }
-        });
+        window.SITE_DATA = {
+            siteName: "{{ site_name|default:'Safe Let Stays' }}",
+            contactPhone: "{{ contact_phone|default:'' }}",
+            contactEmail: "{{ contact_email|default:'' }}",
+            currentPath: "{{ request.path }}",
+            isAuthenticated: {{ user.is_authenticated|yesno:"true,false" }}
+        };
+        
+        // Bookings data from Django
+        window.BOOKINGS_DATA = [
+            {% for booking in bookings %}
+            {
+                id: {{ booking.id }},
+                propertyTitle: "{{ booking.property.title|escapejs }}",
+                propertyImage: "{{ booking.property.image.url|default:'' }}",
+                checkIn: "{{ booking.check_in|date:'M d, Y' }}",
+                checkOut: "{{ booking.check_out|date:'M d, Y' }}",
+                guests: {{ booking.guests|default:1 }},
+                status: "{{ booking.status|default:'confirmed' }}",
+                total: {{ booking.total_price|default:0 }},
+                receiptUrl: "{% url 'booking_receipt' booking.id %}"
+            }{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        ];
     </script>
     
-    <!-- FOOTER -->
-    {% include 'footer.html' %}
+    <script type="text/babel" src="{% static 'yourapp/js/react/components.js' %}"></script>
+    
+    <script type="text/babel">
+    {% verbatim %}
+        const { useState } = React;
+        const { BookingCard, Icons, SiteContext } = window.SafeLetComponents || {};
+        
+        // Booking Detail Modal
+        const BookingDetailModal = ({ booking, onClose }) => {
+            if (!booking) return null;
+            
+            return (
+                <div className="booking-modal-overlay" onClick={onClose}>
+                    <div className="booking-modal" onClick={(e) => e.stopPropagation()}>
+                        <button 
+                            onClick={onClose}
+                            style={{ position: 'absolute', top: '1rem', right: '1rem', background: '#f5f5f5', border: 'none', borderRadius: '50%', width: '36px', height: '36px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                        >
+                            <Icons.Close />
+                        </button>
+                        
+                        <h2 style={{ marginBottom: '1.5rem' }}>Booking Details</h2>
+                        
+                        <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem' }}>
+                            <img 
+                                src={booking.propertyImage} 
+                                alt={booking.propertyTitle}
+                                style={{ width: '120px', height: '80px', objectFit: 'cover', borderRadius: '8px' }}
+                            />
+                            <div>
+                                <h3 style={{ marginBottom: '0.25rem' }}>{booking.propertyTitle}</h3>
+                                <span className={`booking-status booking-status--${booking.status === 'confirmed' ? 'success' : 'warning'}`}>
+                                    {booking.status}
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div style={{ background: '#f8f9fa', borderRadius: '8px', padding: '1rem', marginBottom: '1.5rem' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                                <div>
+                                    <label style={{ fontSize: '0.75rem', color: '#666', textTransform: 'uppercase' }}>Check-in</label>
+                                    <p style={{ fontWeight: '600' }}>{booking.checkIn}</p>
+                                </div>
+                                <div>
+                                    <label style={{ fontSize: '0.75rem', color: '#666', textTransform: 'uppercase' }}>Check-out</label>
+                                    <p style={{ fontWeight: '600' }}>{booking.checkOut}</p>
+                                </div>
+                                <div>
+                                    <label style={{ fontSize: '0.75rem', color: '#666', textTransform: 'uppercase' }}>Guests</label>
+                                    <p style={{ fontWeight: '600' }}>{booking.guests} Guest{booking.guests > 1 ? 's' : ''}</p>
+                                </div>
+                                <div>
+                                    <label style={{ fontSize: '0.75rem', color: '#666', textTransform: 'uppercase' }}>Total</label>
+                                    <p style={{ fontWeight: '700', color: 'var(--primary)' }}>£{booking.total}</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div style={{ display: 'flex', gap: '1rem' }}>
+                            <a href={booking.receiptUrl} className="btn btn--primary" style={{ flex: 1, textAlign: 'center' }}>
+                                View Receipt
+                            </a>
+                            <button className="btn btn--outline" onClick={onClose} style={{ flex: 1 }}>
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+        
+        // Bookings List Component
+        const BookingsList = () => {
+            const bookings = window.BOOKINGS_DATA || [];
+            const [selectedBooking, setSelectedBooking] = useState(null);
+            const isAuthenticated = window.SITE_DATA?.isAuthenticated;
+            
+            if (!isAuthenticated) {
+                return (
+                    <div className="empty-state">
+                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                            <circle cx="12" cy="7" r="4"/>
+                        </svg>
+                        <h3>Sign In to View Your Bookings</h3>
+                        <p>Please log in to see your booking history and upcoming stays.</p>
+                        <a href="/accounts/login/" className="btn btn--primary">Sign In</a>
+                    </div>
+                );
+            }
+            
+            if (bookings.length === 0) {
+                return (
+                    <div className="empty-state">
+                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                            <line x1="16" y1="2" x2="16" y2="6"/>
+                            <line x1="8" y1="2" x2="8" y2="6"/>
+                            <line x1="3" y1="10" x2="21" y2="10"/>
+                        </svg>
+                        <h3>No Bookings Yet</h3>
+                        <p>You haven't made any bookings yet. Explore our properties and book your perfect stay!</p>
+                        <a href="/properties" className="btn btn--primary">Browse Properties</a>
+                    </div>
+                );
+            }
+            
+            return (
+                <>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                        {bookings.map((booking) => (
+                            <BookingCard 
+                                key={booking.id} 
+                                booking={booking}
+                                onClick={() => setSelectedBooking(booking)}
+                            />
+                        ))}
+                    </div>
+                    
+                    {selectedBooking && (
+                        <BookingDetailModal 
+                            booking={selectedBooking}
+                            onClose={() => setSelectedBooking(null)}
+                        />
+                    )}
+                </>
+            );
+        };
+        
+        // Mount component
+        const bookingsRoot = document.getElementById('react-bookings-list');
+        if (bookingsRoot && window.SafeLetComponents) {
+            ReactDOM.createRoot(bookingsRoot).render(
+                <SiteContext.Provider value={window.SITE_DATA || {}}>
+                    <BookingsList />
+                </SiteContext.Provider>
+            );
+        }
+    {% endverbatim %}
+    </script>
     
     <script src="{% static 'yourapp/js/homepage.js' %}"></script>
 </body>

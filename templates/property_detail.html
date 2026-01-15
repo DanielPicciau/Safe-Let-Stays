@@ -14,6 +14,12 @@
     
     <!-- CSS -->
     <link rel="stylesheet" href="{% static 'yourapp/css/homepage.css' %}">
+    <link rel="stylesheet" href="{% static 'yourapp/css/react-components.css' %}">
+    
+    <!-- React 18 -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     
     <style>
         /* Property Detail Specific Styles */
@@ -130,6 +136,91 @@
             margin-bottom: 1rem;
             color: #1a1a1a;
         }
+        
+        /* Guest Details Form Input Styles */
+        .guest-details .booking-form__field {
+            padding: 0;
+            margin-bottom: 0.75rem;
+        }
+        .guest-details .booking-form__field label {
+            margin-bottom: 0.5rem;
+        }
+        .guest-details .booking-form__field label .required {
+            color: #d32f2f;
+            margin-left: 2px;
+        }
+        .guest-details .booking-form__field input.form-control,
+        .guest-details .booking-form__field textarea.form-control {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            font-size: 0.9375rem;
+            color: #1a1a1a;
+            background: #fff;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .guest-details .booking-form__field input.form-control:focus,
+        .guest-details .booking-form__field textarea.form-control:focus {
+            outline: none;
+            border-color: #2E7D32;
+            box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1);
+        }
+        .guest-details .booking-form__field input.form-control::placeholder,
+        .guest-details .booking-form__field textarea.form-control::placeholder {
+            color: #9ca3af;
+        }
+        .company-details .booking-form__field {
+            padding: 0;
+            margin-bottom: 0.75rem;
+        }
+        
+        /* Company Booking Styles */
+        .company-booking-toggle {
+            margin-top: 1rem;
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background: #f0f7f0;
+            border-radius: 8px;
+            border: 1px solid #d4e8d4;
+        }
+        .toggle-label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            font-size: 0.9rem;
+            color: #333;
+        }
+        .toggle-label input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #2E7D32;
+            cursor: pointer;
+        }
+        .toggle-text {
+            font-weight: 500;
+        }
+        .company-details {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px dashed #ccc;
+            animation: fadeIn 0.3s ease;
+        }
+        .company-details h5 {
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: #2E7D32;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .company-details h5::before {
+            content: "🏢";
+            font-size: 1rem;
+        }
+        
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(-10px); }
             to { opacity: 1; transform: translateY(0); }
@@ -309,8 +400,8 @@
         
         .property-layout {
             display: grid;
-            grid-template-columns: 1fr 400px;
-            gap: 3rem;
+            grid-template-columns: 1fr 380px;
+            gap: 2rem;
         }
         
         @media (max-width: 1024px) {
@@ -321,6 +412,11 @@
         
         /* Property Main Content */
         .property-main {
+            min-width: 0;
+        }
+        
+        /* Booking Sidebar */
+        .property-layout > aside {
             min-width: 0;
         }
         
@@ -450,7 +546,7 @@
         }
         
         /* Booking Card (Sidebar) */
-        .booking-card {
+        .property-layout .booking-card {
             position: sticky;
             top: 100px;
             background: white;
@@ -460,8 +556,17 @@
             border: 1px solid #e5e7eb;
             max-height: calc(100vh - 120px);
             overflow-y: auto;
+            overflow-x: hidden;
             scrollbar-width: thin;
             scrollbar-color: #ccc #f1f1f1;
+            min-width: 0;
+            display: block;
+            cursor: default;
+        }
+        
+        .property-layout .booking-card:hover {
+            transform: none;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
         }
 
         .booking-card::-webkit-scrollbar {
@@ -808,38 +913,19 @@
 <body>
     <a href="#main-content" class="skip-link">Skip to main content</a>
     
-    <!-- HEADER -->
-    <header class="header header--static" id="header">
-        <div class="container header__inner">
-            <a href="/" aria-label="{{ site_name }} — Home" class="logo-link">
-                <span class="logo-text">{{ site_name }}</span>
-            </a>
-            
-            <button class="mobile-menu-toggle" aria-label="Toggle menu" aria-expanded="false">
-                <span></span>
-                <span></span>
-                <span></span>
-            </button>
-
-            <nav class="header__nav" id="header-nav">
-                <ul class="nav-list">
-                    <li><a href="/" class="nav-link">Home</a></li>
-                    <li><a href="/properties" class="nav-link active">Properties</a></li>
-                    <li><a href="/about" class="nav-link">About</a></li>
-                    <li><a href="/my-bookings" class="nav-link">My Bookings</a></li>
-                </ul>
-                <div class="header__ctas">
-                    <a href="tel:{{ contact_phone }}" class="btn btn--outline">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-                        <span>{{ contact_phone }}</span>
-                    </a>
-                    <a href="#booking-card" class="btn btn--primary">
-                        Book Now
-                    </a>
-                </div>
-            </nav>
-        </div>
-    </header>
+    <!-- React Header -->
+    <div id="react-header"></div>
+    
+    <!-- Site Data for React -->
+    <script>
+        window.SITE_DATA = {
+            siteName: '{{ site_name|default:"Safe Let Stays" }}',
+            isAuthenticated: {% if user.is_authenticated %}true{% else %}false{% endif %},
+            isStaff: {% if user.is_staff %}true{% else %}false{% endif %},
+            username: '{{ user.username|default:"" }}',
+            activeNav: 'properties'
+        };
+    </script>
     
     <!-- Property Header -->
     <section class="property-header">
@@ -1168,18 +1254,43 @@
                                 </div>
 
                                 <div id="guest-details-form" class="guest-details" style="display: none;">
-                                    <h4>Guest Details</h4>
+                                    <h4>Your Details</h4>
                                     <div class="booking-form__field">
-                                        <label for="guest-name">Full Name</label>
-                                        <input type="text" id="guest-name" name="guest_name" class="form-control">
+                                        <label for="guest-name">Full Name <span class="required">*</span></label>
+                                        <input type="text" id="guest-name" name="guest_name" class="form-control" placeholder="Enter your full name">
                                     </div>
                                     <div class="booking-form__field">
-                                        <label for="guest-email">Email Address</label>
-                                        <input type="email" id="guest-email" name="guest_email" class="form-control">
+                                        <label for="guest-email">Email Address <span class="required">*</span></label>
+                                        <input type="email" id="guest-email" name="guest_email" class="form-control" placeholder="Enter your email address">
                                     </div>
                                     <div class="booking-form__field">
-                                        <label for="guest-phone">Phone Number</label>
-                                        <input type="tel" id="guest-phone" name="guest_phone" class="form-control">
+                                        <label for="guest-phone">Phone Number <span class="required">*</span></label>
+                                        <input type="tel" id="guest-phone" name="guest_phone" class="form-control" placeholder="Enter your phone number">
+                                    </div>
+                                    
+                                    <!-- Company Booking Toggle -->
+                                    <div class="company-booking-toggle">
+                                        <label class="toggle-label">
+                                            <input type="checkbox" id="is-company-booking" name="is_company_booking" onchange="toggleCompanyFields()">
+                                            <span class="toggle-text">Booking for a company?</span>
+                                        </label>
+                                    </div>
+                                    
+                                    <!-- Company Details (hidden by default) -->
+                                    <div id="company-details" class="company-details" style="display: none;">
+                                        <h5>Company Details</h5>
+                                        <div class="booking-form__field">
+                                            <label for="company-name">Company Name <span class="required">*</span></label>
+                                            <input type="text" id="company-name" name="company_name" class="form-control" placeholder="Enter company name">
+                                        </div>
+                                        <div class="booking-form__field">
+                                            <label for="company-address">Company Address <span class="required">*</span></label>
+                                            <textarea id="company-address" name="company_address" class="form-control" rows="2" placeholder="Enter company address for invoice"></textarea>
+                                        </div>
+                                        <div class="booking-form__field">
+                                            <label for="company-vat">VAT Number <span style="color: #888; font-weight: normal;">(optional)</span></label>
+                                            <input type="text" id="company-vat" name="company_vat" class="form-control" placeholder="e.g. GB123456789">
+                                        </div>
                                     </div>
                                 </div>
 
@@ -1204,6 +1315,27 @@
                                     setTimeout(() => {
                                         submitBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                                     }, 100);
+                                }
+                                
+                                function toggleCompanyFields() {
+                                    const checkbox = document.getElementById('is-company-booking');
+                                    const companyDetails = document.getElementById('company-details');
+                                    const companyName = document.getElementById('company-name');
+                                    const companyAddress = document.getElementById('company-address');
+                                    
+                                    if (checkbox.checked) {
+                                        companyDetails.style.display = 'block';
+                                        companyName.required = true;
+                                        companyAddress.required = true;
+                                        // Smooth scroll to show company fields
+                                        setTimeout(() => {
+                                            companyDetails.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                                        }, 100);
+                                    } else {
+                                        companyDetails.style.display = 'none';
+                                        companyName.required = false;
+                                        companyAddress.required = false;
+                                    }
                                 }
                                 </script>
                                 {% else %}
@@ -1291,8 +1423,11 @@
         </div>
     </div>
 
-    <!-- FOOTER -->
-    {% include 'footer.html' %}
+    <!-- React Footer -->
+    <div id="react-footer"></div>
+    
+    <!-- React Components -->
+    <script src="{% static 'yourapp/js/react/components.js' %}"></script>
     
     <!-- Contact Modal -->
     <div class="modal-overlay" id="contact-modal" aria-hidden="true">
