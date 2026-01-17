@@ -2450,3 +2450,220 @@ h1, h2, h3, h4, h5, h6 {
         width: 100%;
     }
 }
+
+/* ============================================================================
+   ENHANCED DARK MODE OVERRIDES
+   ============================================================================ */
+
+/* Helper class for placeholder backgrounds */
+.placeholder-bg {
+    background: var(--bg-off-white);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+@media (prefers-color-scheme: dark) {
+    /* Search Bar */
+    .search-bar {
+        background: var(--bg-card);
+        border-color: var(--border);
+    }
+    
+    .search-bar__group label {
+        color: var(--text-main);
+    }
+    
+    .search-bar__group input,
+    .search-bar__group select {
+        color: var(--text-main);
+    }
+    
+    .search-bar__group input::placeholder,
+    .search-bar__group select::placeholder {
+        color: var(--text-muted);
+    }
+    
+    .search-bar__group input:focus,
+    .search-bar__group select:focus {
+        color: var(--primary-light);
+    }
+    
+    /* Filter Section */
+    .filter-section {
+        background: var(--bg-card);
+        border-bottom-color: var(--border);
+    }
+    
+    .filter-form__group label {
+        color: var(--text-light);
+    }
+    
+    .filter-form__group input,
+    .filter-form__group select {
+        background: var(--input-bg);
+        border-color: var(--input-border);
+        color: var(--input-text);
+    }
+    
+    .filter-form__group input:hover,
+    .filter-form__group select:hover {
+        border-color: var(--primary);
+    }
+    
+    /* Filter Bar */
+    .filter-bar {
+        background: var(--bg-card);
+        border-bottom-color: var(--border);
+    }
+    
+    .filter-select {
+        background: var(--input-bg);
+        border-color: var(--input-border);
+        color: var(--input-text);
+    }
+    
+    /* Properties Listing */
+    .properties-listing {
+        background: var(--bg-main);
+    }
+    
+    /* View Toggle */
+    .view-toggle {
+        background: var(--bg-off-white);
+    }
+    
+    .view-btn.active {
+        background: var(--bg-card);
+    }
+    
+    /* Property Cards */
+    .property-card {
+        background: var(--bg-card);
+        border-color: var(--border);
+    }
+    
+    .property-card:hover {
+        border-color: var(--primary);
+    }
+    
+    .property-card__image {
+        background: var(--bg-off-white);
+    }
+    
+    .property-card__content h3 {
+        color: var(--text-main);
+    }
+    
+    .property-card__content p {
+        color: var(--text-light);
+    }
+    
+    /* No Properties State */
+    .no-properties-wrapper {
+        background: var(--bg-card);
+    }
+    
+    .no-properties-wrapper h3 {
+        color: var(--text-main);
+    }
+    
+    /* Mobile Nav */
+    .header__nav {
+        background: var(--bg-card);
+    }
+    
+    .nav-link {
+        border-bottom-color: var(--border);
+    }
+    
+    .header__ctas .btn--outline {
+        color: var(--text-main);
+        border-color: var(--border);
+    }
+    
+    /* Modal */
+    .modal {
+        background: var(--bg-card);
+    }
+    
+    .modal__header h2 {
+        color: var(--text-main);
+    }
+    
+    .form-group label {
+        color: var(--text-main);
+    }
+    
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        background: var(--input-bg);
+        border-color: var(--input-border);
+        color: var(--input-text);
+    }
+    
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+        background: var(--bg-elevated);
+        border-color: var(--primary);
+    }
+    
+    /* Booking Summary */
+    .booking-summary__content {
+        background: var(--bg-card);
+        color: var(--text-main);
+    }
+    
+    .booking-summary pre {
+        background: var(--bg-off-white);
+    }
+    
+    /* Featured Card */
+    .featured-card {
+        background: var(--bg-card);
+        border-color: var(--border);
+    }
+    
+    .featured-card__content {
+        background: var(--bg-card);
+    }
+    
+    .featured-card__content h3 {
+        color: var(--text-main);
+    }
+    
+    .featured-card__badge {
+        background: rgba(255, 255, 255, 0.15);
+        color: var(--primary-light);
+    }
+    
+    /* Benefit Items */
+    .benefit-item {
+        background: var(--bg-card);
+    }
+    
+    .benefit-item:hover {
+        background: var(--bg-elevated);
+    }
+    
+    .benefit-item h3 {
+        color: var(--text-main);
+    }
+    
+    /* Placeholder Images */
+    .placeholder-image {
+        background: var(--bg-off-white);
+        color: var(--text-light);
+    }
+    
+    /* Date Input Dark Mode Fix */
+    .search-bar__group input[type="date"] {
+        color-scheme: dark;
+    }
+    
+    .filter-form__group input[type="date"] {
+        color-scheme: dark;
+    }
+}
