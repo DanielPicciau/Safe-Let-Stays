@@ -32,6 +32,9 @@ SAFE LET STAYS — REVOLUTIONIZED STYLES
     --overlay-light: rgba(255, 255, 255, 0.95);
     --overlay-dark: rgba(0, 0, 0, 0.5);
     
+    /* White text on dark backgrounds - stays white in all modes */
+    --text-on-dark: #ffffff;
+    
     /* Typography */
     --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     --font-serif: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -92,6 +95,9 @@ SAFE LET STAYS — REVOLUTIONIZED STYLES
         --overlay-light: rgba(30, 30, 30, 0.95);
         --overlay-dark: rgba(0, 0, 0, 0.7);
         
+        /* White text on dark backgrounds - stays white */
+        --text-on-dark: #ffffff;
+        
         /* Shadows - Dark Mode (more subtle) */
         --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
         --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.4), 0 2px 4px -1px rgba(0,0,0,0.3);
@@ -145,15 +151,15 @@ body > footer,
 
 #welcome .section-subtitle {
     background: rgba(255, 255, 255, 0.2);
-    color: var(--white);
+    color: var(--text-on-dark);
 }
 
 #welcome .section-title {
-    color: var(--white);
+    color: var(--text-on-dark);
 }
 
 #welcome .section-desc {
-    color: var(--white);
+    color: var(--text-on-dark);
 }
 
 img {
@@ -373,7 +379,7 @@ h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-serif);
     font-size: 1.5rem;
     font-weight: 700;
-    color: var(--white);
+    color: var(--text-on-dark);
     transition: var(--transition);
 }
 
@@ -593,19 +599,20 @@ h1, h2, h3, h4, h5, h6 {
     font-weight: 500;
     margin-bottom: 1.5rem;
     border: 1px solid rgba(255,255,255,0.2);
+    color: var(--text-on-dark);
 }
 
 .hero h1 {
     font-size: clamp(2.5rem, 6vw, 4.5rem);
     margin-bottom: 1.5rem;
-    color: var(--white);
+    color: var(--text-on-dark);
     letter-spacing: -0.02em;
     text-shadow: 0 2px 10px rgba(0,0,0,0.2);
 }
 
 .hero__subhead {
     font-size: clamp(1.125rem, 2vw, 1.25rem);
-    color: var(--white);
+    color: var(--text-on-dark);
     opacity: 1;
     margin-bottom: 2rem;
     max-width: 600px;
@@ -1721,7 +1728,7 @@ h1, h2, h3, h4, h5, h6 {
 /* Benefits - Dark Theme */
 .benefits-section {
     background-color: transparent;
-    color: var(--white);
+    color: var(--text-on-dark);
     position: relative;
     overflow: hidden;
     z-index: 1;
@@ -1743,15 +1750,15 @@ h1, h2, h3, h4, h5, h6 {
 
 .benefits-section .section-subtitle {
     background: rgba(255, 255, 255, 0.1);
-    color: var(--white);
+    color: var(--text-on-dark);
 }
 
 .benefits-section .section-title {
-    color: var(--white);
+    color: var(--text-on-dark);
 }
 
 .benefits-section .section-desc {
-    color: var(--white);
+    color: var(--text-on-dark);
 }
 
 .benefits-grid {

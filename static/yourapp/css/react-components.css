@@ -1634,7 +1634,7 @@
 .cta-title {
     font-size: clamp(1.875rem, 5vw, 3rem);
     font-weight: 700;
-    color: white;
+    color: #ffffff;
     margin-bottom: 1.5rem;
     line-height: 1.2;
 }
