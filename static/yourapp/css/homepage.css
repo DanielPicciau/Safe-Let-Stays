@@ -77,22 +77,22 @@ SAFE LET STAYS — REVOLUTIONIZED STYLES
         --text-main: #e0e0e0;
         --text-light: #b0b0b0;
         --text-muted: #888;
-        --bg-main: #1a1a1a;
-        --bg-light: #242424;
-        --bg-off-white: #2a2a2a;
-        --bg-card: #242424;
-        --bg-elevated: #2d2d2d;
-        --white: #1a1a1a;
-        --border: #3a3a3a;
-        --border-light: #333333;
+        --bg-main: #101010;
+        --bg-light: #181818;
+        --bg-off-white: #1a1a1a;
+        --bg-card: #181818;
+        --bg-elevated: #1c1c1c;
+        --white: #101010;
+        --border: #2a2a2a;
+        --border-light: #222222;
         
         /* Input/Form colors - Dark Mode */
-        --input-bg: #2a2a2a;
-        --input-border: #3a3a3a;
+        --input-bg: #1a1a1a;
+        --input-border: #2a2a2a;
         --input-text: #e0e0e0;
         
         /* Overlay colors - Dark Mode */
-        --overlay-light: rgba(30, 30, 30, 0.95);
+        --overlay-light: rgba(16, 16, 16, 0.75);
         --overlay-dark: rgba(0, 0, 0, 0.7);
         
         /* White text on dark backgrounds - stays white */
@@ -435,7 +435,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .header__ctas .btn--outline {
-    color: var(--white);
+    color: var(--text-on-dark);
     border-color: rgba(255,255,255,0.3);
 }
 
@@ -489,7 +489,7 @@ h1, h2, h3, h4, h5, h6 {
     display: block;
     width: 100%;
     height: 2px;
-    background-color: var(--white);
+    background-color: var(--text-on-dark);
     position: absolute;
     transition: var(--transition);
 }
@@ -1815,7 +1815,7 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Footer */
 .footer {
-    background: #1a1a1a;
+    background: #101010;
     color: #ffffff;
     padding: 2rem 0;
     border-top: 1px solid rgba(255,255,255,0.05);
@@ -2287,6 +2287,18 @@ h1, h2, h3, h4, h5, h6 {
         height: 100%;
     }
 
+    .hero__layout--centered {
+        gap: 0.75rem;
+        padding-top: 0.5rem;
+    }
+    
+    .hero__content--centered {
+        display: block;
+    }
+    
+    .hero__label {
+        font-size: 0.7rem;
+        padding: 0.35rem 0.7rem;
         margin-bottom: 0.5rem;
     }
     
@@ -2353,9 +2365,11 @@ h1, h2, h3, h4, h5, h6 {
         font-size: 0.9rem;
     }
     
-    /* Top properties section mobile */
+    /* Top properties section mobile - ensure it's above hero elements */
     .top-properties-section {
         padding: 2rem 0 !important;
+        position: relative;
+        z-index: 10;
     }
 
     /* Properties Page Responsive */

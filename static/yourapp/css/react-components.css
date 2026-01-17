@@ -2577,17 +2577,17 @@
     
     /* Mobile modal backgrounds */
     .mobile-search-modal {
-        background: var(--bg-main, #1a1a1a) !important;
+        background: var(--bg-main, #101010) !important;
     }
     
     .mobile-modal-header {
-        background: var(--bg-card, #242424) !important;
-        border-bottom-color: var(--border, #3a3a3a) !important;
+        background: var(--bg-card, #181818) !important;
+        border-bottom-color: var(--border, #2a2a2a) !important;
     }
     
     .mobile-modal-close {
-        background: var(--bg-elevated, #2d2d2d) !important;
-        border-color: var(--border, #3a3a3a) !important;
+        background: var(--bg-elevated, #1c1c1c) !important;
+        border-color: var(--border, #2a2a2a) !important;
     }
     
     .mobile-modal-close svg {
@@ -2606,7 +2606,7 @@
     .mobile-search-card,
     .mobile-guests-card,
     .mobile-dates-card {
-        background: var(--bg-card, #242424) !important;
+        background: var(--bg-card, #181818) !important;
     }
     
     .mobile-search-card h3,
@@ -2625,7 +2625,7 @@
     }
     
     .mobile-location-input-wrapper {
-        background: var(--bg-off-white, #2a2a2a) !important;
+        background: var(--bg-off-white, #1a1a1a) !important;
     }
     
     .mobile-location-input {
@@ -2637,7 +2637,7 @@
     }
     
     .mobile-destination-item:active {
-        background: var(--bg-off-white, #2a2a2a) !important;
+        background: var(--bg-off-white, #1a1a1a) !important;
     }
     
     .mobile-destination-name,
