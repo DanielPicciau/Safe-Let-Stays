@@ -393,9 +393,28 @@ h1, h2, h3, h4, h5, h6 {
    DESKTOP DOCKED SEARCH - Compact search button in header
    ========================================================================== */
 
-/* Hidden by default */
+/* Hidden by default - ONLY show when header has search-docked class on desktop */
 .header__desktop-docked-search {
-    display: none;
+    display: none !important;
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* Show on desktop when scrolled past search */
+.header.search-docked .header__desktop-docked-search {
+    display: block !important;
+    visibility: visible;
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* Hide on mobile always */
+@media (max-width: 768px) {
+    .header__desktop-docked-search,
+    .header.search-docked .header__desktop-docked-search {
+        display: none !important;
+    }
 }
 
 .desktop-docked-search-btn {
@@ -444,13 +463,6 @@ h1, h2, h3, h4, h5, h6 {
     height: 14px;
 }
 
-@media (min-width: 769px) {
-    /* Show desktop docked search when scrolled past hero */
-    .header.search-docked .header__desktop-docked-search {
-        display: block;
-    }
-}
-
 /* ==========================================================================
    DESKTOP: No morphing animation - header stays normal
    ========================================================================== */
@@ -483,22 +495,21 @@ h1, h2, h3, h4, h5, h6 {
         pointer-events: auto;
         transition: opacity 0.4s ease 0.2s, transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s;
     }
-    }
 }
 
 /* ============================================================================
    MOBILE DOCKED SEARCH IN HEADER
    ============================================================================ */
 
-/* Hidden by default */
+/* Hidden by default on all screen sizes */
 .header__mobile-search {
-    display: none;
+    display: none !important;
 }
 
 @media (max-width: 768px) {
-    /* Mobile docked search button - FULL SIZE, DARK MODE */
+    /* Base styles for mobile search button - hidden until docked */
     .header__mobile-search {
-        display: flex;
+        display: none !important;
         align-items: center;
         gap: 1rem;
         padding: 1rem 1.25rem;
@@ -509,9 +520,6 @@ h1, h2, h3, h4, h5, h6 {
         font-weight: 600;
         color: #ffffff;
         cursor: pointer;
-        opacity: 0;
-        pointer-events: none;
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         position: absolute;
         left: 50%;
         top: 50%;
@@ -522,6 +530,9 @@ h1, h2, h3, h4, h5, h6 {
         box-shadow: 0 4px 20px rgba(0,0,0,0.3);
         z-index: 10;
         text-align: left;
+        opacity: 0;
+        pointer-events: none;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     }
     
     .header__mobile-search svg {
@@ -538,6 +549,7 @@ h1, h2, h3, h4, h5, h6 {
     
     /* Show mobile search when docked */
     .header.search-docked .header__mobile-search {
+        display: flex !important;
         opacity: 1;
         transform: translate(-50%, -50%) scale(1);
         pointer-events: auto;
