@@ -150,6 +150,7 @@ const Header = ({ activePage }) => {
     const [menuOpen, setMenuOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
     const [searchDocked, setSearchDocked] = useState(false);
+    const [searchSummary, setSearchSummary] = useState('Where to?');
     const siteData = useSiteData();
 
     useEffect(() => {
@@ -164,10 +165,19 @@ const Header = ({ activePage }) => {
     useEffect(() => {
         const handleSearchDock = (e) => {
             setSearchDocked(e.detail.docked);
+            if (e.detail.summary) {
+                setSearchSummary(e.detail.summary);
+            }
         };
         window.addEventListener('searchDockChange', handleSearchDock);
         return () => window.removeEventListener('searchDockChange', handleSearchDock);
     }, []);
+
+    // Handle click on mobile docked search
+    const handleMobileDockedSearchClick = () => {
+        // Dispatch event to open the mobile search modal
+        window.dispatchEvent(new CustomEvent('openMobileSearch'));
+    };
 
     const navLinks = [
         { href: '/', label: 'Home', key: 'home' },
@@ -192,6 +202,16 @@ const Header = ({ activePage }) => {
                 <a href="/" aria-label={`${siteData.siteName} — Home`} className="logo-link">
                     <span className="logo-text">{siteData.siteName}</span>
                 </a>
+                
+                {/* Mobile Docked Search - appears in center when scrolled on mobile */}
+                <button 
+                    className="header__mobile-search"
+                    onClick={handleMobileDockedSearchClick}
+                    aria-label="Search"
+                >
+                    <Icons.Search />
+                    <span>{searchSummary}</span>
+                </button>
                 
                 <button 
                     className={`mobile-menu-toggle ${menuOpen ? 'active' : ''}`}

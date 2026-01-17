@@ -383,7 +383,7 @@ h1, h2, h3, h4, h5, h6 {
     color: var(--secondary);
 }
 
-/* Hide nav items when search is docked */
+/* Hide nav items when search is docked (desktop) */
 .header.search-docked .nav-list,
 .header.search-docked .header__ctas {
     opacity: 0;
@@ -402,6 +402,88 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* ============================================================================
+   MOBILE DOCKED SEARCH IN HEADER
+   ============================================================================ */
+
+/* Hidden by default */
+.header__mobile-search {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    /* Mobile docked search button */
+    .header__mobile-search {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        background: rgba(255, 255, 255, 0.9);
+        border: 1px solid var(--border, #e5e7eb);
+        border-radius: 24px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--text-main, #1a1a1a);
+        cursor: pointer;
+        opacity: 0;
+        transform: scale(0.9);
+        pointer-events: none;
+        transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%) scale(0.9);
+        white-space: nowrap;
+        max-width: 200px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .header__mobile-search svg {
+        width: 16px;
+        height: 16px;
+        flex-shrink: 0;
+        color: var(--primary, #2E7D32);
+    }
+    
+    .header__mobile-search span {
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    /* Show mobile search when docked */
+    .header.search-docked .header__mobile-search {
+        opacity: 1;
+        transform: translateX(-50%) scale(1);
+        pointer-events: auto;
+    }
+    
+    .header.search-docked .header__mobile-search:active {
+        transform: translateX(-50%) scale(0.95);
+    }
+    
+    /* Logo shifts left when docked */
+    .header.search-docked .logo-link {
+        transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .header.search-docked .logo-text {
+        font-size: 1.125rem;
+    }
+    
+    /* Menu toggle shifts right when docked - already on the right, just ensure spacing */
+    .header.search-docked .mobile-menu-toggle {
+        transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    /* Hide the original mobile search trigger when docked */
+    .hero__search-wrapper.search-docked .mobile-search-trigger {
+        opacity: 0;
+        transform: scale(0.9) translateY(-10px);
+        pointer-events: none;
+        transition: all 0.35s ease;
+    }
+}
+
+/* ============================================================================
    END SEARCH MORPHING STATE
    ============================================================================ */
 
@@ -409,6 +491,7 @@ h1, h2, h3, h4, h5, h6 {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    position: relative;
 }
 
 .logo-text {

@@ -1786,7 +1786,7 @@
    ============================================================================ */
 
 .airbnb-search {
-    background: var(--bg-card, white);
+    background: rgba(255, 255, 255, 0.9);
     border-radius: 32px;
     box-shadow: 0 6px 20px rgba(0,0,0,0.2);
     width: 100%;
@@ -1794,6 +1794,14 @@
     margin: 0 auto;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     overflow: hidden;
+}
+
+/* Ensure text stays fully opaque */
+.airbnb-search,
+.airbnb-search .airbnb-field-input,
+.airbnb-search .airbnb-field-label,
+.airbnb-search .airbnb-search-submit span {
+    color: inherit;
 }
 
 .airbnb-search.expanded {
@@ -2155,7 +2163,7 @@
         gap: 1rem;
         width: 100%;
         padding: 1rem 1.25rem;
-        background: var(--bg-card, white);
+        background: rgba(255, 255, 255, 0.9);
         border-radius: 32px;
         box-shadow: 0 4px 16px rgba(0,0,0,0.12);
         border: 1px solid var(--border, #e0e0e0);
