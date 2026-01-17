@@ -4,6 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#1a1a2e" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#121212" media="(prefers-color-scheme: dark)">
+    <meta name="color-scheme" content="light dark">
     <title>Payment Cancelled | {{ site_name }}</title>
     <link rel="stylesheet" href="{% static 'yourapp/css/homepage.css' %}">
     <link rel="stylesheet" href="{% static 'yourapp/css/react-components.css' %}">
@@ -19,23 +22,24 @@
             margin: 120px auto 60px;
             text-align: center;
             padding: 40px;
-            background: #fff;
+            background: var(--bg-card, #fff);
             border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            box-shadow: var(--shadow-lg, 0 4px 12px rgba(0,0,0,0.1));
+            border: 1px solid var(--border, transparent);
         }
         .cancel-icon {
-            color: #d32f2f;
+            color: #ef5350;
             font-size: 64px;
             margin-bottom: 20px;
         }
         .cancel-title {
             font-size: 32px;
             margin-bottom: 16px;
-            color: #333;
+            color: var(--text-main, #333);
         }
         .cancel-message {
             font-size: 18px;
-            color: #666;
+            color: var(--text-light, #666);
             margin-bottom: 32px;
             line-height: 1.5;
         }

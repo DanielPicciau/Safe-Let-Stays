@@ -4,6 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#1a1a2e" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#121212" media="(prefers-color-scheme: dark)">
+    <meta name="color-scheme" content="light dark">
     <title>{{ property.title }} | {{ site_name }} — Sheffield Accommodation</title>
     <meta name="description" content="{{ property.short_description }}">
     
@@ -26,7 +29,7 @@
         .property-header {
             padding-top: 120px;
             padding-bottom: 2rem;
-            background: #f8f9fa;
+            background: var(--bg-light, #f8f9fa);
         }
         
         .property-breadcrumb {
@@ -35,21 +38,21 @@
             gap: 0.5rem;
             font-size: 0.875rem;
             margin-bottom: 1rem;
-            color: #666;
+            color: var(--text-light, #666);
         }
         
         .property-breadcrumb a {
-            color: #666;
+            color: var(--text-light, #666);
             text-decoration: none;
             transition: color 0.2s;
         }
         
         .property-breadcrumb a:hover {
-            color: #2E7D32;
+            color: var(--primary, #2E7D32);
         }
         
         .property-breadcrumb svg {
-            color: #999;
+            color: var(--text-muted, #999);
         }
         
         .property-title-row {
@@ -63,7 +66,7 @@
         .property-title-info h1 {
             font-size: clamp(1.75rem, 3vw, 2.5rem);
             font-weight: 700;
-            color: #1a1a1a;
+            color: var(--text-main, #1a1a1a);
             margin-bottom: 0.5rem;
         }
         
@@ -71,12 +74,12 @@
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            color: #666;
+            color: var(--text-light, #666);
             font-size: 1rem;
         }
         
         .property-title-location svg {
-            color: #2E7D32;
+            color: var(--primary, #2E7D32);
         }
         
         .property-actions {
@@ -90,32 +93,32 @@
             gap: 0.5rem;
             padding: 0.625rem 1rem;
             border-radius: 8px;
-            background: white;
-            border: 1px solid #e5e7eb;
+            background: var(--bg-card, white);
+            border: 1px solid var(--border, #e5e7eb);
             cursor: pointer;
             font-size: 0.875rem;
             font-weight: 500;
-            color: #1a1a1a;
+            color: var(--text-main, #1a1a1a);
             transition: all 0.2s;
         }
         
         .property-action-btn:hover {
-            border-color: #2E7D32;
-            color: #2E7D32;
+            border-color: var(--primary, #2E7D32);
+            color: var(--primary, #2E7D32);
         }
         
         /* Guest Checkout Styles */
         .guest-options {
-            background: #f8f9fa;
+            background: var(--bg-light, #f8f9fa);
             padding: 1rem;
             border-radius: 8px;
             margin-bottom: 1rem;
             text-align: center;
-            border: 1px solid #e5e7eb;
+            border: 1px solid var(--border, #e5e7eb);
         }
         .guest-prompt {
             font-size: 0.9rem;
-            color: #666;
+            color: var(--text-light, #666);
             margin-bottom: 0.75rem;
         }
         .guest-buttons {
@@ -127,14 +130,14 @@
         .guest-details {
             margin-top: 1rem;
             padding-top: 1rem;
-            border-top: 1px solid #eee;
+            border-top: 1px solid var(--border-light, #eee);
             animation: fadeIn 0.3s ease;
         }
         .guest-details h4 {
             font-size: 1rem;
             font-weight: 600;
             margin-bottom: 1rem;
-            color: #1a1a1a;
+            color: var(--text-main, #1a1a1a);
         }
         
         /* Guest Details Form Input Styles */
@@ -154,21 +157,21 @@
             width: 100%;
             padding: 0.75rem 1rem;
             font-size: 0.9375rem;
-            color: #1a1a1a;
-            background: #fff;
-            border: 1px solid #d1d5db;
+            color: var(--input-text, #1a1a1a);
+            background: var(--input-bg, #fff);
+            border: 1px solid var(--input-border, #d1d5db);
             border-radius: 8px;
             transition: border-color 0.2s, box-shadow 0.2s;
         }
         .guest-details .booking-form__field input.form-control:focus,
         .guest-details .booking-form__field textarea.form-control:focus {
             outline: none;
-            border-color: #2E7D32;
+            border-color: var(--primary, #2E7D32);
             box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1);
         }
         .guest-details .booking-form__field input.form-control::placeholder,
         .guest-details .booking-form__field textarea.form-control::placeholder {
-            color: #9ca3af;
+            color: var(--text-muted, #9ca3af);
         }
         .company-details .booking-form__field {
             padding: 0;
@@ -180,9 +183,9 @@
             margin-top: 1rem;
             margin-bottom: 1rem;
             padding: 0.75rem;
-            background: #f0f7f0;
+            background: rgba(46, 125, 50, 0.08);
             border-radius: 8px;
-            border: 1px solid #d4e8d4;
+            border: 1px solid rgba(46, 125, 50, 0.2);
         }
         .toggle-label {
             display: flex;
@@ -190,13 +193,23 @@
             gap: 0.5rem;
             cursor: pointer;
             font-size: 0.9rem;
-            color: #333;
+            color: var(--text-main, #333);
         }
         .toggle-label input[type="checkbox"] {
             width: 18px;
             height: 18px;
-            accent-color: #2E7D32;
+            accent-color: var(--primary, #2E7D32);
             cursor: pointer;
+        }
+        
+        @media (prefers-color-scheme: dark) {
+            .guest-details .booking-form__field input.form-control:focus,
+            .guest-details .booking-form__field textarea.form-control:focus {
+                box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2);
+            }
+            .guest-details .booking-form__field label .required {
+                color: #f87171;
+            }
         }
         .toggle-text {
             font-weight: 500;

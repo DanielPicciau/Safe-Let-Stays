@@ -4,6 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light dark">
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff">
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#1a1a1a">
     <title>Sign Up | {{ site_name }}</title>
     <link rel="stylesheet" href="{% static 'yourapp/css/homepage.css' %}">
     <link rel="stylesheet" href="{% static 'yourapp/css/react-components.css' %}">
@@ -228,6 +231,33 @@
         /* Hidden checkbox */
         #id_is_business_account {
             display: none;
+        }
+        
+        /* Dark mode */
+        @media (prefers-color-scheme: dark) {
+            .login-card {
+                background: var(--bg-card);
+                border-color: var(--border);
+            }
+            .form-input {
+                background: var(--bg-elevated);
+                border-color: var(--border);
+                color: var(--text-main);
+            }
+            .form-input:focus {
+                background: var(--bg-elevated);
+                border-color: var(--primary);
+            }
+            .form-input::placeholder {
+                color: var(--text-muted);
+            }
+            .error-list {
+                background: rgba(244, 67, 54, 0.15);
+                color: #ff6b6b;
+            }
+            .account-type-toggle {
+                background: var(--bg-elevated);
+            }
         }
     </style>
 </head>

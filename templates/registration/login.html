@@ -4,6 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#1a1a2e" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#121212" media="(prefers-color-scheme: dark)">
+    <meta name="color-scheme" content="light dark">
     <title>Login | {{ site_name }}</title>
     <link rel="stylesheet" href="{% static 'yourapp/css/homepage.css' %}">
     <link rel="stylesheet" href="{% static 'yourapp/css/react-components.css' %}">
@@ -76,6 +79,13 @@
             position: relative;
         }
         
+        @media (prefers-color-scheme: dark) {
+            .login-card {
+                background: rgba(36, 36, 36, 0.95);
+                border-color: rgba(255, 255, 255, 0.1);
+            }
+        }
+        
         .login-card.expanded {
             max-width: 550px;
         }
@@ -123,14 +133,25 @@
             border-radius: var(--radius-md);
             font-size: 1rem;
             transition: var(--transition);
-            background-color: rgba(255, 255, 255, 0.8);
+            background-color: var(--input-bg, rgba(255, 255, 255, 0.8));
+            color: var(--input-text, inherit);
             box-sizing: border-box;
         }
         .form-group input:focus, .form-group select:focus {
             outline: none;
             border-color: var(--primary);
             box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1);
-            background-color: var(--white);
+            background-color: var(--input-bg, var(--white));
+        }
+        
+        @media (prefers-color-scheme: dark) {
+            .form-group input, .form-group select {
+                background-color: var(--input-bg, #2a2a2a);
+                border-color: var(--border, #3a3a3a);
+            }
+            .form-group input:focus, .form-group select:focus {
+                box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2);
+            }
         }
         .btn-block {
             width: 100%;
@@ -158,6 +179,14 @@
             background: #ffebee;
             border-radius: var(--radius-md);
             border: 1px solid #ffcdd2;
+        }
+        
+        @media (prefers-color-scheme: dark) {
+            .error-list {
+                background: #3d2020;
+                border-color: #5c2020;
+                color: #f87171;
+            }
         }
         
         .auth-switch {

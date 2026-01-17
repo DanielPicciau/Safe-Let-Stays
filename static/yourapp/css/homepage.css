@@ -5,7 +5,7 @@ SAFE LET STAYS — REVOLUTIONIZED STYLES
 */
 
 :root {
-    /* Colors */
+    /* Colors - Light Mode (Default) */
     --primary: #2E7D32;
     --primary-dark: #1B5E20;
     --primary-light: #4CAF50;
@@ -13,10 +13,24 @@ SAFE LET STAYS — REVOLUTIONIZED STYLES
     --secondary: #1a1a1a;
     --text-main: #1a1a1a;
     --text-light: #555;
+    --text-muted: #888;
+    --bg-main: #ffffff;
     --bg-light: #f8f9fa;
     --bg-off-white: #f3f4f6;
+    --bg-card: #ffffff;
+    --bg-elevated: #ffffff;
     --white: #ffffff;
     --border: #e5e7eb;
+    --border-light: #f0f0f0;
+    
+    /* Input/Form colors */
+    --input-bg: #ffffff;
+    --input-border: #e5e7eb;
+    --input-text: #1a1a1a;
+    
+    /* Overlay colors */
+    --overlay-light: rgba(255, 255, 255, 0.95);
+    --overlay-dark: rgba(0, 0, 0, 0.5);
     
     /* Typography */
     --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -31,7 +45,7 @@ SAFE LET STAYS — REVOLUTIONIZED STYLES
     --radius-xl: 14px;
     --radius-full: 9999px;
     
-    /* Shadows */
+    /* Shadows - Light Mode */
     --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
     --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
     --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
@@ -41,6 +55,50 @@ SAFE LET STAYS — REVOLUTIONIZED STYLES
     /* Transitions */
     --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     --transition-bounce: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    
+    /* Color scheme hint for form controls */
+    color-scheme: light dark;
+}
+
+/* ============================================================================
+   DARK MODE - Automatic based on device preference
+   ============================================================================ */
+@media (prefers-color-scheme: dark) {
+    :root {
+        /* Colors - Dark Mode */
+        --primary: #4CAF50;
+        --primary-dark: #2E7D32;
+        --primary-light: #81C784;
+        --primary-darker: #1B5E20;
+        --secondary: #e0e0e0;
+        --text-main: #e0e0e0;
+        --text-light: #b0b0b0;
+        --text-muted: #888;
+        --bg-main: #1a1a1a;
+        --bg-light: #242424;
+        --bg-off-white: #2a2a2a;
+        --bg-card: #242424;
+        --bg-elevated: #2d2d2d;
+        --white: #1a1a1a;
+        --border: #3a3a3a;
+        --border-light: #333333;
+        
+        /* Input/Form colors - Dark Mode */
+        --input-bg: #2a2a2a;
+        --input-border: #3a3a3a;
+        --input-text: #e0e0e0;
+        
+        /* Overlay colors - Dark Mode */
+        --overlay-light: rgba(30, 30, 30, 0.95);
+        --overlay-dark: rgba(0, 0, 0, 0.7);
+        
+        /* Shadows - Dark Mode (more subtle) */
+        --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
+        --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.4), 0 2px 4px -1px rgba(0,0,0,0.3);
+        --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.4), 0 4px 6px -2px rgba(0,0,0,0.3);
+        --shadow-xl: 0 20px 25px -5px rgba(0,0,0,0.4), 0 10px 10px -5px rgba(0,0,0,0.3);
+        --shadow-inner: inset 0 2px 4px 0 rgba(0, 0, 0, 0.3);
+    }
 }
 
 /* Reset & Base */
@@ -75,7 +133,7 @@ body > footer,
 #react-footer {
     position: relative;
     z-index: 2;
-    background-color: var(--white);
+    background-color: var(--bg-main);
 }
 
 /* Welcome section - transparent to show video behind */
@@ -167,7 +225,7 @@ button, input, select, textarea {
 #main-content {
     position: relative;
     z-index: 2;
-    background-color: var(--white);
+    background-color: var(--bg-main);
 }
 
 /* Typography */
@@ -298,7 +356,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .header.scrolled {
-    background: rgba(255, 255, 255, 0.95);
+    background: var(--overlay-light);
     backdrop-filter: blur(12px);
     padding: 1rem 0;
     padding-top: calc(1rem + env(safe-area-inset-top));
@@ -558,7 +616,7 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Search Bar */
 .search-bar {
-    background: rgba(255, 255, 255, 0.98);
+    background: var(--bg-card);
     backdrop-filter: blur(10px);
     padding: 2rem;
     border-radius: var(--radius-lg);
@@ -568,7 +626,7 @@ h1, h2, h3, h4, h5, h6 {
     box-shadow: var(--shadow-xl);
     width: 100%;
     margin: 0;
-    border: 1px solid rgba(255,255,255,0.5);
+    border: 1px solid var(--border);
 }
 
 .search-bar__group {
@@ -697,7 +755,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .booking-summary__content {
-    background: var(--white);
+    background: var(--bg-card);
     padding: 1.5rem;
     border-radius: var(--radius-md);
     box-shadow: var(--shadow-lg);
@@ -725,7 +783,7 @@ h1, h2, h3, h4, h5, h6 {
     padding: 4rem 0;
     position: relative;
     z-index: 1;
-    background-color: var(--white);
+    background-color: var(--bg-main);
 }
 
 .section-header {
@@ -737,7 +795,13 @@ h1, h2, h3, h4, h5, h6 {
 .featured-section {
     position: relative;
     overflow: hidden;
-    background: linear-gradient(to bottom, #f0fdf4 0%, #ffffff 100%);
+    background: linear-gradient(to bottom, var(--bg-light) 0%, var(--bg-main) 100%);
+}
+
+@media (prefers-color-scheme: dark) {
+    .featured-section {
+        background: linear-gradient(to bottom, var(--bg-off-white) 0%, var(--bg-main) 100%);
+    }
 }
 
 /* Decorative background blob */
@@ -748,7 +812,7 @@ h1, h2, h3, h4, h5, h6 {
     right: -10%;
     width: 600px;
     height: 600px;
-    background: radial-gradient(circle, rgba(46, 125, 50, 0.08) 0%, rgba(255,255,255,0) 70%);
+    background: radial-gradient(circle, rgba(46, 125, 50, 0.08) 0%, transparent 70%);
     z-index: 0;
     pointer-events: none;
 }
@@ -758,11 +822,11 @@ h1, h2, h3, h4, h5, h6 {
     z-index: 1;
     display: grid;
     grid-template-columns: 1.2fr 0.8fr;
-    background: var(--white);
+    background: var(--bg-card);
     border-radius: var(--radius-xl);
     overflow: hidden;
     box-shadow: var(--shadow-xl);
-    border: 1px solid rgba(46, 125, 50, 0.1);
+    border: 1px solid var(--border);
 }
 
 .featured-card__image {
@@ -778,8 +842,8 @@ h1, h2, h3, h4, h5, h6 {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #e0e0e0;
-    color: #757575;
+    background: var(--bg-off-white);
+    color: var(--text-light);
     font-weight: 500;
     transition: transform 0.8s ease;
 }
@@ -809,7 +873,7 @@ h1, h2, h3, h4, h5, h6 {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    background: var(--white);
+    background: var(--bg-card);
 }
 
 .featured-card__content h3 {
@@ -1744,12 +1808,19 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Footer */
 .footer {
-    background: var(--secondary);
-    color: var(--white);
+    background: #1a1a1a;
+    color: #ffffff;
     padding: 2rem 0;
     border-top: 1px solid rgba(255,255,255,0.05);
     position: relative;
     z-index: 1;
+}
+
+@media (prefers-color-scheme: dark) {
+    .footer {
+        background: #121212;
+        border-top: 1px solid rgba(255,255,255,0.1);
+    }
 }
 
 .footer__inner {
@@ -1768,7 +1839,7 @@ h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-serif);
     font-size: 1.5rem;
     font-weight: 700;
-    color: var(--white);
+    color: #ffffff;
 }
 
 .footer__mobile-actions {

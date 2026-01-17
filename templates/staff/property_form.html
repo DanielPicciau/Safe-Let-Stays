@@ -4,6 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#1a1a2e" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#121212" media="(prefers-color-scheme: dark)">
+    <meta name="color-scheme" content="light dark">
     <title>{{ title }} — Safe Let Stays</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -14,9 +17,34 @@
             --danger: #dc3545;
             --text-main: #1a1a1a;
             --text-light: #666;
+            --bg-main: #ffffff;
             --bg-light: #f8f9fa;
+            --bg-card: #ffffff;
             --border: #e5e7eb;
             --white: #ffffff;
+            --input-bg: #ffffff;
+            --input-border: #e5e7eb;
+            --input-text: #1a1a1a;
+            color-scheme: light dark;
+        }
+        
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --primary: #4CAF50;
+                --primary-dark: #2E7D32;
+                --primary-light: #81C784;
+                --danger: #ef5350;
+                --text-main: #e0e0e0;
+                --text-light: #b0b0b0;
+                --bg-main: #1a1a1a;
+                --bg-light: #242424;
+                --bg-card: #2a2a2a;
+                --border: #3a3a3a;
+                --white: #1a1a1a;
+                --input-bg: #2a2a2a;
+                --input-border: #3a3a3a;
+                --input-text: #e0e0e0;
+            }
         }
         
         * {
@@ -40,10 +68,16 @@
             top: 0;
             bottom: 0;
             width: 260px;
-            background: var(--text-main);
-            color: var(--white);
+            background: #1a1a1a;
+            color: #ffffff;
             padding: 2rem 0;
             overflow-y: auto;
+        }
+        
+        @media (prefers-color-scheme: dark) {
+            .sidebar {
+                background: #121212;
+            }
         }
         
         .sidebar__logo {
@@ -55,7 +89,7 @@
         .sidebar__logo h2 {
             font-size: 1.25rem;
             font-weight: 700;
-            color: var(--white);
+            color: #ffffff;
         }
         
         .sidebar__logo span {

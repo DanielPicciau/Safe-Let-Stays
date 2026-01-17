@@ -4,6 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#1a1a2e" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#121212" media="(prefers-color-scheme: dark)">
+    <meta name="color-scheme" content="light dark">
     <title>Booking Confirmed | {{ site_name }}</title>
     <link rel="stylesheet" href="{% static 'yourapp/css/homepage.css' %}">
     <link rel="stylesheet" href="{% static 'yourapp/css/react-components.css' %}">
@@ -27,24 +30,24 @@
             padding: 120px 20px 60px;
         }
         .debug-error {
-            background-color: #ffebee;
-            color: #c62828;
+            background-color: rgba(198, 40, 40, 0.15);
+            color: #ef5350;
             padding: 15px;
             border-radius: 8px;
             margin-bottom: 20px;
             max-width: 600px;
             text-align: center;
-            border: 1px solid #ef9a9a;
+            border: 1px solid rgba(198, 40, 40, 0.3);
         }
         .debug-success {
-            background-color: #e8f5e9;
-            color: #2e7d32;
+            background-color: rgba(46, 125, 50, 0.15);
+            color: var(--primary);
             padding: 15px;
             border-radius: 8px;
             margin-bottom: 20px;
             max-width: 600px;
             text-align: center;
-            border: 1px solid #a5d6a7;
+            border: 1px solid rgba(46, 125, 50, 0.3);
         }
 
         .success-card {
@@ -79,7 +82,7 @@
         .success-icon-wrapper {
             width: 80px;
             height: 80px;
-            background: #e8f5e9;
+            background: rgba(46, 125, 50, 0.15);
             border-radius: 50%;
             display: flex;
             align-items: center;
