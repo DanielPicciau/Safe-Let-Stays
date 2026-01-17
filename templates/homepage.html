@@ -1108,10 +1108,19 @@ SAFE LET STAYS — HOMEPAGE TEMPLATE (REACT INTEGRATED)
                         </div>
                     </div>, document.body)}
                     
-                    {/* Desktop Search */}
+                    {/* Desktop Search - This is the ONLY search bar, it morphs into navbar when scrolled */}
                     <div 
                         className={`airbnb-search desktop-search ${isExpanded ? 'expanded' : ''} ${isDocked ? 'is-docked' : ''}`} 
                         ref={formRef}
+                        onClick={(e) => {
+                            // When docked and clicked, scroll back up to undock
+                            if (isDocked) {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                window.scrollTo({ top: 0, behavior: 'smooth' });
+                            }
+                        }}
+                        style={isDocked ? { cursor: 'pointer' } : {}}
                     >
                         {/* Main Search Bar */}
                         <div className="airbnb-search-bar">
@@ -1119,7 +1128,10 @@ SAFE LET STAYS — HOMEPAGE TEMPLATE (REACT INTEGRATED)
                             <button
                                 type="button"
                                 className={`airbnb-field ${activePanel === 'location' ? 'active' : ''}`}
-                                onClick={() => setActivePanel(activePanel === 'location' ? null : 'location')}
+                                onClick={(e) => {
+                                    if (isDocked) { e.stopPropagation(); return; }
+                                    setActivePanel(activePanel === 'location' ? null : 'location');
+                                }}
                             >
                                 <span className="airbnb-field-label">Where</span>
                                 <span className="airbnb-field-value">
@@ -1133,7 +1145,10 @@ SAFE LET STAYS — HOMEPAGE TEMPLATE (REACT INTEGRATED)
                             <button
                                 type="button"
                                 className={`airbnb-field ${activePanel === 'dates' ? 'active' : ''}`}
-                                onClick={() => setActivePanel(activePanel === 'dates' ? null : 'dates')}
+                                onClick={(e) => {
+                                    if (isDocked) { e.stopPropagation(); return; }
+                                    setActivePanel(activePanel === 'dates' ? null : 'dates');
+                                }}
                             >
                                 <span className="airbnb-field-label">When</span>
                                 <span className="airbnb-field-value">
@@ -1151,7 +1166,10 @@ SAFE LET STAYS — HOMEPAGE TEMPLATE (REACT INTEGRATED)
                         <button
                             type="button"
                             className={`airbnb-field ${activePanel === 'guests' ? 'active' : ''}`}
-                            onClick={() => setActivePanel(activePanel === 'guests' ? null : 'guests')}
+                            onClick={(e) => {
+                                if (isDocked) { e.stopPropagation(); return; }
+                                setActivePanel(activePanel === 'guests' ? null : 'guests');
+                            }}
                         >
                             <span className="airbnb-field-label">Who</span>
                             <span className="airbnb-field-value">
@@ -1164,7 +1182,10 @@ SAFE LET STAYS — HOMEPAGE TEMPLATE (REACT INTEGRATED)
                         </button>
                         
                         {/* Search Button */}
-                            <button type="button" onClick={handleSearch} className="airbnb-search-btn">
+                            <button type="button" onClick={(e) => {
+                                if (isDocked) { e.stopPropagation(); return; }
+                                handleSearch();
+                            }} className="airbnb-search-btn">
                                 <SearchIcon />
                                 <span className="airbnb-search-btn-text">Search</span>
                             </button>
