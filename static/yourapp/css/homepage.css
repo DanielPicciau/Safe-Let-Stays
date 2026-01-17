@@ -383,36 +383,73 @@ h1, h2, h3, h4, h5, h6 {
     color: var(--secondary);
 }
 
-/* Hide nav items when search is docked (desktop) - slide up and fade out */
+/* ==========================================================================
+   DESKTOP: All navbar content slides UP and fades to 0%
+   ========================================================================== */
 @media (min-width: 769px) {
-    .header.search-docked .nav-list,
-    .header.search-docked .header__ctas {
+    /* Logo slides up and fades */
+    .header.search-docked .logo-link {
         opacity: 0;
-        transform: translateY(-30px);
+        transform: translateY(-25px);
         pointer-events: none;
-        transition: opacity 0.3s ease, transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: 
+            opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+            transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     }
     
-    /* Also hide logo on desktop when docked so only search bar is visible */
+    .header:not(.search-docked) .logo-link {
+        opacity: 1;
+        transform: translateY(0);
+        pointer-events: auto;
+        transition: 
+            opacity 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s,
+            transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s;
+    }
+    
+    /* Navigation slides up and fades */
     .header.search-docked .header__nav {
         opacity: 0;
-        transform: translateY(-30px);
+        transform: translateY(-25px);
         pointer-events: none;
-        transition: opacity 0.3s ease, transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: 
+            opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+            transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     }
     
-    /* Restore nav when search is not docked */
-    .header:not(.search-docked) .nav-list,
-    .header:not(.search-docked) .header__ctas,
     .header:not(.search-docked) .header__nav {
         opacity: 1;
         transform: translateY(0);
         pointer-events: auto;
-        transition: opacity 0.4s ease 0.25s, transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.25s;
+        transition: 
+            opacity 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.25s,
+            transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) 0.25s;
+    }
+    
+    /* Nav list and CTAs for extra specificity */
+    .header.search-docked .nav-list,
+    .header.search-docked .header__ctas {
+        opacity: 0;
+        transform: translateY(-25px);
+        pointer-events: none;
+        transition: 
+            opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+            transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .header:not(.search-docked) .nav-list,
+    .header:not(.search-docked) .header__ctas {
+        opacity: 1;
+        transform: translateY(0);
+        pointer-events: auto;
+        transition: 
+            opacity 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.25s,
+            transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) 0.25s;
     }
 }
 
-/* Mobile: Keep logo and hamburger visible */
+/* ==========================================================================
+   MOBILE: Keep separate behavior
+   ========================================================================== */
 @media (max-width: 768px) {
     .header.search-docked .nav-list,
     .header.search-docked .header__ctas {
@@ -428,6 +465,7 @@ h1, h2, h3, h4, h5, h6 {
         transform: translateY(0);
         pointer-events: auto;
         transition: opacity 0.4s ease 0.2s, transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s;
+    }
     }
 }
 
