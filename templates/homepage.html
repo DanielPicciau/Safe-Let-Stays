@@ -215,8 +215,26 @@ SAFE LET STAYS — HOMEPAGE TEMPLATE (REACT INTEGRATED)
     
     <script>
         // Parse JSON data from script tags (safer than |safe filter)
-        window.DESTINATIONS = JSON.parse(document.getElementById('destinations-data').textContent);
-        window.RECENT_SEARCHES = JSON.parse(document.getElementById('recent-searches-data').textContent);
+        // Use try-catch and defaults in case data is missing or invalid
+        try {
+            var destEl = document.getElementById('destinations-data');
+            window.DESTINATIONS = destEl ? JSON.parse(destEl.textContent) : [];
+        } catch(e) {
+            console.warn('Failed to parse destinations:', e);
+            window.DESTINATIONS = [];
+        }
+        
+        try {
+            var searchEl = document.getElementById('recent-searches-data');
+            window.RECENT_SEARCHES = searchEl ? JSON.parse(searchEl.textContent) : [];
+        } catch(e) {
+            console.warn('Failed to parse recent searches:', e);
+            window.RECENT_SEARCHES = [];
+        }
+        
+        // Ensure they are arrays
+        if (!Array.isArray(window.DESTINATIONS)) window.DESTINATIONS = [];
+        if (!Array.isArray(window.RECENT_SEARCHES)) window.RECENT_SEARCHES = [];
         
         // Benefits data
         window.BENEFITS_DATA = [
