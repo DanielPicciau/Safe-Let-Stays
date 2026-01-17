@@ -577,16 +577,14 @@ SAFE LET STAYS — HOMEPAGE TEMPLATE (REACT INTEGRATED)
                 : filteredDestinations.slice(0, 4);
             
             // Scroll-based search bar morphing into navbar
-            // Desktop: Scroll-based search bar morphing into navbar
+            // Mobile only: Scroll-based search bar docking into navbar
             useEffect(() => {
                 const searchWrapper = document.querySelector('.hero__search-wrapper');
-                const searchBar = document.querySelector('.airbnb-search.desktop-search');
                 const mobileSearchTrigger = document.querySelector('.mobile-search-trigger');
                 const header = document.getElementById('header');
                 if (!searchWrapper || !header) return;
                 
                 // Store original dimensions
-                let originalRect = null;
                 let mobileOriginalRect = null;
                 let isCurrentlyDocked = false;
                 let ticking = false;
@@ -594,17 +592,7 @@ SAFE LET STAYS — HOMEPAGE TEMPLATE (REACT INTEGRATED)
                 const isMobile = () => window.innerWidth <= 768;
                 
                 const captureOriginalPosition = () => {
-                    // Desktop
-                    if (searchBar && !searchBar.classList.contains('morphing')) {
-                        const rect = searchWrapper.getBoundingClientRect();
-                        originalRect = {
-                            top: rect.top + window.scrollY,
-                            left: rect.left,
-                            width: rect.width,
-                            height: rect.height
-                        };
-                    }
-                    // Mobile
+                    // Mobile only
                     if (mobileSearchTrigger) {
                         const rect = mobileSearchTrigger.getBoundingClientRect();
                         mobileOriginalRect = {
@@ -628,20 +616,32 @@ SAFE LET STAYS — HOMEPAGE TEMPLATE (REACT INTEGRATED)
                 window.addEventListener('resize', handleResize);
                 
                 const updateMorphPosition = () => {
+                    // Only apply on mobile
+                    if (!isMobile()) {
+                        // Reset state if switching from mobile to desktop while docked
+                        if (isCurrentlyDocked) {
+                            isCurrentlyDocked = false;
+                            setIsDocked(false);
+                            searchWrapper.classList.remove('search-docked');
+                            window.dispatchEvent(new CustomEvent('searchDockChange', {
+                                detail: { docked: false, summary: 'Where to?' }
+                            }));
+                        }
+                        ticking = false;
+                        return;
+                    }
+                    
                     const scrollY = window.scrollY;
                     const headerHeight = header.offsetHeight;
                     
-                    // Use mobile or desktop original rect based on screen size
-                    const activeRect = isMobile() ? mobileOriginalRect : originalRect;
-                    
-                    if (!activeRect) {
+                    if (!mobileOriginalRect) {
                         captureOriginalPosition();
                         ticking = false;
                         return;
                     }
                     
                     // Calculate the scroll position where search bar would hit the header
-                    const dockScrollThreshold = activeRect.top - headerHeight - 20;
+                    const dockScrollThreshold = mobileOriginalRect.top - headerHeight - 20;
                     
                     const shouldDock = scrollY >= dockScrollThreshold && dockScrollThreshold > 0;
                     
@@ -656,8 +656,6 @@ SAFE LET STAYS — HOMEPAGE TEMPLATE (REACT INTEGRATED)
                         const summary = summaryParts[0];
                         
                         if (shouldDock) {
-                            // Desktop morphing
-                            if (searchBar) searchBar.classList.add('morphing');
                             searchWrapper.classList.add('search-docked');
                             
                             // Notify header
@@ -665,8 +663,6 @@ SAFE LET STAYS — HOMEPAGE TEMPLATE (REACT INTEGRATED)
                                 detail: { docked: true, summary }
                             }));
                         } else {
-                            // Desktop unmorphing
-                            if (searchBar) searchBar.classList.remove('morphing');
                             searchWrapper.classList.remove('search-docked');
                             
                             // Recapture original position after unmorphing

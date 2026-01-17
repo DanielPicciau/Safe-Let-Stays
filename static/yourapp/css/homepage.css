@@ -384,71 +384,20 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* ==========================================================================
-   DESKTOP: All navbar content slides UP and fades to 0%
+   DESKTOP: No morphing animation - header stays normal
    ========================================================================== */
 @media (min-width: 769px) {
-    /* Logo slides up and fades */
-    .header.search-docked .logo-link {
-        opacity: 0;
-        transform: translateY(-25px);
-        pointer-events: none;
-        transition: 
-            opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1),
-            transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    
-    .header:not(.search-docked) .logo-link {
-        opacity: 1;
-        transform: translateY(0);
-        pointer-events: auto;
-        transition: 
-            opacity 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s,
-            transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s;
-    }
-    
-    /* Navigation slides up and fades */
-    .header.search-docked .header__nav {
-        opacity: 0;
-        transform: translateY(-25px);
-        pointer-events: none;
-        transition: 
-            opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1),
-            transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    
-    .header:not(.search-docked) .header__nav {
-        opacity: 1;
-        transform: translateY(0);
-        pointer-events: auto;
-        transition: 
-            opacity 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.25s,
-            transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) 0.25s;
-    }
-    
-    /* Nav list and CTAs for extra specificity */
+    /* Desktop header content stays visible - no animation */
+    .header.search-docked .logo-link,
+    .header.search-docked .header__nav,
     .header.search-docked .nav-list,
     .header.search-docked .header__ctas {
-        opacity: 0;
-        transform: translateY(-25px);
-        pointer-events: none;
-        transition: 
-            opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1),
-            transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    
-    .header:not(.search-docked) .nav-list,
-    .header:not(.search-docked) .header__ctas {
-        opacity: 1;
-        transform: translateY(0);
-        pointer-events: auto;
-        transition: 
-            opacity 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.25s,
-            transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) 0.25s;
+        /* No changes when docked on desktop */
     }
 }
 
 /* ==========================================================================
-   MOBILE: Keep separate behavior
+   MOBILE: Full morphing animation (preserved)
    ========================================================================== */
 @media (max-width: 768px) {
     .header.search-docked .nav-list,
