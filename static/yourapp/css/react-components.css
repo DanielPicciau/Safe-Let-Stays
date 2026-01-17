@@ -2218,7 +2218,9 @@
         width: 100vw !important;
         height: 100vh !important;
         height: 100dvh !important;
-        background: var(--bg-off-white, #f7f7f7) !important;
+        background: rgba(255, 255, 255, 0.85) !important;
+        backdrop-filter: blur(20px) !important;
+        -webkit-backdrop-filter: blur(20px) !important;
         z-index: 999999 !important;
         display: flex !important;
         flex-direction: column !important;
