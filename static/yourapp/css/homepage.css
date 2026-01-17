@@ -390,6 +390,68 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* ==========================================================================
+   DESKTOP DOCKED SEARCH - Compact search button in header
+   ========================================================================== */
+
+/* Hidden by default */
+.header__desktop-docked-search {
+    display: none;
+}
+
+.desktop-docked-search-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.625rem 0.625rem 0.625rem 1.25rem;
+    background: var(--bg-card, #fff);
+    border: 1px solid var(--border, #e5e7eb);
+    border-radius: 40px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.desktop-docked-search-btn:hover {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1), 0 8px 24px rgba(0,0,0,0.1);
+}
+
+.desktop-docked-search-fields {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.desktop-docked-search-field {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-main, #222);
+    white-space: nowrap;
+}
+
+.desktop-docked-search-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: var(--primary, #2E7D32);
+    border-radius: 50%;
+    color: #fff;
+}
+
+.desktop-docked-search-icon svg {
+    width: 14px;
+    height: 14px;
+}
+
+@media (min-width: 769px) {
+    /* Show desktop docked search when scrolled past hero */
+    .header.search-docked .header__desktop-docked-search {
+        display: block;
+    }
+}
+
+/* ==========================================================================
    DESKTOP: No morphing animation - header stays normal
    ========================================================================== */
 @media (min-width: 769px) {
