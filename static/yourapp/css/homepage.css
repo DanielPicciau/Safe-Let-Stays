@@ -92,7 +92,7 @@ SAFE LET STAYS — REVOLUTIONIZED STYLES
         --input-text: #e0e0e0;
         
         /* Overlay colors - Dark Mode */
-        --overlay-light: rgba(16, 16, 16, 0.75);
+        --overlay-light: rgba(16, 16, 16, 0.6);
         --overlay-dark: rgba(0, 0, 0, 0.7);
         
         /* White text on dark backgrounds - stays white */
