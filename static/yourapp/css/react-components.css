@@ -1801,10 +1801,121 @@
     box-shadow: 0 16px 40px rgba(0,0,0,0.25);
 }
 
+/* ============================================================================
+   SEARCH BAR MORPHING ANIMATION
+   When scrolling, the search bar transforms and moves into the navbar
+   ============================================================================ */
+
+.airbnb-search.desktop-search {
+    /* Enable smooth morphing transitions */
+    transition: 
+        position 0s,
+        top 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+        left 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+        transform 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+        width 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+        max-width 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+        box-shadow 0.35s ease,
+        border-radius 0.35s ease;
+    will-change: transform, width, top, left;
+}
+
+.airbnb-search.desktop-search.morphing {
+    position: fixed !important;
+    top: calc(10px + env(safe-area-inset-top)) !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    z-index: 1001 !important;
+    max-width: 420px;
+    width: 420px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+    margin: 0;
+    border: 1px solid var(--border, #e5e7eb);
+}
+
+/* When morphed, simplify the search bar appearance */
+.airbnb-search.desktop-search.morphing .airbnb-search-bar {
+    padding: 0.3rem;
+    transition: padding 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.airbnb-search.desktop-search.morphing .airbnb-field {
+    padding: 0.5rem 1rem;
+    transition: padding 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.airbnb-search.desktop-search.morphing .airbnb-field-label {
+    opacity: 0;
+    height: 0;
+    margin: 0;
+    overflow: hidden;
+    transition: opacity 0.2s ease, height 0.3s ease;
+}
+
+.airbnb-search.desktop-search.morphing .airbnb-field-value {
+    font-size: 0.8125rem;
+    font-weight: 500;
+}
+
+.airbnb-search.desktop-search.morphing .airbnb-divider {
+    height: 24px;
+    transition: height 0.35s ease;
+}
+
+.airbnb-search.desktop-search.morphing .airbnb-search-btn {
+    width: 34px;
+    height: 34px;
+    min-width: 34px;
+    padding: 0;
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.airbnb-search.desktop-search.morphing .airbnb-search-btn-text {
+    display: none;
+}
+
+/* Hide panels when morphed */
+.airbnb-search.desktop-search.morphing .airbnb-panel {
+    max-height: 0 !important;
+    padding: 0 !important;
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* Hover effect on morphed search */
+.airbnb-search.desktop-search.morphing:hover {
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    border-color: var(--primary-light, #4CAF50);
+    transform: translateX(-50%) scale(1.02) !important;
+}
+
+/* Click the morphed bar to scroll back up */
+.airbnb-search.desktop-search.morphing .airbnb-search-bar {
+    cursor: pointer;
+}
+
+/* Transition back to original - slightly slower for smoothness */
+.airbnb-search.desktop-search:not(.morphing) {
+    transition: 
+        position 0s 0.45s,
+        top 0.5s cubic-bezier(0.34, 1.56, 0.64, 1),
+        left 0.5s cubic-bezier(0.34, 1.56, 0.64, 1),
+        transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1),
+        width 0.5s cubic-bezier(0.34, 1.56, 0.64, 1),
+        max-width 0.5s cubic-bezier(0.34, 1.56, 0.64, 1),
+        box-shadow 0.4s ease,
+        border-radius 0.4s ease;
+}
+
+/* ============================================================================
+   END SEARCH BAR MORPHING
+   ============================================================================ */
+
 .airbnb-search-bar {
     display: flex;
     align-items: center;
     padding: 0.5rem;
+    transition: padding 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .airbnb-field {
@@ -1815,7 +1926,7 @@
     background: transparent;
     border: none;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.3s ease;
     min-width: 0;
 }
 
@@ -1836,6 +1947,9 @@
     letter-spacing: 0.04em;
     color: var(--text-main, #222);
     margin-bottom: 0.125rem;
+    transition: opacity 0.25s ease, height 0.35s ease, margin 0.35s ease;
+    height: auto;
+    overflow: hidden;
 }
 
 .airbnb-field-value {
@@ -1846,6 +1960,34 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    transition: font-size 0.35s ease, font-weight 0.35s ease;
+}
+
+.airbnb-divider {
+    width: 1px;
+    height: 32px;
+    background: var(--border, #ddd);
+    flex-shrink: 0;
+    transition: height 0.35s ease;
+}
+
+.airbnb-search-btn {
+    flex-shrink: 0;
+    height: 48px;
+    min-width: 48px;
+    padding: 0 1rem;
+    background: var(--primary, #2E7D32);
+    color: white;
+    border: none;
+    border-radius: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    font-weight: 600;
+    font-size: 1rem;
 }
 
 .airbnb-field-value .placeholder {
@@ -1881,32 +2023,6 @@
 
 .airbnb-input::placeholder {
     color: var(--text-muted, #717171);
-}
-
-.airbnb-divider {
-    width: 1px;
-    height: 32px;
-    background: var(--border, #ddd);
-    flex-shrink: 0;
-}
-
-.airbnb-search-btn {
-    flex-shrink: 0;
-    height: 48px;
-    min-width: 48px;
-    padding: 0 1rem;
-    background: var(--primary, #2E7D32);
-    color: white;
-    border: none;
-    border-radius: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    font-weight: 600;
-    font-size: 1rem;
 }
 
 .airbnb-search-btn:hover {

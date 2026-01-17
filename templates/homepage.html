@@ -576,87 +576,112 @@ SAFE LET STAYS — HOMEPAGE TEMPLATE (REACT INTEGRATED)
                 ? filteredDestinations 
                 : filteredDestinations.slice(0, 4);
             
-            // Scroll-based search bar docking to navbar
+            // Scroll-based search bar morphing into navbar
             useEffect(() => {
                 const searchWrapper = document.querySelector('.hero__search-wrapper');
+                const searchBar = document.querySelector('.airbnb-search.desktop-search');
                 const header = document.getElementById('header');
-                if (!searchWrapper || !header) return;
+                if (!searchWrapper || !searchBar || !header) return;
                 
+                // Store original dimensions
+                let originalRect = null;
+                let isCurrentlyDocked = false;
                 let ticking = false;
                 
-                // Compute summary for docked search
-                const computeSummary = () => {
-                    let parts = [];
-                    if (location) parts.push(location);
-                    if (checkIn && checkOut) {
-                        parts.push(`${formatDate(checkIn, 'MMM d')} - ${formatDate(checkOut, 'MMM d')}`);
+                const captureOriginalPosition = () => {
+                    // Only capture when not morphed
+                    if (!searchBar.classList.contains('morphing')) {
+                        originalRect = searchWrapper.getBoundingClientRect();
+                        originalRect = {
+                            top: originalRect.top + window.scrollY,
+                            left: originalRect.left,
+                            width: originalRect.width,
+                            height: originalRect.height
+                        };
                     }
-                    if (guests > 0) {
-                        parts.push(`${guests} guest${guests > 1 ? 's' : ''}`);
-                    }
-                    return parts.length > 0 ? parts.join(' · ') : 'Where to? · Any dates · Guests';
                 };
                 
-                const checkDockPosition = () => {
-                    const searchRect = searchWrapper.getBoundingClientRect();
-                    const headerHeight = header.offsetHeight;
-                    // Dock when search bar top gets within 20px of header bottom
-                    const dockThreshold = headerHeight + 20;
-                    const shouldDock = searchRect.top <= dockThreshold;
+                // Capture on load
+                setTimeout(captureOriginalPosition, 100);
+                
+                // Recapture on resize (but only when not docked)
+                const handleResize = () => {
+                    if (!isCurrentlyDocked) {
+                        captureOriginalPosition();
+                    }
+                };
+                window.addEventListener('resize', handleResize);
+                
+                const updateMorphPosition = () => {
+                    if (!originalRect) {
+                        captureOriginalPosition();
+                        if (!originalRect) return;
+                    }
                     
-                    if (shouldDock !== isDocked) {
+                    const scrollY = window.scrollY;
+                    const headerHeight = header.offsetHeight;
+                    
+                    // Calculate the scroll position where search bar would hit the header
+                    const dockScrollThreshold = originalRect.top - headerHeight - 20;
+                    
+                    const shouldDock = scrollY >= dockScrollThreshold && dockScrollThreshold > 0;
+                    
+                    if (shouldDock !== isCurrentlyDocked) {
+                        isCurrentlyDocked = shouldDock;
                         setIsDocked(shouldDock);
                         
-                        // Update search wrapper class
                         if (shouldDock) {
+                            searchBar.classList.add('morphing');
                             searchWrapper.classList.add('search-docked');
+                            
+                            // Notify header to hide nav
+                            window.dispatchEvent(new CustomEvent('searchDockChange', {
+                                detail: { docked: true }
+                            }));
                         } else {
+                            searchBar.classList.remove('morphing');
                             searchWrapper.classList.remove('search-docked');
+                            
+                            // Recapture original position after unmorphing
+                            setTimeout(captureOriginalPosition, 600);
+                            
+                            // Notify header to show nav
+                            window.dispatchEvent(new CustomEvent('searchDockChange', {
+                                detail: { docked: false }
+                            }));
                         }
-                        
-                        // Dispatch event to header with current search summary
-                        window.dispatchEvent(new CustomEvent('searchDockChange', {
-                            detail: {
-                                docked: shouldDock,
-                                summary: computeSummary()
-                            }
-                        }));
                     }
+                    
                     ticking = false;
                 };
                 
                 const handleScroll = () => {
                     if (!ticking) {
-                        requestAnimationFrame(checkDockPosition);
+                        requestAnimationFrame(updateMorphPosition);
                         ticking = true;
                     }
                 };
                 
+                // Handle click on morphed search bar to scroll back up
+                const handleMorphedClick = (e) => {
+                    if (searchBar.classList.contains('morphing')) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }
+                };
+                searchBar.addEventListener('click', handleMorphedClick, true);
+                
                 window.addEventListener('scroll', handleScroll, { passive: true });
                 // Initial check
-                checkDockPosition();
+                setTimeout(updateMorphPosition, 150);
                 
-                return () => window.removeEventListener('scroll', handleScroll);
-            }, [isDocked, location, checkIn, checkOut, guests]);
-            
-            // Update docked search summary when values change
-            useEffect(() => {
-                if (isDocked) {
-                    let parts = [];
-                    if (location) parts.push(location);
-                    if (checkIn && checkOut) {
-                        parts.push(`${formatDate(checkIn, 'MMM d')} - ${formatDate(checkOut, 'MMM d')}`);
-                    }
-                    if (guests > 0) {
-                        parts.push(`${guests} guest${guests > 1 ? 's' : ''}`);
-                    }
-                    const summary = parts.length > 0 ? parts.join(' · ') : 'Where to? · Any dates · Guests';
-                    
-                    window.dispatchEvent(new CustomEvent('searchDockChange', {
-                        detail: { docked: true, summary }
-                    }));
-                }
-            }, [location, checkIn, checkOut, guests, isDocked]);
+                return () => {
+                    window.removeEventListener('scroll', handleScroll);
+                    window.removeEventListener('resize', handleResize);
+                    searchBar.removeEventListener('click', handleMorphedClick, true);
+                };
+            }, []);
             
             // Listen for openHeroSearch event (when user clicks docked search)
             useEffect(() => {

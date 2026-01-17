@@ -150,7 +150,6 @@ const Header = ({ activePage }) => {
     const [menuOpen, setMenuOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
     const [searchDocked, setSearchDocked] = useState(false);
-    const [searchSummary, setSearchSummary] = useState('Where to? · Any dates · Guests');
     const siteData = useSiteData();
 
     useEffect(() => {
@@ -165,20 +164,10 @@ const Header = ({ activePage }) => {
     useEffect(() => {
         const handleSearchDock = (e) => {
             setSearchDocked(e.detail.docked);
-            if (e.detail.summary) {
-                setSearchSummary(e.detail.summary);
-            }
         };
         window.addEventListener('searchDockChange', handleSearchDock);
         return () => window.removeEventListener('searchDockChange', handleSearchDock);
     }, []);
-
-    const handleDockedSearchClick = () => {
-        // Scroll back to top to reveal the search form
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        // Dispatch event to open the search form
-        window.dispatchEvent(new CustomEvent('openHeroSearch'));
-    };
 
     const navLinks = [
         { href: '/', label: 'Home', key: 'home' },
@@ -203,18 +192,6 @@ const Header = ({ activePage }) => {
                 <a href="/" aria-label={`${siteData.siteName} — Home`} className="logo-link">
                     <span className="logo-text">{siteData.siteName}</span>
                 </a>
-                
-                {/* Docked Search Bar - appears when scrolled */}
-                <button 
-                    className={`header__docked-search ${searchDocked ? 'visible' : ''}`}
-                    onClick={handleDockedSearchClick}
-                    aria-label="Open search"
-                >
-                    <span className="docked-search__text">{searchSummary}</span>
-                    <span className="docked-search__icon">
-                        <Icons.Search />
-                    </span>
-                </button>
                 
                 <button 
                     className={`mobile-menu-toggle ${menuOpen ? 'active' : ''}`}

@@ -370,7 +370,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* ============================================================================
-   SEARCH DOCKED STATE - Nav items fade out, search bar slides in
+   SEARCH MORPHING STATE - Search bar transforms into compact navbar version
    ============================================================================ */
 
 .header.search-docked {
@@ -387,68 +387,9 @@ h1, h2, h3, h4, h5, h6 {
 .header.search-docked .nav-list,
 .header.search-docked .header__ctas {
     opacity: 0;
-    transform: translateY(-10px);
+    transform: translateY(-15px);
     pointer-events: none;
-    transition: opacity 0.25s ease, transform 0.25s ease;
-}
-
-/* Docked Search Bar - Compact search in navbar */
-.header__docked-search {
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%) scale(0.9);
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0.625rem 0.625rem 0.625rem 1.25rem;
-    background: var(--bg-card, white);
-    border: 1px solid var(--border, #e5e7eb);
-    border-radius: 9999px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    cursor: pointer;
-    opacity: 0;
-    pointer-events: none;
-    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-    white-space: nowrap;
-    max-width: 400px;
-    z-index: 10;
-}
-
-.header__docked-search:hover {
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    border-color: var(--border-light, #d1d5db);
-}
-
-.header__docked-search.visible {
-    opacity: 1;
-    transform: translateX(-50%) scale(1);
-    pointer-events: auto;
-}
-
-.docked-search__text {
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: var(--text-main, #1a1a1a);
-    max-width: 280px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.docked-search__icon {
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--primary, #2E7D32);
-    border-radius: 50%;
-    color: white;
-    flex-shrink: 0;
-}
-
-.docked-search__icon svg {
-    width: 14px;
-    height: 14px;
+    transition: opacity 0.35s ease, transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Restore nav when search is not docked */
@@ -457,18 +398,11 @@ h1, h2, h3, h4, h5, h6 {
     opacity: 1;
     transform: translateY(0);
     pointer-events: auto;
-    transition: opacity 0.35s ease 0.1s, transform 0.35s ease 0.1s;
-}
-
-/* Mobile: Hide docked search */
-@media (max-width: 768px) {
-    .header__docked-search {
-        display: none;
-    }
+    transition: opacity 0.4s ease 0.2s, transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s;
 }
 
 /* ============================================================================
-   END SEARCH DOCKED STATE
+   END SEARCH MORPHING STATE
    ============================================================================ */
 
 .header__inner {
@@ -671,7 +605,6 @@ h1, h2, h3, h4, h5, h6 {
     width: 100%;
     position: relative;
     z-index: 100;
-    transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
 .hero__search-wrapper--centered {
@@ -679,10 +612,8 @@ h1, h2, h3, h4, h5, h6 {
     max-width: 800px;
 }
 
-/* Search form docked state - fades out when docked to navbar */
+/* Wrapper maintains layout space when search morphs away */
 .hero__search-wrapper.search-docked {
-    opacity: 0;
-    transform: translateY(-20px) scale(0.95);
     pointer-events: none;
 }
 
