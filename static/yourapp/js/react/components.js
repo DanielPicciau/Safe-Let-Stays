@@ -343,7 +343,7 @@ const Footer = () => {
 // PROPERTY CARD COMPONENT
 // ============================================================================
 
-const PropertyCard = ({ property, variant = 'default' }) => {
+const PropertyCard = ({ property, variant = 'default', style }) => {
     const [liked, setLiked] = useState(false);
     const [imageLoaded, setImageLoaded] = useState(false);
 
@@ -356,7 +356,8 @@ const PropertyCard = ({ property, variant = 'default' }) => {
     return (
         <a 
             href={`/property/${property.slug}/`} 
-            className={`property-card property-card--${variant} ${imageLoaded ? 'loaded' : ''}`}
+            className={`property-card property-card--${variant} fade-in-up ${imageLoaded ? 'loaded' : ''}`}
+            style={style}
         >
             <div className="property-card__image-wrapper">
                 <img 
