@@ -136,7 +136,7 @@
             {
                 id: {{ booking.id }},
                 propertyTitle: "{{ booking.property.title|escapejs }}",
-                propertyImage: "{{ booking.property.image.url|default:'' }}",
+                propertyImage: "{% if booking.property.image %}{{ booking.property.image.url }}{% endif %}",
                 checkIn: "{{ booking.check_in|date:'M d, Y' }}",
                 checkOut: "{{ booking.check_out|date:'M d, Y' }}",
                 guests: {{ booking.guests|default:1 }},

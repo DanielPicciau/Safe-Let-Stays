@@ -112,7 +112,7 @@
                 url: "{{ property.get_absolute_url }}",
                 title: "{{ property.title|escapejs }}",
                 shortDescription: "{{ property.short_description|escapejs|truncatechars:80 }}",
-                image: "{{ property.image.url|default:'' }}",
+                image: "{% if property.image %}{{ property.image.url }}{% endif %}",
                 location: "Sheffield, UK",
                 bedrooms: {{ property.beds|default:1 }},
                 bathrooms: {{ property.baths|default:1 }},

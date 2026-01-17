@@ -12,8 +12,9 @@ from django.core.exceptions import PermissionDenied
 from django.utils.html import escape
 import stripe
 import logging
+import json
 from datetime import datetime
-from .models import Property, Booking
+from .models import Property, Booking, Destination, RecentSearch
 from .forms import PropertyForm, CheckoutForm
 from .utils import generate_receipt_pdf, send_receipt_email
 from .security import rate_limit, get_client_ip, InputValidator, SecurityLogger
@@ -57,6 +58,29 @@ def homepage(request):
         top_properties = properties[:3]
     context['top_properties'] = top_properties
     
+    # Destinations for search dropdown (JSON serialized)
+    destinations = Destination.objects.filter(is_active=True).order_by('order')
+    destinations_list = list(destinations.values('name', 'subtitle', 'icon_name', 'icon_color', 'filter_area'))
+    context['destinations'] = json.dumps(destinations_list)
+    
+    # Recent searches (for logged in users or session) - JSON serialized
+    recent_searches = []
+    if request.user.is_authenticated:
+        recent_searches = RecentSearch.objects.filter(user=request.user)[:3]
+    elif request.session.session_key:
+        recent_searches = RecentSearch.objects.filter(session_key=request.session.session_key)[:3]
+    
+    # Convert dates to strings for JSON
+    recent_list = []
+    for search in recent_searches:
+        recent_list.append({
+            'location': search.location,
+            'check_in': search.check_in.isoformat() if search.check_in else None,
+            'check_out': search.check_out.isoformat() if search.check_out else None,
+            'guests': search.guests
+        })
+    context['recent_searches'] = json.dumps(recent_list)
+    
     return render(request, 'homepage.html', context)
 
 def properties_view(request):
@@ -68,6 +92,48 @@ def properties_view(request):
     beds = request.GET.get('beds')
     check_in = request.GET.get('check_in')
     check_out = request.GET.get('check_out')
+    location = request.GET.get('location', '').strip()
+    
+    # Filter by location/area
+    if location:
+        properties = properties.filter(
+            Q(area__icontains=location) | 
+            Q(city__icontains=location) |
+            Q(title__icontains=location)
+        )
+        
+        # Save recent search
+        try:
+            check_in_date = datetime.strptime(check_in, '%Y-%m-%d').date() if check_in else None
+            check_out_date = datetime.strptime(check_out, '%Y-%m-%d').date() if check_out else None
+            guests_int = int(guests) if guests else 2
+            
+            # Create or update recent search
+            if request.user.is_authenticated:
+                RecentSearch.objects.update_or_create(
+                    user=request.user,
+                    location=location,
+                    defaults={
+                        'check_in': check_in_date,
+                        'check_out': check_out_date,
+                        'guests': guests_int,
+                    }
+                )
+            else:
+                # Ensure session exists
+                if not request.session.session_key:
+                    request.session.create()
+                RecentSearch.objects.update_or_create(
+                    session_key=request.session.session_key,
+                    location=location,
+                    defaults={
+                        'check_in': check_in_date,
+                        'check_out': check_out_date,
+                        'guests': guests_int,
+                    }
+                )
+        except Exception as e:
+            logger.warning(f"Failed to save recent search: {e}")
     
     if guests:
         try:
@@ -90,6 +156,7 @@ def properties_view(request):
         'beds': beds,
         'check_in': check_in,
         'check_out': check_out,
+        'location': location,
     }
     return render(request, 'properties.html', context)
 
@@ -146,10 +213,11 @@ def add_property_view(request):
     if request.method == 'POST':
         form = PropertyForm(request.POST, request.FILES)
         if form.is_valid():
-            form.save()
+            property_obj = form.save()
+            logger.info(f"Property created: {property_obj.title} by user: {request.user.username}")
             return redirect('staff_panel')
         else:
-            print("Form errors:", form.errors)
+            logger.warning(f"Property form errors: {form.errors}")
     else:
         form = PropertyForm()
     
@@ -165,9 +233,10 @@ def edit_property_view(request, pk):
         form = PropertyForm(request.POST, request.FILES, instance=property_obj)
         if form.is_valid():
             form.save()
+            logger.info(f"Property updated: {property_obj.title} by user: {request.user.username}")
             return redirect('staff_panel')
         else:
-            print("Edit Form errors:", form.errors)
+            logger.warning(f"Property edit form errors: {form.errors}")
     else:
         form = PropertyForm(instance=property_obj)
     return render(request, 'staff/property_form.html', {'form': form, 'title': 'Edit Property'})

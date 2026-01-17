@@ -12,6 +12,15 @@ class Property(models.Model):
     # Image handling
     image = models.ImageField(upload_to='properties/', blank=True, null=True)
     
+    # Location fields
+    area = models.CharField(
+        max_length=100, 
+        default='Sheffield',
+        help_text="Area/neighborhood name (e.g., City Centre, Hillsborough)"
+    )
+    city = models.CharField(max_length=100, default='Sheffield')
+    postcode = models.CharField(max_length=20, blank=True)
+    
     # Key details
     price_from = models.DecimalField(max_digits=10, decimal_places=2)
     beds = models.IntegerField()
@@ -279,3 +288,72 @@ def create_user_profile(sender, instance, created, **kwargs):
 @receiver(post_save, sender=User)
 def save_user_profile(sender, instance, **kwargs):
     instance.profile.save()
+
+
+# =============================================================================
+# RECENT SEARCH MODEL
+# =============================================================================
+class RecentSearch(models.Model):
+    """
+    Stores recent searches for users (session-based for anonymous, user-based for logged in).
+    """
+    # Can be linked to user or session
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='recent_searches'
+    )
+    session_key = models.CharField(max_length=40, blank=True, db_index=True)
+    
+    # Search parameters
+    location = models.CharField(max_length=200)
+    check_in = models.DateField(null=True, blank=True)
+    check_out = models.DateField(null=True, blank=True)
+    guests = models.PositiveIntegerField(default=2)
+    
+    # Timestamp
+    searched_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-searched_at']
+        verbose_name_plural = "Recent searches"
+    
+    def __str__(self):
+        dates = ''
+        if self.check_in and self.check_out:
+            dates = f" ({self.check_in.strftime('%d %b')} - {self.check_out.strftime('%d %b')})"
+        return f"{self.location}{dates}"
+
+
+# =============================================================================
+# DESTINATION/AREA MODEL (for suggested destinations)
+# =============================================================================
+class Destination(models.Model):
+    """
+    Predefined destinations/areas that users can search for.
+    """
+    name = models.CharField(max_length=100)
+    subtitle = models.CharField(max_length=200, blank=True, help_text="E.g., 'Near the stadium'")
+    icon_name = models.CharField(
+        max_length=50, 
+        default='location',
+        help_text="Icon identifier: location, stadium, city, home, park, nearby"
+    )
+    icon_color = models.CharField(max_length=20, default='#2E7D32')
+    is_active = models.BooleanField(default=True)
+    order = models.IntegerField(default=0)
+    
+    # Link to filter properties
+    filter_area = models.CharField(
+        max_length=100, 
+        blank=True,
+        help_text="Area value to filter properties (leave blank for all)"
+    )
+    
+    class Meta:
+        ordering = ['order', 'name']
+    
+    def __str__(self):
+        return self.name

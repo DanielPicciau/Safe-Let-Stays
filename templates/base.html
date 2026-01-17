@@ -1,0 +1,94 @@
+{% load static %}
+{% comment %}
+================================================================================
+SAFE LET STAYS — BASE TEMPLATE
+================================================================================
+All pages should extend this template for consistent structure and styling.
+{% endcomment %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ site_name|default:"Safe Let Stays" }}{% endblock %}</title>
+    <meta name="description" content="{% block meta_description %}Premium accommodation in Sheffield. Direct bookings for corporates, contractors and visitors.{% endblock %}">
+    <link rel="canonical" href="{{ request.build_absolute_uri }}">
+    
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="{% block og_title %}{{ site_name|default:"Safe Let Stays" }}{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}Direct bookings for longer stays in Sheffield. Premium accommodation for corporates and visitors.{% endblock %}">
+    {% block og_image %}<meta property="og:image" content="{% static 'yourapp/images/SafeLetStays-New.png' %}">{% endblock %}
+    <meta property="og:url" content="{{ request.build_absolute_uri }}">
+    <meta property="og:site_name" content="{{ site_name|default:'Safe Let Stays' }}">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Core CSS -->
+    <link rel="stylesheet" href="{% static 'yourapp/css/homepage.css' %}">
+    <link rel="stylesheet" href="{% static 'yourapp/css/react-components.css' %}">
+    
+    {% block extra_css %}{% endblock %}
+    
+    <!-- React 18 Production -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    {% block extra_head %}{% endblock %}
+    
+    <!-- JSON-LD Structured Data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "LocalBusiness",
+        "name": "{{ site_name|default:'Safe Let Stays' }}",
+        "description": "Direct bookings for longer stays in Sheffield.",
+        "url": "{{ request.build_absolute_uri }}",
+        "telephone": "{{ contact_phone|default:'+44 114 123 4567' }}",
+        "email": "{{ contact_email|default:'hello@safeletstays.co.uk' }}",
+        "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "{{ business_address|default:'123 Sheffield Street' }}",
+            "addressLocality": "Sheffield",
+            "postalCode": "S1 1AA",
+            "addressCountry": "UK"
+        },
+        "priceRange": "££"
+    }
+    </script>
+</head>
+<body class="{% block body_class %}{% endblock %}">
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+    
+    <!-- React Header -->
+    <div id="react-header" data-active-page="{% block active_page %}{% endblock %}"></div>
+    
+    {% block content %}{% endblock %}
+    
+    <!-- React Footer -->
+    <div id="react-footer"></div>
+    
+    <!-- Site Data for React Components -->
+    <script>
+        window.SITE_DATA = {
+            siteName: "{{ site_name|default:'Safe Let Stays' }}",
+            contactPhone: "{{ contact_phone|default:'+44 114 123 4567' }}",
+            contactEmail: "{{ contact_email|default:'hello@safeletstays.co.uk' }}",
+            brandColor: "{{ brand_color|default:'#2E7D32' }}",
+            isAuthenticated: {% if user.is_authenticated %}true{% else %}false{% endif %},
+            isStaff: {% if user.is_staff %}true{% else %}false{% endif %},
+            username: "{% if user.is_authenticated %}{{ user.first_name|default:user.username }}{% endif %}",
+            csrfToken: "{{ csrf_token }}",
+        };
+    </script>
+    
+    <!-- React Components -->
+    <script type="text/babel" src="{% static 'yourapp/js/react/components.js' %}"></script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

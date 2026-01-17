@@ -17,7 +17,7 @@ SAFE LET STAYS — HOMEPAGE TEMPLATE (REACT INTEGRATED)
     <meta property="og:type" content="website">
     <meta property="og:title" content="{{ featured_property.title }} | {{ site_name }}">
     <meta property="og:description" content="Direct bookings for longer stays in Sheffield. Premium accommodation for corporates and visitors.">
-    <meta property="og:image" content="{{ featured_property.image.url }}">
+    {% if featured_property.image %}<meta property="og:image" content="{{ featured_property.image.url }}">{% endif %}
     <meta property="og:url" content="{{ request.build_absolute_uri }}">
     <meta property="og:site_name" content="{{ site_name }}">
     
@@ -66,18 +66,14 @@ SAFE LET STAYS — HOMEPAGE TEMPLATE (REACT INTEGRATED)
         </video>
         <div class="hero__overlay"></div>
         
-        <div class="container hero__layout">
-            <div class="hero__content fade-in-up">
+        <div class="container hero__layout hero__layout--centered">
+            <div class="hero__content hero__content--centered fade-in-up">
                 <span class="hero__label">Sheffield's Premier Accommodation</span>
                 <h1>Experience Comfort,<br>Book Directly.</h1>
-                <p class="hero__subhead">Save on commission fees with our premium properties for corporates, contractors, and visitors.</p>
-                <div class="hero__actions">
-                    <a href="/properties" class="btn btn--white btn--lg">Explore Stays</a>
-                </div>
             </div>
 
             <!-- React Search Form -->
-            <div class="hero__search-wrapper">
+            <div class="hero__search-wrapper hero__search-wrapper--centered">
                 <div id="react-search-form"></div>
             </div>
         </div>
@@ -170,6 +166,9 @@ SAFE LET STAYS — HOMEPAGE TEMPLATE (REACT INTEGRATED)
             </div>
         </section>
 
+        <!-- CTA SECTION - React Component -->
+        <div id="react-cta"></div>
+
     </main>
     
     <!-- React Footer -->
@@ -194,8 +193,8 @@ SAFE LET STAYS — HOMEPAGE TEMPLATE (REACT INTEGRATED)
                 slug: "{{ property.slug }}",
                 title: "{{ property.title|escapejs }}",
                 shortDescription: "{{ property.short_description|escapejs }}",
-                image: "{{ property.image.url|default:'' }}",
-                location: "{{ property.location|default:'Sheffield'|escapejs }}",
+                image: "{% if property.image %}{{ property.image.url }}{% endif %}",
+                location: "{{ property.area|default:'Sheffield'|escapejs }}",
                 bedrooms: {{ property.beds|default:1 }},
                 bathrooms: {{ property.baths|default:1 }},
                 guests: {{ property.capacity|default:2 }},
@@ -205,6 +204,12 @@ SAFE LET STAYS — HOMEPAGE TEMPLATE (REACT INTEGRATED)
             }{% if not forloop.last %},{% endif %}
             {% endfor %}
         ];
+        
+        // Destinations for search dropdown
+        window.DESTINATIONS = {{ destinations|safe }};
+        
+        // Recent searches
+        window.RECENT_SEARCHES = {{ recent_searches|safe }};
         
         // Benefits data
         window.BENEFITS_DATA = [
@@ -232,77 +237,834 @@ SAFE LET STAYS — HOMEPAGE TEMPLATE (REACT INTEGRATED)
     <!-- Homepage-specific React Components -->
     <script type="text/babel">
     {% verbatim %}
-        const { useState } = React;
+        const { useState, useRef, useEffect } = React;
         const { PropertyCard, BenefitCard, SearchFilter, Icons, SiteContext } = window.SafeLetComponents || {};
         
-        // Search Form Component for Hero
+        // Utility functions for date handling
+        const formatDate = (date, pattern) => {
+            if (!date) return '';
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            const d = new Date(date);
+            if (pattern === 'MMM d') {
+                return `${months[d.getMonth()]} ${d.getDate()}`;
+            }
+            if (pattern === 'yyyy-MM-dd') {
+                return d.toISOString().split('T')[0];
+            }
+            return d.toLocaleDateString();
+        };
+        
+        const addDays = (date, days) => {
+            const result = new Date(date);
+            result.setDate(result.getDate() + days);
+            return result;
+        };
+        
+        const isSameDay = (date1, date2) => {
+            if (!date1 || !date2) return false;
+            const d1 = new Date(date1);
+            const d2 = new Date(date2);
+            return d1.getFullYear() === d2.getFullYear() &&
+                   d1.getMonth() === d2.getMonth() &&
+                   d1.getDate() === d2.getDate();
+        };
+        
+        const isWithinRange = (date, start, end) => {
+            if (!start || !end) return false;
+            const d = new Date(date).getTime();
+            return d >= new Date(start).getTime() && d <= new Date(end).getTime();
+        };
+        
+        // Calendar Icons
+        const ChevronLeft = ({ className = '' }) => (
+            <svg className={className} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polyline points="15 18 9 12 15 6"/>
+            </svg>
+        );
+        
+        const ChevronRight = ({ className = '' }) => (
+            <svg className={className} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polyline points="9 18 15 12 9 6"/>
+            </svg>
+        );
+        
+        const ChevronDown = ({ className = '' }) => (
+            <svg className={className} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polyline points="6 9 12 15 18 9"/>
+            </svg>
+        );
+        
+        const Minus = ({ className = '' }) => (
+            <svg className={className} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+        );
+        
+        const Plus = ({ className = '' }) => (
+            <svg className={className} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <line x1="12" y1="5" x2="12" y2="19"/>
+                <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+        );
+        
+        const SearchIcon = ({ className = '' }) => (
+            <svg className={className} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="11" cy="11" r="8"/>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+        );
+        
+        // Location/Destination Icons
+        const LocationIcon = ({ color = '#3B82F6' }) => (
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                <circle cx="12" cy="10" r="3"/>
+            </svg>
+        );
+        
+        const CityIcon = ({ color = '#8B5CF6' }) => (
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2">
+                <rect x="4" y="2" width="16" height="20" rx="2" ry="2"/>
+                <path d="M9 22v-4h6v4"/>
+                <path d="M8 6h.01M16 6h.01M12 6h.01M8 10h.01M16 10h.01M12 10h.01M8 14h.01M16 14h.01M12 14h.01"/>
+            </svg>
+        );
+        
+        const StadiumIcon = ({ color = '#2E7D32' }) => (
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2">
+                <ellipse cx="12" cy="12" rx="10" ry="5"/>
+                <path d="M2 12v4c0 2.76 4.48 5 10 5s10-2.24 10-5v-4"/>
+                <path d="M2 12c0-2.76 4.48-5 10-5s10 2.24 10 5"/>
+                <line x1="12" y1="7" x2="12" y2="17"/>
+            </svg>
+        );
+        
+        const HomeIcon = ({ color = '#F59E0B' }) => (
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                <polyline points="9 22 9 12 15 12 15 22"/>
+            </svg>
+        );
+        
+        const NearbyIcon = ({ color = '#3B82F6' }) => (
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2">
+                <polygon points="3 11 22 2 13 21 11 13 3 11"/>
+            </svg>
+        );
+        
+        const ClockIcon = ({ color = '#6B7280' }) => (
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+            </svg>
+        );
+        
+        // Get icon component by name
+        const getDestinationIcon = (iconName, color) => {
+            switch (iconName) {
+                case 'city': return <CityIcon color={color} />;
+                case 'stadium': return <StadiumIcon color={color} />;
+                case 'home': return <HomeIcon color={color} />;
+                case 'nearby': return <NearbyIcon color={color} />;
+                case 'clock': return <ClockIcon color={color} />;
+                default: return <LocationIcon color={color} />;
+            }
+        };
+        
+        // Airbnb-Style Two Month Calendar
+        const DatePickerCalendar = ({ checkIn, checkOut, onSelectCheckIn, onSelectCheckOut, onClose }) => {
+            const [baseMonth, setBaseMonth] = useState(new Date());
+            const [selectingCheckOut, setSelectingCheckOut] = useState(false);
+            // Set minimum date to tomorrow (not today)
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const minDate = tomorrow;
+            
+            const months = ['January', 'February', 'March', 'April', 'May', 'June', 
+                           'July', 'August', 'September', 'October', 'November', 'December'];
+            const weekDays = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
+            
+            const getDaysInMonth = (date) => {
+                const year = date.getFullYear();
+                const month = date.getMonth();
+                const firstDay = new Date(year, month, 1);
+                const lastDay = new Date(year, month + 1, 0);
+                const daysInMonth = lastDay.getDate();
+                // Adjust for Monday start (0 = Monday, 6 = Sunday)
+                let startingDay = firstDay.getDay() - 1;
+                if (startingDay < 0) startingDay = 6;
+                
+                const days = [];
+                // Previous month's trailing days
+                const prevMonthLastDay = new Date(year, month, 0).getDate();
+                for (let i = startingDay - 1; i >= 0; i--) {
+                    days.push({ day: prevMonthLastDay - i, outside: true, date: new Date(year, month - 1, prevMonthLastDay - i) });
+                }
+                // Current month's days
+                for (let i = 1; i <= daysInMonth; i++) {
+                    days.push({ day: i, outside: false, date: new Date(year, month, i) });
+                }
+                // Next month's leading days to complete the grid
+                const remainingDays = Math.ceil(days.length / 7) * 7 - days.length;
+                for (let i = 1; i <= remainingDays; i++) {
+                    days.push({ day: i, outside: true, date: new Date(year, month + 1, i) });
+                }
+                return days;
+            };
+            
+            const handleDayClick = (dayInfo) => {
+                if (dayInfo.date < minDate) return;
+                
+                if (!checkIn || selectingCheckOut === false) {
+                    onSelectCheckIn(dayInfo.date);
+                    onSelectCheckOut(null);
+                    setSelectingCheckOut(true);
+                } else {
+                    if (dayInfo.date <= checkIn) {
+                        onSelectCheckIn(dayInfo.date);
+                        onSelectCheckOut(null);
+                        setSelectingCheckOut(true);
+                    } else {
+                        onSelectCheckOut(dayInfo.date);
+                        setSelectingCheckOut(false);
+                    }
+                }
+            };
+            
+            const isRangeStart = (date) => isSameDay(date, checkIn);
+            const isRangeEnd = (date) => isSameDay(date, checkOut);
+            const isInRange = (date) => checkIn && checkOut && isWithinRange(date, checkIn, checkOut) && !isSameDay(date, checkIn) && !isSameDay(date, checkOut);
+            const isDisabled = (date) => date < minDate;
+            const isToday = (date) => isSameDay(date, new Date());
+            
+            const prevMonth = () => setBaseMonth(new Date(baseMonth.getFullYear(), baseMonth.getMonth() - 1));
+            const nextMonth = () => setBaseMonth(new Date(baseMonth.getFullYear(), baseMonth.getMonth() + 1));
+            
+            const month1 = baseMonth;
+            const month2 = new Date(baseMonth.getFullYear(), baseMonth.getMonth() + 1);
+            const days1 = getDaysInMonth(month1);
+            const days2 = getDaysInMonth(month2);
+            
+            const renderMonth = (monthDate, days) => (
+                <div className="cal-month">
+                    <div className="cal-month-title">
+                        {months[monthDate.getMonth()]} {monthDate.getFullYear()}
+                    </div>
+                    <div className="cal-weekdays">
+                        {weekDays.map(day => (
+                            <div key={day} className="cal-weekday">{day}</div>
+                        ))}
+                    </div>
+                    <div className="cal-days">
+                        {days.map((dayInfo, idx) => {
+                            const disabled = isDisabled(dayInfo.date);
+                            const rangeStart = isRangeStart(dayInfo.date);
+                            const rangeEnd = isRangeEnd(dayInfo.date);
+                            const inRange = isInRange(dayInfo.date);
+                            const todayClass = isToday(dayInfo.date);
+                            
+                            let className = 'cal-day';
+                            if (dayInfo.outside) className += ' outside';
+                            if (disabled) className += ' disabled';
+                            if (rangeStart) className += ' range-start';
+                            if (rangeEnd) className += ' range-end';
+                            if (inRange) className += ' in-range';
+                            if (todayClass && !rangeStart && !rangeEnd) className += ' today';
+                            
+                            return (
+                                <button
+                                    key={idx}
+                                    type="button"
+                                    className={className}
+                                    onClick={() => !disabled && !dayInfo.outside && handleDayClick(dayInfo)}
+                                    disabled={disabled || dayInfo.outside}
+                                >
+                                    <span className="cal-day-inner">{dayInfo.day}</span>
+                                </button>
+                            );
+                        })}
+                    </div>
+                </div>
+            );
+            
+            return (
+                <div className="cal-container">
+                    <div className="cal-nav">
+                        <button type="button" onClick={prevMonth} className="cal-nav-btn cal-nav-prev">
+                            <ChevronLeft />
+                        </button>
+                        <button type="button" onClick={nextMonth} className="cal-nav-btn cal-nav-next">
+                            <ChevronRight />
+                        </button>
+                    </div>
+                    <div className="cal-months">
+                        {renderMonth(month1, days1)}
+                        {renderMonth(month2, days2)}
+                    </div>
+                </div>
+            );
+        };
+        
+        // Search Form Component for Hero - Airbnb Style
         const HeroSearchForm = () => {
-            const [checkIn, setCheckIn] = useState('');
-            const [checkOut, setCheckOut] = useState('');
-            const [guests, setGuests] = useState('1');
+            const [checkIn, setCheckIn] = useState(null);
+            const [checkOut, setCheckOut] = useState(null);
+            const [guests, setGuests] = useState(0);
+            const [location, setLocation] = useState('');
+            const [activePanel, setActivePanel] = useState(null); // 'dates', 'location', 'guests', or null
+            const [mobileModalOpen, setMobileModalOpen] = useState(false);
+            const [mobileActiveSection, setMobileActiveSection] = useState('where'); // 'where', 'when', 'who'
+            const [showAllDestinations, setShowAllDestinations] = useState(false);
+            const formRef = useRef(null);
+            const inputRef = useRef(null);
+            const mobileInputRef = useRef(null);
             
-            const today = new Date().toISOString().split('T')[0];
+            const destinations = window.DESTINATIONS || [];
+            const recentSearches = window.RECENT_SEARCHES || [];
             
-            const handleSubmit = (e) => {
-                e.preventDefault();
+            // Filter destinations based on input
+            const filteredDestinations = location.trim() 
+                ? destinations.filter(d => 
+                    d.name.toLowerCase().includes(location.toLowerCase()) ||
+                    d.subtitle.toLowerCase().includes(location.toLowerCase())
+                  )
+                : destinations;
+            
+            // Limit destinations shown on mobile
+            const displayedDestinations = showAllDestinations 
+                ? filteredDestinations 
+                : filteredDestinations.slice(0, 4);
+            
+            // Close panel when clicking outside (desktop)
+            useEffect(() => {
+                const handleClickOutside = (e) => {
+                    if (formRef.current && !formRef.current.contains(e.target)) {
+                        setActivePanel(null);
+                    }
+                };
+                document.addEventListener('mousedown', handleClickOutside);
+                return () => document.removeEventListener('mousedown', handleClickOutside);
+            }, []);
+            
+            // Focus input when location panel opens
+            useEffect(() => {
+                if (activePanel === 'location' && inputRef.current) {
+                    inputRef.current.focus();
+                }
+            }, [activePanel]);
+            
+            // Focus mobile input when modal opens to Where section
+            useEffect(() => {
+                if (mobileModalOpen && mobileActiveSection === 'where' && mobileInputRef.current) {
+                    setTimeout(() => mobileInputRef.current?.focus(), 100);
+                }
+            }, [mobileModalOpen, mobileActiveSection]);
+            
+            // Manage body scroll when mobile modal is open
+            useEffect(() => {
+                if (mobileModalOpen) {
+                    document.body.classList.add('modal-open');
+                } else {
+                    document.body.classList.remove('modal-open');
+                }
+                return () => document.body.classList.remove('modal-open');
+            }, [mobileModalOpen]);
+            
+            const handleSearch = () => {
                 const params = new URLSearchParams();
-                if (checkIn) params.set('check_in', checkIn);
-                if (checkOut) params.set('check_out', checkOut);
-                if (guests) params.set('guests', guests);
+                if (checkIn) params.set('check_in', formatDate(checkIn, 'yyyy-MM-dd'));
+                if (checkOut) params.set('check_out', formatDate(checkOut, 'yyyy-MM-dd'));
+                if (guests > 0) params.set('guests', guests.toString());
+                if (location) params.set('location', location);
                 window.location.href = `/properties/?${params.toString()}`;
             };
             
+            const handleDestinationClick = (dest) => {
+                setLocation(dest.name);
+                setActivePanel('dates'); // Move to dates after selecting location (desktop)
+                setMobileActiveSection('when'); // Move to dates on mobile
+            };
+            
+            const handleRecentSearchClick = (search) => {
+                setLocation(search.location);
+                if (search.check_in) setCheckIn(new Date(search.check_in));
+                if (search.check_out) setCheckOut(new Date(search.check_out));
+                if (search.guests) setGuests(search.guests);
+                setActivePanel(null);
+                setMobileModalOpen(false);
+            };
+            
+            const handleClearAll = () => {
+                setLocation('');
+                setCheckIn(null);
+                setCheckOut(null);
+                setGuests(0);
+            };
+            
+            const formatRecentDate = (checkIn, checkOut) => {
+                if (!checkIn || !checkOut) return '';
+                const inDate = new Date(checkIn);
+                const outDate = new Date(checkOut);
+                const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                return `${inDate.getDate()}-${outDate.getDate()} ${months[inDate.getMonth()]}`;
+            };
+            
+            const getSearchSummary = () => {
+                let parts = [];
+                if (location) parts.push(location);
+                if (checkIn && checkOut) {
+                    parts.push(`${formatDate(checkIn, 'MMM d')} - ${formatDate(checkOut, 'MMM d')}`);
+                }
+                if (guests > 0) {
+                    parts.push(`${guests} guest${guests > 1 ? 's' : ''}`);
+                }
+                return parts.length > 0 ? parts.join(' · ') : 'Anywhere · Any week · Add guests';
+            };
+            
+            const isExpanded = activePanel !== null;
+            
             return (
-                <form className="search-bar" onSubmit={handleSubmit}>
-                    <div className="search-bar__group">
-                        <label htmlFor="check-in">Check-in</label>
-                        <input 
-                            type="date" 
-                            id="check-in" 
-                            value={checkIn}
-                            onChange={(e) => setCheckIn(e.target.value)}
-                            min={today}
-                            required
-                        />
-                    </div>
-                    
-                    <div className="search-bar__group">
-                        <label htmlFor="check-out">Check-out</label>
-                        <input 
-                            type="date" 
-                            id="check-out" 
-                            value={checkOut}
-                            onChange={(e) => setCheckOut(e.target.value)}
-                            min={checkIn || today}
-                            required
-                        />
-                    </div>
-                    
-                    <div className="search-bar__group">
-                        <label htmlFor="guests">Guests</label>
-                        <select 
-                            id="guests" 
-                            value={guests}
-                            onChange={(e) => setGuests(e.target.value)}
-                            required
-                        >
-                            <option value="1">1 Guest</option>
-                            <option value="2">2 Guests</option>
-                            <option value="3">3 Guests</option>
-                            <option value="4">4 Guests</option>
-                            <option value="5">5 Guests</option>
-                            <option value="6">6+ Guests</option>
-                        </select>
-                    </div>
-                    
-                    <button type="submit" className="search-bar__btn">
-                        <span>Find your perfect match</span>
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <circle cx="11" cy="11" r="8"/>
-                            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-                        </svg>
+                <>
+                    {/* Mobile Search Trigger */}
+                    <button
+                        type="button"
+                        className="mobile-search-trigger"
+                        onClick={() => setMobileModalOpen(true)}
+                    >
+                        <div className="mobile-search-trigger-icon">
+                            <SearchIcon />
+                        </div>
+                        <div className="mobile-search-trigger-text">
+                            <span className="mobile-search-trigger-title">Where to?</span>
+                            <span className="mobile-search-trigger-subtitle">{getSearchSummary()}</span>
+                        </div>
                     </button>
-                </form>
+                    
+                    {/* Mobile Full-Screen Modal */}
+                    <div className={`mobile-search-modal ${mobileModalOpen ? 'open' : ''}`}>
+                        {/* Modal Header */}
+                        <div className="mobile-modal-header">
+                            <button
+                                type="button"
+                                className="mobile-modal-close"
+                                onClick={() => setMobileModalOpen(false)}
+                            >
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <line x1="18" y1="6" x2="6" y2="18"/>
+                                    <line x1="6" y1="6" x2="18" y2="18"/>
+                                </svg>
+                            </button>
+                            <div className="mobile-modal-tabs">
+                                <button
+                                    type="button"
+                                    className={`mobile-modal-tab ${mobileActiveSection !== 'experiences' ? 'active' : ''}`}
+                                >
+                                    Stays
+                                </button>
+                            </div>
+                        </div>
+                        
+                        {/* Modal Content */}
+                        <div className="mobile-modal-content">
+                            {mobileActiveSection === 'where' && (
+                                <div className="mobile-search-card">
+                                    <h3>Where?</h3>
+                                    
+                                    <div className="mobile-location-input-wrapper">
+                                        <SearchIcon />
+                                        <input
+                                            ref={mobileInputRef}
+                                            type="text"
+                                            value={location}
+                                            onChange={(e) => setLocation(e.target.value)}
+                                            placeholder="Search destinations"
+                                            className="mobile-location-input"
+                                        />
+                                    </div>
+                                    
+                                    {/* Recent Searches */}
+                                    {recentSearches.length > 0 && !location.trim() && (
+                                        <>
+                                            <h4 className="mobile-section-title">Recent searches</h4>
+                                            <div className="mobile-destination-list">
+                                                {recentSearches.map((search, idx) => (
+                                                    <button
+                                                        key={idx}
+                                                        type="button"
+                                                        className="mobile-destination-item"
+                                                        onClick={() => handleRecentSearchClick(search)}
+                                                    >
+                                                        <div className="mobile-destination-icon" style={{ background: '#f3f4f6' }}>
+                                                            <ClockIcon color="#6B7280" />
+                                                        </div>
+                                                        <div className="mobile-destination-info">
+                                                            <span className="mobile-destination-name">{search.location}</span>
+                                                            <span className="mobile-destination-subtitle">
+                                                                {formatRecentDate(search.check_in, search.check_out)}
+                                                                {search.guests && ` · ${search.guests} guests`}
+                                                            </span>
+                                                        </div>
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </>
+                                    )}
+                                    
+                                    {/* Suggested Destinations */}
+                                    <h4 className="mobile-section-title" style={{ marginTop: recentSearches.length > 0 && !location.trim() ? '1.5rem' : '0' }}>
+                                        {location.trim() ? 'Results' : 'Suggested destinations'}
+                                    </h4>
+                                    <div className="mobile-destination-list">
+                                        {displayedDestinations.length > 0 ? (
+                                            displayedDestinations.map((dest, idx) => (
+                                                <button
+                                                    key={idx}
+                                                    type="button"
+                                                    className="mobile-destination-item"
+                                                    onClick={() => handleDestinationClick(dest)}
+                                                >
+                                                    <div 
+                                                        className="mobile-destination-icon"
+                                                        style={{ background: `${dest.icon_color}15` }}
+                                                    >
+                                                        {getDestinationIcon(dest.icon_name, dest.icon_color)}
+                                                    </div>
+                                                    <div className="mobile-destination-info">
+                                                        <span className="mobile-destination-name">{dest.name}</span>
+                                                        <span className="mobile-destination-subtitle">{dest.subtitle}</span>
+                                                    </div>
+                                                </button>
+                                            ))
+                                        ) : (
+                                            <p className="no-results" style={{ color: '#717171', padding: '1rem 0' }}>
+                                                No destinations found for "{location}"
+                                            </p>
+                                        )}
+                                    </div>
+                                    
+                                    {/* Show more button */}
+                                    {filteredDestinations.length > 4 && (
+                                        <button
+                                            type="button"
+                                            className={`mobile-show-more ${showAllDestinations ? 'expanded' : ''}`}
+                                            onClick={() => setShowAllDestinations(!showAllDestinations)}
+                                        >
+                                            {showAllDestinations ? 'Show less' : `Show ${filteredDestinations.length - 4} more`}
+                                            <ChevronDown />
+                                        </button>
+                                    )}
+                                </div>
+                            )}
+                            
+                            {mobileActiveSection === 'when' && (
+                                <div className="mobile-dates-card">
+                                    <h3>When's your trip?</h3>
+                                    <DatePickerCalendar
+                                        checkIn={checkIn}
+                                        checkOut={checkOut}
+                                        onSelectCheckIn={(date) => {
+                                            setCheckIn(date);
+                                            if (checkOut && date > checkOut) {
+                                                setCheckOut(null);
+                                            }
+                                        }}
+                                        onSelectCheckOut={(date) => {
+                                            setCheckOut(date);
+                                        }}
+                                        onClose={() => {}}
+                                    />
+                                    {checkIn && checkOut && (
+                                        <button
+                                            type="button"
+                                            className="mobile-next-btn"
+                                            onClick={() => setMobileActiveSection('who')}
+                                        >
+                                            Next
+                                        </button>
+                                    )}
+                                </div>
+                            )}
+                            
+                            {mobileActiveSection === 'who' && (
+                                <div className="mobile-guests-card">
+                                    <h3>Who's coming?</h3>
+                                    <div className="mobile-guests-row">
+                                        <div className="mobile-guests-info">
+                                            <span className="mobile-guests-title">Adults</span>
+                                            <span className="mobile-guests-subtitle">Ages 16+</span>
+                                        </div>
+                                        <div className="mobile-guests-controls">
+                                            <button
+                                                type="button"
+                                                className="mobile-guest-btn"
+                                                onClick={() => setGuests(Math.max(0, guests - 1))}
+                                                disabled={guests <= 0}
+                                            >
+                                                <Minus />
+                                            </button>
+                                            <span className="mobile-guest-count">{guests}</span>
+                                            <button
+                                                type="button"
+                                                className="mobile-guest-btn"
+                                                onClick={() => setGuests(Math.min(16, guests + 1))}
+                                                disabled={guests >= 16}
+                                            >
+                                                <Plus />
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                            
+                            {/* Collapsed cards for other sections */}
+                            {mobileActiveSection !== 'where' && (
+                                <div
+                                    className="mobile-search-card collapsed"
+                                    onClick={() => setMobileActiveSection('where')}
+                                    style={{ marginTop: '1rem' }}
+                                >
+                                    <div className="mobile-search-card-header">
+                                        <span className="mobile-search-card-label">Where</span>
+                                        <span className="mobile-search-card-value">
+                                            {location || "I'm flexible"}
+                                        </span>
+                                    </div>
+                                </div>
+                            )}
+                            
+                            {mobileActiveSection !== 'when' && (
+                                <div
+                                    className="mobile-search-card collapsed"
+                                    onClick={() => setMobileActiveSection('when')}
+                                >
+                                    <div className="mobile-search-card-header">
+                                        <span className="mobile-search-card-label">When</span>
+                                        <span className="mobile-search-card-value">
+                                            {checkIn && checkOut 
+                                                ? `${formatDate(checkIn, 'MMM d')} - ${formatDate(checkOut, 'MMM d')}`
+                                                : 'Add dates'}
+                                        </span>
+                                    </div>
+                                </div>
+                            )}
+                            
+                            {mobileActiveSection !== 'who' && (
+                                <div
+                                    className="mobile-search-card collapsed"
+                                    onClick={() => setMobileActiveSection('who')}
+                                >
+                                    <div className="mobile-search-card-header">
+                                        <span className="mobile-search-card-label">Who</span>
+                                        <span className="mobile-search-card-value">
+                                            {guests > 0 ? `${guests} guest${guests > 1 ? 's' : ''}` : 'Add guests'}
+                                        </span>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                        
+                        {/* Modal Footer */}
+                        <div className="mobile-modal-footer">
+                            <button
+                                type="button"
+                                className="mobile-clear-btn"
+                                onClick={handleClearAll}
+                            >
+                                Clear all
+                            </button>
+                            <button
+                                type="button"
+                                className="mobile-search-btn"
+                                onClick={handleSearch}
+                            >
+                                <SearchIcon />
+                                Search
+                            </button>
+                        </div>
+                    </div>
+                    
+                    {/* Desktop Search */}
+                    <div className={`airbnb-search desktop-search ${isExpanded ? 'expanded' : ''}`} ref={formRef}>
+                        {/* Main Search Bar */}
+                        <div className="airbnb-search-bar">
+                            {/* Where */}
+                            <button
+                                type="button"
+                                className={`airbnb-field ${activePanel === 'location' ? 'active' : ''}`}
+                                onClick={() => setActivePanel(activePanel === 'location' ? null : 'location')}
+                            >
+                                <span className="airbnb-field-label">Where</span>
+                                <span className="airbnb-field-value">
+                                    {location || <span className="placeholder">Search destinations</span>}
+                                </span>
+                            </button>
+                            
+                            <div className="airbnb-divider"></div>
+                            
+                            {/* When */}
+                            <button
+                                type="button"
+                                className={`airbnb-field ${activePanel === 'dates' ? 'active' : ''}`}
+                                onClick={() => setActivePanel(activePanel === 'dates' ? null : 'dates')}
+                            >
+                                <span className="airbnb-field-label">When</span>
+                                <span className="airbnb-field-value">
+                                    {checkIn && checkOut ? (
+                                        `${formatDate(checkIn, 'MMM d')} - ${formatDate(checkOut, 'MMM d')}`
+                                    ) : (
+                                        <span className="placeholder">Add dates</span>
+                                )}
+                            </span>
+                        </button>
+                        
+                        <div className="airbnb-divider"></div>
+                        
+                        {/* Guests */}
+                        <button
+                            type="button"
+                            className={`airbnb-field ${activePanel === 'guests' ? 'active' : ''}`}
+                            onClick={() => setActivePanel(activePanel === 'guests' ? null : 'guests')}
+                        >
+                            <span className="airbnb-field-label">Who</span>
+                            <span className="airbnb-field-value">
+                                {guests > 0 ? (
+                                    `${guests} ${guests === 1 ? 'guest' : 'guests'}`
+                                ) : (
+                                    <span className="placeholder">Add guests</span>
+                                )}
+                            </span>
+                        </button>
+                        
+                        {/* Search Button */}
+                            <button type="button" onClick={handleSearch} className="airbnb-search-btn">
+                                <SearchIcon />
+                                <span className="airbnb-search-btn-text">Search</span>
+                            </button>
+                        </div>
+                        
+                        {/* Location Panel */}
+                        <div className={`airbnb-panel ${activePanel === 'location' ? 'open' : ''}`}>
+                            <div className="location-panel">
+                                {/* Search Input */}
+                                <div className="location-search-input">
+                                    <SearchIcon />
+                                    <input
+                                        ref={inputRef}
+                                        type="text"
+                                        value={location}
+                                        onChange={(e) => setLocation(e.target.value)}
+                                        placeholder="Search destinations"
+                                        className="location-input"
+                                    />
+                                </div>
+                                
+                                {/* Recent Searches */}
+                                {recentSearches.length > 0 && !location.trim() && (
+                                    <div className="location-section">
+                                        <h4 className="location-section-title">Recent searches</h4>
+                                        <div className="location-list">
+                                            {recentSearches.map((search, idx) => (
+                                                <button
+                                                    key={idx}
+                                                    type="button"
+                                                    className="location-item"
+                                                    onClick={() => handleRecentSearchClick(search)}
+                                                >
+                                                    <div className="location-icon-wrapper" style={{ background: '#f3f4f6' }}>
+                                                        <ClockIcon color="#6B7280" />
+                                                    </div>
+                                                    <div className="location-info">
+                                                        <span className="location-name">{search.location}</span>
+                                                        <span className="location-subtitle">
+                                                            {formatRecentDate(search.check_in, search.check_out)}
+                                                            {search.guests && ` · ${search.guests} guests`}
+                                                        </span>
+                                                    </div>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                                
+                                {/* Suggested Destinations */}
+                                <div className="location-section">
+                                    <h4 className="location-section-title">
+                                        {location.trim() ? 'Results' : 'Suggested destinations'}
+                                    </h4>
+                                    <div className="location-list">
+                                        {filteredDestinations.length > 0 ? (
+                                            filteredDestinations.map((dest, idx) => (
+                                                <button
+                                                    key={idx}
+                                                    type="button"
+                                                    className="location-item"
+                                                    onClick={() => handleDestinationClick(dest)}
+                                                >
+                                                    <div 
+                                                        className="location-icon-wrapper"
+                                                        style={{ background: `${dest.icon_color}15` }}
+                                                    >
+                                                        {getDestinationIcon(dest.icon_name, dest.icon_color)}
+                                                    </div>
+                                                    <div className="location-info">
+                                                        <span className="location-name">{dest.name}</span>
+                                                        <span className="location-subtitle">{dest.subtitle}</span>
+                                                    </div>
+                                                </button>
+                                            ))
+                                        ) : (
+                                            <p className="no-results">No destinations found for "{location}"</p>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        {/* Dates Panel */}
+                        <div className={`airbnb-panel ${activePanel === 'dates' ? 'open' : ''}`}>
+                            <DatePickerCalendar
+                                checkIn={checkIn}
+                                checkOut={checkOut}
+                                onSelectCheckIn={setCheckIn}
+                                onSelectCheckOut={setCheckOut}
+                                onClose={() => setActivePanel(null)}
+                            />
+                        </div>
+                        
+                        {/* Guests Panel */}
+                        <div className={`airbnb-panel ${activePanel === 'guests' ? 'open' : ''}`}>
+                            <div className="guests-picker">
+                                <div className="guests-picker-row guests-picker-row-last">
+                                    <div className="guests-picker-info">
+                                        <span className="guests-picker-title">Adults</span>
+                                        <span className="guests-picker-subtitle">Ages 16+</span>
+                                    </div>
+                                    <div className="guests-picker-controls">
+                                        <button
+                                            type="button"
+                                            onClick={() => setGuests(Math.max(0, guests - 1))}
+                                            disabled={guests <= 0}
+                                            className="guest-control-btn"
+                                        >
+                                            <Minus />
+                                        </button>
+                                        <span className="guest-count">{guests}</span>
+                                        <button
+                                            type="button"
+                                            onClick={() => setGuests(Math.min(16, guests + 1))}
+                                            disabled={guests >= 16}
+                                            className="guest-control-btn"
+                                        >
+                                            <Plus />
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </>
             );
         };
         
@@ -349,6 +1111,66 @@ SAFE LET STAYS — HOMEPAGE TEMPLATE (REACT INTEGRATED)
             );
         };
         
+        // CTA Section Component
+        const BuildingIcon = () => (
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <rect x="4" y="2" width="16" height="20" rx="2" ry="2"/>
+                <path d="M9 22v-4h6v4"/>
+                <path d="M8 6h.01"/>
+                <path d="M16 6h.01"/>
+                <path d="M12 6h.01"/>
+                <path d="M12 10h.01"/>
+                <path d="M12 14h.01"/>
+                <path d="M16 10h.01"/>
+                <path d="M16 14h.01"/>
+                <path d="M8 10h.01"/>
+                <path d="M8 14h.01"/>
+            </svg>
+        );
+        
+        const ArrowRightIcon = () => (
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <line x1="5" y1="12" x2="19" y2="12"/>
+                <polyline points="12 5 19 12 12 19"/>
+            </svg>
+        );
+        
+        const CTASection = () => {
+            return (
+                <section className="cta-section">
+                    <div className="cta-bg-pattern">
+                        <div className="cta-bg-blob cta-bg-blob-1"></div>
+                        <div className="cta-bg-blob cta-bg-blob-2"></div>
+                    </div>
+                    
+                    <div className="container cta-content">
+                        <div className="cta-icon">
+                            <BuildingIcon />
+                        </div>
+                        
+                        <h2 className="cta-title">
+                            Ready to Experience Sheffield's
+                            <span className="cta-highlight"> Best Accommodation?</span>
+                        </h2>
+                        
+                        <p className="cta-description">
+                            Join thousands of satisfied guests who've discovered the smarter way to stay in Sheffield.
+                        </p>
+                        
+                        <div className="cta-buttons">
+                            <a href="/properties" className="cta-btn cta-btn-primary">
+                                Browse Properties
+                                <ArrowRightIcon />
+                            </a>
+                            <a href="/about" className="cta-btn cta-btn-outline">
+                                Learn More
+                            </a>
+                        </div>
+                    </div>
+                </section>
+            );
+        };
+        
         // Mount Homepage Components
         const searchFormRoot = document.getElementById('react-search-form');
         if (searchFormRoot) {
@@ -367,6 +1189,11 @@ SAFE LET STAYS — HOMEPAGE TEMPLATE (REACT INTEGRATED)
         const benefitsRoot = document.getElementById('react-benefits');
         if (benefitsRoot && window.SafeLetComponents) {
             ReactDOM.createRoot(benefitsRoot).render(<BenefitsGrid />);
+        }
+        
+        const ctaRoot = document.getElementById('react-cta');
+        if (ctaRoot) {
+            ReactDOM.createRoot(ctaRoot).render(<CTASection />);
         }
     {% endverbatim %}
     </script>

@@ -1,17 +1,86 @@
-asgiref==3.11.0
-certifi==2025.11.12
-charset-normalizer==3.4.4
-Django==5.2.8
-idna==3.11
-pillow==12.0.0
-python-dotenv==1.2.1
-reportlab==4.4.5
-requests==2.32.5
-sqlparse==0.5.4
-stripe==14.0.1
-typing_extensions==4.15.0
-urllib3==2.5.0
-mailjet-rest==1.3.4
-# Security packages
-bleach==6.1.0  # HTML sanitization
-defusedxml==0.7.1  # Safe XML parsing
+# =============================================================================
+# Safe Let Stays - Production Requirements
+# =============================================================================
+# Install with: pip install -r requirements.txt
+# =============================================================================
+
+# Core Django Framework
+Django>=5.2,<6.0
+asgiref>=3.11.0
+
+# Database & ORM
+sqlparse>=0.5.0
+
+# Image Processing
+pillow>=12.0.0
+
+# Environment Variables
+python-dotenv>=1.2.0
+
+# HTTP Client
+requests>=2.32.0
+urllib3>=2.5.0
+certifi>=2025.0.0
+charset-normalizer>=3.4.0
+idna>=3.11
+
+# Payment Processing
+stripe>=14.0.0
+
+# Email (Mailjet)
+mailjet-rest>=1.3.4
+
+# PDF Generation
+reportlab>=4.4.0
+
+# Type Hints
+typing_extensions>=4.15.0
+
+# =============================================================================
+# Security Packages
+# =============================================================================
+
+# HTML Sanitization
+bleach>=6.1.0
+
+# Safe XML Parsing
+defusedxml>=0.7.1
+
+# =============================================================================
+# Production Server (Optional - for non-PythonAnywhere deployments)
+# =============================================================================
+
+# WSGI Server (uncomment for standalone deployment)
+# gunicorn>=21.0.0
+
+# =============================================================================
+# Development & Testing (Optional)
+# =============================================================================
+
+# Testing
+# pytest>=7.0.0
+# pytest-django>=4.5.0
+# coverage>=7.0.0
+
+# Code Quality
+# flake8>=6.0.0
+# black>=23.0.0
+# isort>=5.12.0
+
+# =============================================================================
+# Database Options (Optional - uncomment as needed)
+# =============================================================================
+
+# PostgreSQL
+# psycopg2-binary>=2.9.9
+
+# MySQL
+# mysqlclient>=2.2.0
+
+# =============================================================================
+# Caching (Optional - for production performance)
+# =============================================================================
+
+# Redis Cache
+# django-redis>=5.4.0
+# redis>=5.0.0

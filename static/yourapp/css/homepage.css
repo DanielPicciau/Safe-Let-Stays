@@ -66,9 +66,10 @@ body {
 /* Sections after hero need solid backgrounds to cover the fixed video */
 body > section:not(.hero):not(#welcome),
 body > main,
-body > footer {
+body > footer,
+#react-footer {
     position: relative;
-    z-index: 1;
+    z-index: 2;
     background-color: var(--white);
 }
 
@@ -160,8 +161,8 @@ button, input, select, textarea {
 /* Main content - ensure it's above the fixed video */
 #main-content {
     position: relative;
-    z-index: 1;
-    background-color: transparent;
+    z-index: 2;
+    background-color: var(--white);
 }
 
 /* Typography */
@@ -450,7 +451,7 @@ h1, h2, h3, h4, h5, h6 {
     padding-top: var(--header-height);
     padding-bottom: 4rem;
     color: var(--white);
-    overflow: hidden;
+    z-index: 1;
 }
 
 .hero__bg-video {
@@ -478,16 +479,41 @@ h1, h2, h3, h4, h5, h6 {
     width: 100%;
 }
 
+.hero__layout--centered {
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    gap: 2rem;
+}
+
 .hero__search-wrapper {
     flex: 1;
     max-width: 400px;
     width: 100%;
+    position: relative;
+    z-index: 100;
+}
+
+.hero__search-wrapper--centered {
+    flex: none;
+    max-width: 800px;
 }
 
 .hero__content {
     text-align: left;
     max-width: 600px;
     margin-bottom: 0;
+}
+
+.hero__content--centered {
+    text-align: center;
+    max-width: 800px;
+}
+
+.hero__content--centered .hero__label {
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .hero__label {
@@ -2005,13 +2031,16 @@ h1, h2, h3, h4, h5, h6 {
     .hero {
         height: auto;
         min-height: 100vh;
-        padding-top: calc(var(--header-height) + 2rem);
+        padding-top: calc(var(--header-height) + 1rem);
+        padding-bottom: 2rem;
     }
 
     .hero__layout {
         flex-direction: column;
         text-align: center;
-        gap: 3rem;
+        gap: 1.5rem;
+        justify-content: flex-start;
+        padding-top: 1rem;
     }
 
     .hero__content {
@@ -2059,6 +2088,19 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 @media (max-width: 768px) {
+    /* Header - keep gradient on mobile for video background */
+    :root {
+        --header-height: 60px;
+    }
+    
+    .header {
+        padding: 0.75rem 0;
+    }
+    
+    .logo-text {
+        font-size: 1.25rem;
+    }
+    
     .header__nav {
         position: fixed;
         top: 0;
@@ -2131,8 +2173,39 @@ h1, h2, h3, h4, h5, h6 {
         z-index: 1001;
     }
     
+    /* Hero CTA - compact with video on mobile */
+    .hero {
+        min-height: 40vh;
+        height: auto;
+        padding-top: calc(var(--header-height) + 0.5rem);
+        padding-bottom: 1.5rem;
+        justify-content: flex-start;
+    }
+    
+    .hero__layout--centered {
+        gap: 0.75rem;
+        padding-top: 0.5rem;
+    }
+    
+    .hero__content--centered {
+        display: block;
+    }
+    
+    .hero__label {
+        font-size: 0.7rem;
+        padding: 0.35rem 0.7rem;
+        margin-bottom: 0.5rem;
+    }
+    
     .hero h1 {
-        font-size: 2.5rem;
+        font-size: 1.75rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .hero__search-wrapper--centered {
+        margin-top: 0;
+        max-width: 100%;
+        padding: 0;
     }
     
     .featured-card__content {
@@ -2154,7 +2227,33 @@ h1, h2, h3, h4, h5, h6 {
     }
     
     .section {
-        padding: 3rem 0;
+    .section {
+        padding: 2.5rem 0;
+    }
+    
+    /* Compact section headers on mobile */
+    .section-header {
+        margin-bottom: 1.5rem !important;
+    }
+    
+    .section-subtitle {
+        font-size: 0.7rem;
+        padding: 0.2rem 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .section-title {
+        font-size: 1.5rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .section-desc {
+        font-size: 0.9rem;
+    }
+    
+    /* Top properties section mobile */
+    .top-properties-section {
+        padding: 2rem 0 !important;
     }
 
     /* Properties Page Responsive */
@@ -2219,6 +2318,14 @@ h1, h2, h3, h4, h5, h6 {
 
     .cta-actions .btn {
         width: 100%;
+    }
+}
+
+/* Extra small mobile - keep minimal hero */
+@media (max-width: 480px) {
+    .hero {
+        padding-top: calc(var(--header-height) + 0.75rem);
+        padding-bottom: 1rem;
     }
 }
 

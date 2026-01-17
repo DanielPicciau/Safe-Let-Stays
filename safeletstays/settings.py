@@ -34,7 +34,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'yourapp',
+    'yourapp.apps.YourappConfig',
 ]
 
 MIDDLEWARE = [
@@ -54,6 +54,8 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'safeletstays.urls'
+
+WSGI_APPLICATION = 'safeletstays.wsgi.application'
 
 TEMPLATES = [
     {
@@ -86,6 +88,15 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+# =============================================================================
+# INTERNATIONALIZATION
+# =============================================================================
+
+LANGUAGE_CODE = 'en-gb'
+TIME_ZONE = 'Europe/London'
+USE_I18N = True
+USE_TZ = True
 
 # =============================================================================
 # PASSWORD VALIDATION
