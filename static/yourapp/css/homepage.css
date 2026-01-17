@@ -384,7 +384,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* ==========================================================================
-   DESKTOP: Navbar content fades up when search docks
+   DESKTOP: Search bar docking animation - navbar content fades up
    ========================================================================== */
 @media (min-width: 769px) {
     /* Desktop header nav slides up and fades out when search docks */
@@ -411,7 +411,83 @@ h1, h2, h3, h4, h5, h6 {
         transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
     }
     
-    /* Hide mobile search on desktop always */
+    /* Desktop docked search - compact bar in header */
+    .header__desktop-docked-search {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%) scale(0.9);
+        opacity: 0;
+        pointer-events: none;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        z-index: 10;
+    }
+    
+    .header.search-docked .header__desktop-docked-search {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+        pointer-events: auto;
+    }
+    
+    /* Compact docked search bar styling */
+    .desktop-docked-search-btn {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 0.625rem 0.5rem 1rem;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 40px;
+        cursor: pointer;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        transition: all 0.25s ease;
+        white-space: nowrap;
+    }
+    
+    .desktop-docked-search-btn:hover {
+        box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    }
+    
+    .desktop-docked-search-btn:active {
+        transform: scale(0.98);
+    }
+    
+    .desktop-docked-search-fields {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .desktop-docked-search-field {
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--text-main);
+    }
+    
+    .desktop-docked-search-divider {
+        width: 1px;
+        height: 16px;
+        background: var(--border);
+    }
+    
+    .desktop-docked-search-icon {
+        width: 32px;
+        height: 32px;
+        background: var(--primary);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+    
+    .desktop-docked-search-icon svg {
+        width: 14px;
+        height: 14px;
+        color: white;
+    }
+    
+    /* Hide mobile search on desktop */
     .header__mobile-search {
         display: none !important;
     }

@@ -178,6 +178,15 @@ const Header = ({ activePage }) => {
         // Dispatch event to open the mobile search modal
         window.dispatchEvent(new CustomEvent('openMobileSearch'));
     };
+    
+    // Handle click on desktop docked search - scroll back up and open search
+    const handleDesktopDockedSearchClick = () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        // After scroll, open the search panel
+        setTimeout(() => {
+            window.dispatchEvent(new CustomEvent('openHeroSearch'));
+        }, 400);
+    };
 
     const navLinks = [
         { href: '/', label: 'Home', key: 'home' },
@@ -202,6 +211,22 @@ const Header = ({ activePage }) => {
                 <a href="/" aria-label={`${siteData.siteName} — Home`} className="logo-link">
                     <span className="logo-text">{siteData.siteName}</span>
                 </a>
+                
+                {/* Desktop Docked Search - compact bar in center of header */}
+                <div className="header__desktop-docked-search">
+                    <button 
+                        className="desktop-docked-search-btn"
+                        onClick={handleDesktopDockedSearchClick}
+                        aria-label="Search"
+                    >
+                        <div className="desktop-docked-search-fields">
+                            <span className="desktop-docked-search-field">{searchSummary}</span>
+                        </div>
+                        <div className="desktop-docked-search-icon">
+                            <Icons.Search />
+                        </div>
+                    </button>
+                </div>
                 
                 {/* Mobile Docked Search - appears in center when scrolled on mobile */}
                 <button 

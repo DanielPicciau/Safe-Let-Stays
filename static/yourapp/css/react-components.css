@@ -1810,7 +1810,7 @@
 }
 
 /* ============================================================================
-   DESKTOP SEARCH BAR - Morphs and moves into navbar when docked
+   DESKTOP SEARCH BAR - Fade out when docked (compact version appears in header)
    ============================================================================ */
 
 @media (min-width: 769px) {
@@ -1818,73 +1818,10 @@
         transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     }
     
-    /* When docked, the search bar becomes fixed and moves up into navbar */
+    /* When docked, fade out and scale down the hero search bar */
     .airbnb-search.desktop-search.is-docked {
-        position: fixed;
-        top: 14px;
-        left: 50%;
-        transform: translateX(-50%);
-        max-width: 380px;
-        z-index: 1001;
-        background: var(--bg-card);
-        border: 1px solid var(--border);
-        box-shadow: 0 2px 12px rgba(0,0,0,0.1);
-        cursor: pointer;
-    }
-    
-    .airbnb-search.desktop-search.is-docked:hover {
-        box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-    }
-    
-    /* Compact the search bar padding when docked */
-    .airbnb-search.desktop-search.is-docked .airbnb-search-bar {
-        padding: 0.25rem;
-    }
-    
-    /* Hide field labels when docked - smooth collapse */
-    .airbnb-search.desktop-search.is-docked .airbnb-field-label {
         opacity: 0;
-        height: 0;
-        margin: 0;
-        overflow: hidden;
-        transition: all 0.3s ease;
-    }
-    
-    /* Compact the fields when docked */
-    .airbnb-search.desktop-search.is-docked .airbnb-field {
-        padding: 0.5rem 0.875rem;
-    }
-    
-    /* Smaller field text when docked */
-    .airbnb-search.desktop-search.is-docked .airbnb-field-value {
-        font-size: 0.8125rem;
-        font-weight: 500;
-    }
-    
-    /* Shorter dividers when docked */
-    .airbnb-search.desktop-search.is-docked .airbnb-divider {
-        height: 18px;
-    }
-    
-    /* Smaller search button when docked */
-    .airbnb-search.desktop-search.is-docked .airbnb-search-btn {
-        height: 32px;
-        min-width: 32px;
-        padding: 0 0.625rem;
-        border-radius: 16px;
-    }
-    
-    /* Hide search text when docked */
-    .airbnb-search.desktop-search.is-docked .airbnb-search-btn-text {
-        display: none;
-    }
-    
-    /* Hide any open panels when docked */
-    .airbnb-search.desktop-search.is-docked .airbnb-panel {
-        max-height: 0 !important;
-        opacity: 0 !important;
-        padding: 0 !important;
-        border: none !important;
+        transform: translateY(-30px) scale(0.9);
         pointer-events: none;
     }
 }
