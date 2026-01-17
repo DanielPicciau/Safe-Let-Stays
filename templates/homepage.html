@@ -685,16 +685,6 @@ SAFE LET STAYS — HOMEPAGE TEMPLATE (REACT INTEGRATED)
                     }
                 };
                 
-                // Handle click on morphed search bar to scroll back up (desktop)
-                const handleMorphedClick = (e) => {
-                    if (searchBar && searchBar.classList.contains('morphing')) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                    }
-                };
-                if (searchBar) searchBar.addEventListener('click', handleMorphedClick, true);
-                
                 window.addEventListener('scroll', handleScroll, { passive: true });
                 // Initial check
                 setTimeout(updateMorphPosition, 150);
@@ -702,7 +692,6 @@ SAFE LET STAYS — HOMEPAGE TEMPLATE (REACT INTEGRATED)
                 return () => {
                     window.removeEventListener('scroll', handleScroll);
                     window.removeEventListener('resize', handleResize);
-                    if (searchBar) searchBar.removeEventListener('click', handleMorphedClick, true);
                 };
             }, [location]);
             
