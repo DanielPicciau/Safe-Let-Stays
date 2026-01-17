@@ -1810,17 +1810,27 @@
 }
 
 /* ============================================================================
-   DESKTOP SEARCH BAR - No morphing animation (disabled)
+   DESKTOP SEARCH BAR - Docking animation into navbar
    ============================================================================ */
 
-/* Desktop search stays in place, no morphing */
+/* Desktop: search bar fades out when docked */
 @media (min-width: 769px) {
     .airbnb-search.desktop-search {
-        /* No morphing - stays in hero */
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     }
     
-    .airbnb-search.desktop-search.morphing {
-        /* Morphing class has no effect on desktop */
+    /* When search is docked (scrolled), hide the hero search bar */
+    .hero__search-wrapper.search-docked .airbnb-search.desktop-search {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.95);
+        pointer-events: none;
+    }
+    
+    .hero__search-wrapper:not(.search-docked) .airbnb-search.desktop-search {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        pointer-events: auto;
+        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s;
     }
 }
 

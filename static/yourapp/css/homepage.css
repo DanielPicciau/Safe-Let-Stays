@@ -384,15 +384,119 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* ==========================================================================
-   DESKTOP: No morphing animation - header stays normal
+   DESKTOP: Search bar docking animation - navbar content fades up
    ========================================================================== */
 @media (min-width: 769px) {
-    /* Desktop header content stays visible - no animation */
-    .header.search-docked .logo-link,
-    .header.search-docked .header__nav,
+    /* Desktop header nav slides up and fades out when search docks */
     .header.search-docked .nav-list,
     .header.search-docked .header__ctas {
-        /* No changes when docked on desktop */
+        opacity: 0;
+        transform: translateY(-20px);
+        pointer-events: none;
+        transition: opacity 0.35s ease, transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .header:not(.search-docked) .nav-list,
+    .header:not(.search-docked) .header__ctas {
+        opacity: 1;
+        transform: translateY(0);
+        pointer-events: auto;
+        transition: opacity 0.4s ease 0.15s, transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.15s;
+    }
+    
+    /* Logo stays visible but moves left slightly */
+    .header.search-docked .logo-link {
+        transform: translateX(0);
+        opacity: 1;
+        transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    /* Desktop docked search container - positioned in header */
+    .header__desktop-docked-search {
+        display: none;
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%) scale(0.95);
+        opacity: 0;
+        pointer-events: none;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        z-index: 10;
+    }
+    
+    .header.search-docked .header__desktop-docked-search {
+        display: block;
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+        pointer-events: auto;
+    }
+    
+    /* Compact docked search bar styling */
+    .desktop-docked-search-btn {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.625rem 0.75rem 0.625rem 1.25rem;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 40px;
+        cursor: pointer;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        transition: all 0.25s ease;
+        min-width: 280px;
+        max-width: 500px;
+    }
+    
+    .desktop-docked-search-btn:hover {
+        box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+        border-color: var(--border);
+    }
+    
+    .desktop-docked-search-btn:active {
+        transform: scale(0.98);
+    }
+    
+    .desktop-docked-search-fields {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        flex: 1;
+        min-width: 0;
+    }
+    
+    .desktop-docked-search-field {
+        display: flex;
+        align-items: center;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--text-main);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    .desktop-docked-search-divider {
+        width: 1px;
+        height: 20px;
+        background: var(--border);
+        flex-shrink: 0;
+    }
+    
+    .desktop-docked-search-icon {
+        width: 32px;
+        height: 32px;
+        background: var(--primary);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+    
+    .desktop-docked-search-icon svg {
+        width: 14px;
+        height: 14px;
+        color: white;
     }
 }
 
