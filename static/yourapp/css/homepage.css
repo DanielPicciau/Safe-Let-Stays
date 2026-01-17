@@ -516,15 +516,31 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* ============================================================================
-   MOBILE DOCKED SEARCH IN HEADER
+   DOCKED SEARCH IN HEADER - BASE STYLES
    ============================================================================ */
 
-/* Hidden by default */
+/* Hidden by default - both mobile and desktop */
 .header__mobile-search {
     display: none;
 }
 
+.header__desktop-docked-search {
+    display: none;
+}
+
+/* Only show desktop docked search on desktop when inside media query */
+@media (min-width: 769px) {
+    .header__desktop-docked-search {
+        display: block;
+    }
+}
+
 @media (max-width: 768px) {
+    /* Hide desktop docked search on mobile */
+    .header__desktop-docked-search {
+        display: none !important;
+    }
+    
     /* Mobile docked search button - FULL SIZE, DARK MODE */
     .header__mobile-search {
         display: flex;
