@@ -33,7 +33,13 @@ load_dotenv(BASE_DIR / '.env')
 # SECURITY: Generate a new secret key for production!
 # Run this in Python: 
 # from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())
-SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'CHANGE-THIS-TO-A-REAL-SECRET-KEY-IN-PRODUCTION')
+_secret_key = os.environ.get('DJANGO_SECRET_KEY')
+if not _secret_key:
+    raise ValueError(
+        "DJANGO_SECRET_KEY environment variable is required in production. "
+        "Generate one with: python -c 'from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())'"
+    )
+SECRET_KEY = _secret_key
 
 # SECURITY: Set to False in production
 DEBUG = False
@@ -102,29 +108,51 @@ TEMPLATES = [
 WSGI_APPLICATION = 'safeletstays.wsgi.application'
 
 # =============================================================================
-# DATABASE
+# DATABASE (MED-02)
 # =============================================================================
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
+# Default: SQLite (for PythonAnywhere without paid database)
+# For production with high traffic, PostgreSQL is recommended
+_db_engine = os.environ.get('DB_ENGINE', 'sqlite3')
 
-# For MySQL on PythonAnywhere (optional - uncomment if using MySQL):
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.mysql',
-#         'NAME': 'yourusername$safeletstays',
-#         'USER': 'yourusername',
-#         'PASSWORD': os.environ.get('DB_PASSWORD', ''),
-#         'HOST': 'yourusername.mysql.pythonanywhere-services.com',
-#         'OPTIONS': {
-#             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
-#         },
-#     }
-# }
+if _db_engine == 'postgresql':
+    # PostgreSQL configuration (recommended for production)
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.environ.get('DB_NAME', 'safeletstays'),
+            'USER': os.environ.get('DB_USER', 'safeletstays'),
+            'PASSWORD': os.environ.get('DB_PASSWORD', ''),
+            'HOST': os.environ.get('DB_HOST', 'localhost'),
+            'PORT': os.environ.get('DB_PORT', '5432'),
+            'CONN_MAX_AGE': 600,  # Connection pooling
+            'OPTIONS': {
+                'sslmode': os.environ.get('DB_SSLMODE', 'prefer'),
+            },
+        }
+    }
+elif _db_engine == 'mysql':
+    # MySQL configuration (for PythonAnywhere)
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': os.environ.get('DB_NAME', 'yourusername$safeletstays'),
+            'USER': os.environ.get('DB_USER', 'yourusername'),
+            'PASSWORD': os.environ.get('DB_PASSWORD', ''),
+            'HOST': os.environ.get('DB_HOST', 'yourusername.mysql.pythonanywhere-services.com'),
+            'OPTIONS': {
+                'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+            },
+        }
+    }
+else:
+    # SQLite (development/simple deployments only)
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 # =============================================================================
 # PASSWORD VALIDATION
@@ -141,19 +169,47 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 # =============================================================================
-# CACHE CONFIGURATION (for rate limiting)
+# CACHE CONFIGURATION (MED-03 - for rate limiting and session storage)
 # =============================================================================
 
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-        'LOCATION': 'safeletstays-prod-cache',
-        'TIMEOUT': 300,
-        'OPTIONS': {
-            'MAX_ENTRIES': 5000,
+_cache_backend = os.environ.get('CACHE_BACKEND', 'locmem')
+
+if _cache_backend == 'redis':
+    # Redis configuration (recommended for production with brute force protection)
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+            'LOCATION': os.environ.get('REDIS_URL', 'redis://127.0.0.1:6379/1'),
+            'OPTIONS': {
+                'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+            },
+            'TIMEOUT': 300,
         }
     }
-}
+    # Use Redis for sessions when Redis is available
+    SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
+    SESSION_CACHE_ALIAS = 'default'
+elif _cache_backend == 'memcached':
+    # Memcached configuration
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.memcached.PyMemcacheCache',
+            'LOCATION': os.environ.get('MEMCACHED_URL', '127.0.0.1:11211'),
+            'TIMEOUT': 300,
+        }
+    }
+else:
+    # Local memory cache (not recommended for multi-process deployments)
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+            'LOCATION': 'safeletstays-prod-cache',
+            'TIMEOUT': 300,
+            'OPTIONS': {
+                'MAX_ENTRIES': 5000,
+            }
+        }
+    }
 
 # =============================================================================
 # FILE UPLOAD SECURITY

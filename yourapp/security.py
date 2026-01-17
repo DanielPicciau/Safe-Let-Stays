@@ -154,10 +154,12 @@ class SecurityHeadersMiddleware(MiddlewareMixin):
     """
     
     def process_response(self, request: HttpRequest, response: HttpResponse) -> HttpResponse:
-        # Content Security Policy
+        # Content Security Policy (HIGH-02: Strengthened)
+        # Note: 'unsafe-inline' for styles is required for React inline styles
+        # 'unsafe-eval' is required for Babel standalone - consider pre-compiling in production
         csp_directives = [
             "default-src 'self'",
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://fonts.googleapis.com https://unpkg.com",
+            "script-src 'self' https://js.stripe.com https://fonts.googleapis.com https://unpkg.com",
             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
             "font-src 'self' https://fonts.gstatic.com data:",
             "img-src 'self' data: https: blob:",
@@ -167,11 +169,19 @@ class SecurityHeadersMiddleware(MiddlewareMixin):
             "form-action 'self' https://checkout.stripe.com",
             "frame-ancestors 'none'",
             "object-src 'none'",
+            "upgrade-insecure-requests",
         ]
         
-        # Only apply strict CSP in production
+        # In development, allow unsafe-eval for Babel standalone
+        if settings.DEBUG:
+            csp_directives[1] = "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://fonts.googleapis.com https://unpkg.com"
+        
+        # Apply CSP (in production, consider using report-only first)
         if not settings.DEBUG:
             response['Content-Security-Policy'] = "; ".join(csp_directives)
+        else:
+            # Report-only in development for testing
+            response['Content-Security-Policy-Report-Only'] = "; ".join(csp_directives)
         
         # Prevent MIME type sniffing
         response['X-Content-Type-Options'] = 'nosniff'
@@ -199,11 +209,8 @@ class SecurityHeadersMiddleware(MiddlewareMixin):
 class BruteForceProtectionMiddleware(MiddlewareMixin):
     """
     Protect against brute force attacks on login and sensitive endpoints.
+    Uses Django cache backend for multi-worker compatibility (HIGH-03).
     """
-    
-    # Track failed attempts in memory (use Redis in production for multi-instance)
-    failed_attempts = defaultdict(list)
-    blocked_ips = {}
     
     MAX_FAILED_ATTEMPTS = 5
     BLOCK_DURATION = 900  # 15 minutes
@@ -215,22 +222,63 @@ class BruteForceProtectionMiddleware(MiddlewareMixin):
         '/signup/',
     ]
     
-    def process_request(self, request: HttpRequest) -> Optional[HttpResponse]:
-        ip = get_client_ip(request)
+    def _get_cache_key(self, ip: str, key_type: str) -> str:
+        """Generate cache key for IP tracking."""
+        return f"bruteforce:{key_type}:{ip}"
+    
+    def _is_blocked(self, ip: str) -> tuple[bool, int]:
+        """Check if IP is blocked and return remaining time."""
+        blocked_until = cache.get(self._get_cache_key(ip, 'blocked'))
+        if blocked_until:
+            current_time = time.time()
+            if current_time < blocked_until:
+                return True, int(blocked_until - current_time)
+            else:
+                # Clear expired block
+                cache.delete(self._get_cache_key(ip, 'blocked'))
+        return False, 0
+    
+    def _record_failure(self, ip: str) -> bool:
+        """Record a failed attempt and return True if IP should be blocked."""
+        cache_key = self._get_cache_key(ip, 'attempts')
         current_time = time.time()
         
+        # Get current attempts
+        attempts = cache.get(cache_key, [])
+        
+        # Filter to only recent attempts within window
+        attempts = [t for t in attempts if current_time - t < self.ATTEMPT_WINDOW]
+        
+        # Add new attempt
+        attempts.append(current_time)
+        
+        # Store with timeout
+        cache.set(cache_key, attempts, timeout=self.ATTEMPT_WINDOW)
+        
+        # Check if should block
+        if len(attempts) >= self.MAX_FAILED_ATTEMPTS:
+            # Block the IP
+            cache.set(
+                self._get_cache_key(ip, 'blocked'),
+                current_time + self.BLOCK_DURATION,
+                timeout=self.BLOCK_DURATION
+            )
+            # Clear attempts
+            cache.delete(cache_key)
+            return True
+        
+        return False
+    
+    def process_request(self, request: HttpRequest) -> Optional[HttpResponse]:
+        ip = get_client_ip(request)
+        
         # Check if IP is blocked
-        if ip in self.blocked_ips:
-            if current_time < self.blocked_ips[ip]:
-                remaining = int(self.blocked_ips[ip] - current_time)
-                logger.warning(f"Blocked IP {ip} attempted access. Blocked for {remaining}s more.")
-                return HttpResponseForbidden(
-                    f"Too many failed attempts. Please try again in {remaining // 60} minutes."
-                )
-            else:
-                # Unblock after duration
-                del self.blocked_ips[ip]
-                self.failed_attempts[ip] = []
+        is_blocked, remaining = self._is_blocked(ip)
+        if is_blocked:
+            logger.warning(f"Blocked IP {ip} attempted access. Blocked for {remaining}s more.")
+            return HttpResponseForbidden(
+                f"Too many failed attempts. Please try again in {remaining // 60 + 1} minutes."
+            )
         
         return None
     
@@ -243,7 +291,6 @@ class BruteForceProtectionMiddleware(MiddlewareMixin):
             return response
         
         ip = get_client_ip(request)
-        current_time = time.time()
         
         # Check if this was a failed attempt (redirect to login with errors or 401/403)
         is_failure = (
@@ -256,16 +303,7 @@ class BruteForceProtectionMiddleware(MiddlewareMixin):
         )
         
         if is_failure or (response.status_code == 302 and request.path == '/accounts/login/'):
-            # Clean old attempts outside window
-            self.failed_attempts[ip] = [
-                t for t in self.failed_attempts[ip] 
-                if current_time - t < self.ATTEMPT_WINDOW
-            ]
-            
-            self.failed_attempts[ip].append(current_time)
-            
-            if len(self.failed_attempts[ip]) >= self.MAX_FAILED_ATTEMPTS:
-                self.blocked_ips[ip] = current_time + self.BLOCK_DURATION
+            if self._record_failure(ip):
                 logger.warning(f"IP {ip} blocked due to {self.MAX_FAILED_ATTEMPTS} failed login attempts")
         
         return response
@@ -373,13 +411,21 @@ class RequestValidationMiddleware(MiddlewareMixin):
 class SessionSecurityMiddleware(MiddlewareMixin):
     """
     Enhanced session security measures.
+    
+    Configure via settings:
+    - SESSION_INVALIDATE_ON_IP_CHANGE: If True, flush session on IP change (default: False)
+    - SESSION_INVALIDATE_ON_UA_CHANGE: If True, flush session on User-Agent change (default: False)
     """
     
     def process_request(self, request: HttpRequest) -> Optional[HttpResponse]:
         if not hasattr(request, 'session'):
             return None
         
-        # Bind session to IP (optional, can cause issues with mobile users)
+        # Get settings (MED-05: configurable session invalidation)
+        invalidate_on_ip_change = getattr(settings, 'SESSION_INVALIDATE_ON_IP_CHANGE', False)
+        invalidate_on_ua_change = getattr(settings, 'SESSION_INVALIDATE_ON_UA_CHANGE', False)
+        
+        # Bind session to IP
         session_ip = request.session.get('_session_ip')
         current_ip = get_client_ip(request)
         
@@ -389,8 +435,10 @@ class SessionSecurityMiddleware(MiddlewareMixin):
                 f"Session IP mismatch: stored={session_ip}, current={current_ip}, "
                 f"user={getattr(request.user, 'username', 'anonymous')}"
             )
-            # Optionally invalidate session (commented out to prevent issues with proxies)
-            # request.session.flush()
+            if invalidate_on_ip_change:
+                request.session.flush()
+                logger.warning("Session invalidated due to IP change")
+                return None
         
         if not session_ip:
             request.session['_session_ip'] = current_ip
@@ -403,6 +451,10 @@ class SessionSecurityMiddleware(MiddlewareMixin):
             logger.warning(
                 f"Session UA mismatch for user: {getattr(request.user, 'username', 'anonymous')}"
             )
+            if invalidate_on_ua_change:
+                request.session.flush()
+                logger.warning("Session invalidated due to User-Agent change")
+                return None
         
         if not session_ua:
             request.session['_session_ua'] = current_ua

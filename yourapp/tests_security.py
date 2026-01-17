@@ -328,7 +328,7 @@ class ViewSecurityTests(TestCase):
         
         # Create test booking
         cls.booking = Booking.objects.create(
-            property=cls.property,
+            booked_property=cls.property,
             user=cls.user,
             guest_name='Test Guest',
             guest_email='testuser@example.com',
@@ -426,11 +426,16 @@ class XSSProtectionTests(TestCase):
         )
     
     def test_property_title_is_escaped_in_list(self):
-        """Test that property title is escaped in the property list."""
+        """Test that property title is escaped in the property list.
+        
+        Note: Content is JSON-escaped for JavaScript/React context (\\u003C instead of &lt;).
+        This is the correct behavior as React handles the XSS protection on the client side.
+        """
         response = self.client.get(reverse('properties'))
+        # Raw script tag should not appear unescaped in the response
         self.assertNotContains(response, '<script>alert("xss")</script>')
-        # The content should be escaped
-        self.assertContains(response, '&lt;script&gt;')
+        # For JSON context, script tags are unicode-escaped
+        self.assertContains(response, '\\u003Cscript\\u003E')
 
 
 # =============================================================================

@@ -202,17 +202,21 @@ SAFE LET STAYS — HOMEPAGE TEMPLATE (REACT INTEGRATED)
                 bathrooms: {{ property.baths|default:1 }},
                 guests: {{ property.capacity|default:2 }},
                 pricePerNight: {{ property.price_from|default:0 }},
-                rating: {{ property.avg_rating|default:'4.8' }},
+                rating: {{ property.avg_rating|default:4.8 }},
                 reviewCount: {{ property.review_count|default:0 }}
             }{% if not forloop.last %},{% endif %}
             {% endfor %}
         ];
-        
-        // Destinations for search dropdown
-        window.DESTINATIONS = {{ destinations|safe }};
-        
-        // Recent searches
-        window.RECENT_SEARCHES = {{ recent_searches|safe }};
+    </script>
+    
+    <!-- Safely embed JSON data using json_script (HIGH-01, INEFF-03) -->
+    {{ destinations_json|json_script:"destinations-data" }}
+    {{ recent_searches_json|json_script:"recent-searches-data" }}
+    
+    <script>
+        // Parse JSON data from script tags (safer than |safe filter)
+        window.DESTINATIONS = JSON.parse(document.getElementById('destinations-data').textContent);
+        window.RECENT_SEARCHES = JSON.parse(document.getElementById('recent-searches-data').textContent);
         
         // Benefits data
         window.BENEFITS_DATA = [

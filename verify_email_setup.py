@@ -33,7 +33,7 @@ def create_and_test():
     # 2. Create a Test Booking
     print("   Creating a test booking...")
     booking = Booking.objects.create(
-        property=property_obj,
+        booked_property=property_obj,
         guest_name="Test User",
         guest_email="danieljunior.business@gmail.com", 
         check_in=timezone.now().date(),

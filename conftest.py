@@ -73,7 +73,7 @@ def sample_booking(db, sample_property, user):
     from datetime import date, timedelta
     
     return Booking.objects.create(
-        property=sample_property,
+        booked_property=sample_property,
         user=user,
         guest_name='Test Guest',
         guest_email='guest@example.com',

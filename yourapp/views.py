@@ -4,22 +4,33 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView
 from django.contrib.auth.forms import AuthenticationForm
 from django.db.models import Q
+from django.db import transaction
 from django.conf import settings
 from django.http import JsonResponse, HttpResponse, HttpResponseForbidden
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods, require_POST
 from django.core.exceptions import PermissionDenied
+from django.core.signing import Signer, BadSignature
 from django.utils.html import escape
+from django.utils import timezone
 import stripe
 import logging
 import json
 from datetime import datetime
 from .models import Property, Booking, Destination, RecentSearch
-from .forms import PropertyForm, CheckoutForm
+from .forms import PropertyForm, CheckoutForm, BookingSearchForm
 from .utils import generate_receipt_pdf, send_receipt_email
 from .security import rate_limit, get_client_ip, InputValidator, SecurityLogger
 
 logger = logging.getLogger(__name__)
+
+# Constants
+HOMEPAGE_TOP_PROPERTIES_COUNT = 3
+SIMILAR_PROPERTIES_COUNT = 3
+RECENT_SEARCHES_COUNT = 3
+
+# Signer for secure URL tokens
+booking_signer = Signer(salt='booking-payment')
 
 
 def csrf_failure(request, reason=""):
@@ -30,45 +41,51 @@ def csrf_failure(request, reason=""):
     )
 
 def get_common_context():
+    """Get common context variables from settings."""
     return {
-        'site_name': 'Safe Let Stays',
-        'brand_color': '#2E7D32',
-        'contact_phone': '+44 114 123 4567',
-        'contact_email': 'hello@safeletstays.co.uk',
-        'business_address': '123 Sheffield Street, Sheffield, S1 1AA',
+        'site_name': getattr(settings, 'SITE_NAME', 'Safe Let Stays'),
+        'brand_color': getattr(settings, 'BRAND_COLOR', '#2E7D32'),
+        'contact_phone': getattr(settings, 'CONTACT_PHONE', '+44 114 123 4567'),
+        'contact_email': getattr(settings, 'CONTACT_EMAIL', 'hello@safeletstays.co.uk'),
+        'business_address': getattr(settings, 'BUSINESS_ADDRESS', '123 Sheffield Street, Sheffield, S1 1AA'),
     }
 
 def homepage(request):
     """Render the homepage with database context data."""
     context = get_common_context()
     
-    properties = Property.objects.all()
+    # Optimized query: Get all needed properties in fewer queries
+    all_properties = list(Property.objects.all()[:HOMEPAGE_TOP_PROPERTIES_COUNT + 1])
         
-    # Featured Property
-    featured = Property.objects.filter(is_featured=True).first()
-    if not featured and properties.exists():
-        featured = properties.first()
+    # Featured Property - try to find featured, fallback to first
+    featured = None
+    for prop in all_properties:
+        if prop.is_featured:
+            featured = prop
+            break
+    if not featured and all_properties:
+        featured = all_properties[0]
         
     context['featured_property'] = featured
     
     # Top Properties for homepage section (selected by staff)
-    top_properties = Property.objects.filter(show_on_homepage=True).order_by('homepage_order')[:3]
-    if top_properties.count() < 3:
-        # Fallback to first 3 properties if not enough are selected
-        top_properties = properties[:3]
+    top_properties = list(Property.objects.filter(show_on_homepage=True).order_by('homepage_order')[:HOMEPAGE_TOP_PROPERTIES_COUNT])
+    if len(top_properties) < HOMEPAGE_TOP_PROPERTIES_COUNT:
+        # Fallback to first properties if not enough are selected
+        top_properties = all_properties[:HOMEPAGE_TOP_PROPERTIES_COUNT]
     context['top_properties'] = top_properties
     
-    # Destinations for search dropdown (JSON serialized)
+    # Destinations for search dropdown - will use json_script in template
     destinations = Destination.objects.filter(is_active=True).order_by('order')
     destinations_list = list(destinations.values('name', 'subtitle', 'icon_name', 'icon_color', 'filter_area'))
-    context['destinations'] = json.dumps(destinations_list)
+    context['destinations_json'] = json.dumps(destinations_list)
     
-    # Recent searches (for logged in users or session) - JSON serialized
+    # Recent searches (for logged in users or session)
     recent_searches = []
     if request.user.is_authenticated:
-        recent_searches = RecentSearch.objects.filter(user=request.user)[:3]
+        recent_searches = RecentSearch.objects.filter(user=request.user)[:RECENT_SEARCHES_COUNT]
     elif request.session.session_key:
-        recent_searches = RecentSearch.objects.filter(session_key=request.session.session_key)[:3]
+        recent_searches = RecentSearch.objects.filter(session_key=request.session.session_key)[:RECENT_SEARCHES_COUNT]
     
     # Convert dates to strings for JSON
     recent_list = []
@@ -79,7 +96,7 @@ def homepage(request):
             'check_out': search.check_out.isoformat() if search.check_out else None,
             'guests': search.guests
         })
-    context['recent_searches'] = json.dumps(recent_list)
+    context['recent_searches_json'] = json.dumps(recent_list)
     
     return render(request, 'homepage.html', context)
 
@@ -87,7 +104,10 @@ def properties_view(request):
     context = get_common_context()
     properties = Property.objects.all()
     
-    # Search Logic
+    # Use form for validation (MED-04)
+    form = BookingSearchForm(request.GET)
+    
+    # Get raw values for backward compatibility
     guests = request.GET.get('guests')
     beds = request.GET.get('beds')
     check_in = request.GET.get('check_in')
@@ -102,11 +122,15 @@ def properties_view(request):
             Q(title__icontains=location)
         )
         
-        # Save recent search
+        # Save recent search with proper date parsing
         try:
-            check_in_date = datetime.strptime(check_in, '%Y-%m-%d').date() if check_in else None
-            check_out_date = datetime.strptime(check_out, '%Y-%m-%d').date() if check_out else None
-            guests_int = int(guests) if guests else 2
+            check_in_date = None
+            check_out_date = None
+            if check_in:
+                check_in_date = timezone.datetime.strptime(check_in, settings.DATE_FORMAT_ISO).date()
+            if check_out:
+                check_out_date = timezone.datetime.strptime(check_out, settings.DATE_FORMAT_ISO).date()
+            guests_int = int(guests) if guests and guests.isdigit() else 2
             
             # Create or update recent search
             if request.user.is_authenticated:
@@ -132,23 +156,26 @@ def properties_view(request):
                         'guests': guests_int,
                     }
                 )
-        except Exception as e:
-            logger.warning(f"Failed to save recent search: {e}")
+        except (ValueError, TypeError) as e:
+            logger.debug(f"Failed to save recent search: {e}")
     
     if guests:
         try:
-            properties = properties.filter(capacity__gte=int(guests))
+            guests_val = int(guests)
+            if 1 <= guests_val <= 100:  # Reasonable bounds
+                properties = properties.filter(capacity__gte=guests_val)
         except ValueError:
-            pass
+            logger.debug(f"Invalid guests value: {guests}")
             
     if beds:
         try:
-            if beds == '4':
+            beds_val = int(beds)
+            if beds_val >= 4:
                 properties = properties.filter(beds__gte=4)
-            else:
-                properties = properties.filter(beds=int(beds))
+            elif 1 <= beds_val <= 20:  # Reasonable bounds
+                properties = properties.filter(beds=beds_val)
         except ValueError:
-            pass
+            logger.debug(f"Invalid beds value: {beds}")
             
     context['properties'] = properties
     context['search_params'] = {
@@ -178,11 +205,19 @@ def property_detail_view(request, slug):
     property_obj = get_object_or_404(Property, slug=slug)
     
     # Get similar properties (same number of beds, excluding current)
-    similar_properties = Property.objects.filter(beds=property_obj.beds).exclude(pk=property_obj.pk)[:3]
-    if similar_properties.count() < 3:
+    # Convert to list once to avoid multiple queries (CORR-02)
+    similar_properties = list(
+        Property.objects.filter(beds=property_obj.beds)
+        .exclude(pk=property_obj.pk)[:SIMILAR_PROPERTIES_COUNT]
+    )
+    
+    if len(similar_properties) < SIMILAR_PROPERTIES_COUNT:
         # Fill with other properties if not enough similar ones
-        additional = Property.objects.exclude(pk=property_obj.pk).exclude(pk__in=similar_properties)[:3-similar_properties.count()]
-        similar_properties = list(similar_properties) + list(additional)
+        existing_pks = [p.pk for p in similar_properties] + [property_obj.pk]
+        additional = list(
+            Property.objects.exclude(pk__in=existing_pks)[:SIMILAR_PROPERTIES_COUNT - len(similar_properties)]
+        )
+        similar_properties = similar_properties + additional
     
     context['property'] = property_obj
     context['similar_properties'] = similar_properties
@@ -217,7 +252,8 @@ def add_property_view(request):
             logger.info(f"Property created: {property_obj.title} by user: {request.user.username}")
             return redirect('staff_panel')
         else:
-            logger.warning(f"Property form errors: {form.errors}")
+            # Log form errors at debug level to avoid leaking user data (MED-01)
+            logger.debug(f"Property form validation failed for user: {request.user.username}")
     else:
         form = PropertyForm()
     
@@ -236,7 +272,8 @@ def edit_property_view(request, pk):
             logger.info(f"Property updated: {property_obj.title} by user: {request.user.username}")
             return redirect('staff_panel')
         else:
-            logger.warning(f"Property edit form errors: {form.errors}")
+            # Log form errors at debug level to avoid leaking user data (MED-01)
+            logger.debug(f"Property edit form validation failed for user: {request.user.username}")
     else:
         form = PropertyForm(instance=property_obj)
     return render(request, 'staff/property_form.html', {'form': form, 'title': 'Edit Property'})
@@ -513,8 +550,9 @@ def create_checkout_session(request, property_id):
     if guests > property_obj.capacity:
         return JsonResponse({'error': f'Maximum capacity is {property_obj.capacity} guests'}, status=400)
     
-    # Format dates for description
-    date_range = f"{checkin.strftime('%d %b %Y')} - {checkout.strftime('%d %b %Y')}"
+    # Format dates for description using settings constants
+    date_format = getattr(settings, 'DATE_FORMAT_DISPLAY', '%d %b %Y')
+    date_range = f"{checkin.strftime(date_format)} - {checkout.strftime(date_format)}"
     description_parts = [date_range]
     description_parts.append(f"{nights} Night{'s' if nights > 1 else ''}")
     description_parts.append(f"{guests} Guest{'s' if guests != 1 else ''}")
@@ -528,7 +566,7 @@ def create_checkout_session(request, property_id):
         guest_phone = getattr(request.user.profile, 'phone_number', '') if hasattr(request.user, 'profile') else ''
     else:
         guest_name = escape(form.cleaned_data.get('guest_name') or 'Guest')
-        guest_email = form.cleaned_data.get('guest_email') or 'pending@example.com'
+        guest_email = form.cleaned_data.get('guest_email') or ''
         guest_phone = form.cleaned_data.get('guest_phone') or ''
     
     # Get company details (for guest bookings)
@@ -538,66 +576,72 @@ def create_checkout_session(request, property_id):
     company_vat = escape(form.cleaned_data.get('company_vat') or '')
 
     try:
-        # Create pending booking
-        booking = Booking.objects.create(
-            property=property_obj,
-            user=request.user if request.user.is_authenticated else None,
-            guest_name=guest_name,
-            guest_email=guest_email,
-            guest_phone=guest_phone,
-            is_company_booking=is_company_booking,
-            company_name=company_name,
-            company_address=company_address,
-            company_vat=company_vat,
-            check_in=checkin,
-            check_out=checkout,
-            guests=guests,
-            total_price=property_obj.price_from * nights,
-            status='awaiting_payment'
-        )
+        # Use atomic transaction to prevent race conditions (HIGH-04)
+        with transaction.atomic():
+            # Create pending booking (using booked_property to avoid shadowing builtin)
+            booking = Booking.objects.create(
+                booked_property=property_obj,
+                user=request.user if request.user.is_authenticated else None,
+                guest_name=guest_name,
+                guest_email=guest_email,
+                guest_phone=guest_phone,
+                is_company_booking=is_company_booking,
+                company_name=company_name,
+                company_address=company_address,
+                company_vat=company_vat,
+                check_in=checkin,
+                check_out=checkout,
+                guests=guests,
+                nightly_rate=property_obj.price_from,
+                total_price=property_obj.price_from * nights,
+                status='awaiting_payment'
+            )
 
-        # Construct image URL if available
-        images = []
-        if property_obj.image:
-            image_url = request.build_absolute_uri(property_obj.image.url)
-            # Only add image if it's likely accessible (not localhost)
-            if 'localhost' not in image_url and '127.0.0.1' not in image_url:
-                images = [image_url]
+            # Create signed token for secure callback URLs (CRIT-04)
+            signed_booking_id = booking_signer.sign(str(booking.id))
 
-        checkout_session = stripe.checkout.Session.create(
-            payment_method_types=['card'],
-            line_items=[
-                {
-                    'price_data': {
-                        'currency': 'gbp',
-                        'unit_amount': int(property_obj.price_from * nights * 100),
-                        'product_data': {
-                            'name': f"Stay at {property_obj.title}",
-                            'description': full_description,
-                            'images': images,
+            # Construct image URL if available
+            images = []
+            if property_obj.image:
+                image_url = request.build_absolute_uri(property_obj.image.url)
+                # Only add image if it's likely accessible (not localhost)
+                if 'localhost' not in image_url and '127.0.0.1' not in image_url:
+                    images = [image_url]
+
+            checkout_session = stripe.checkout.Session.create(
+                payment_method_types=['card'],
+                line_items=[
+                    {
+                        'price_data': {
+                            'currency': 'gbp',
+                            'unit_amount': int(property_obj.price_from * nights * 100),
+                            'product_data': {
+                                'name': f"Stay at {property_obj.title}",
+                                'description': full_description,
+                                'images': images,
+                            },
                         },
+                        'quantity': 1,
                     },
-                    'quantity': 1,
-                },
-            ],
-            mode='payment',
-            customer_email=guest_email if guest_email and guest_email != 'pending@example.com' else None,
-            success_url=request.build_absolute_uri('/payment-success/') + f"?booking_id={booking.id}",
-            cancel_url=request.build_absolute_uri('/payment-cancel/') + f"?booking_id={booking.id}",
-            client_reference_id=str(booking.id),
-            metadata={
-                'booking_id': booking.id,
-                'property_id': property_id,
-                'checkin': str(checkin),
-                'checkout': str(checkout),
-                'guests': guests,
-                'nights': nights
-            }
-        )
-        
-        # Update booking with session ID
-        booking.stripe_session_id = checkout_session.id
-        booking.save()
+                ],
+                mode='payment',
+                customer_email=guest_email if guest_email else None,
+                success_url=request.build_absolute_uri('/payment-success/') + f"?token={signed_booking_id}",
+                cancel_url=request.build_absolute_uri('/payment-cancel/') + f"?token={signed_booking_id}",
+                client_reference_id=str(booking.id),
+                metadata={
+                    'booking_id': booking.id,
+                    'property_id': property_id,
+                    'checkin': str(checkin),
+                    'checkout': str(checkout),
+                    'guests': guests,
+                    'nights': nights
+                }
+            )
+            
+            # Update booking with session ID
+            booking.stripe_session_id = checkout_session.id
+            booking.save()
         
         logger.info(f"Checkout session created for booking {booking.id}")
         return redirect(checkout_session.url, code=303)
@@ -610,77 +654,90 @@ def create_checkout_session(request, property_id):
         return JsonResponse({'error': 'An error occurred. Please try again.'}, status=500)
 
 def payment_success(request):
-    booking_id = request.GET.get('booking_id')
+    """Handle payment success callback with signed token verification."""
+    signed_token = request.GET.get('token')
     error_message = None
     success_message = None
+    booking = None
     
-    logger.debug(f"payment_success view reached. Booking ID: {booking_id}")
-    
-    if booking_id:
-        # Validate booking_id is a valid integer
-        if not InputValidator.validate_positive_integer(booking_id):
-            logger.warning(f"Invalid booking_id format: {booking_id} from IP: {get_client_ip(request)}")
-            error_message = "Invalid booking reference."
-        else:
-            try:
-                booking = Booking.objects.get(id=int(booking_id))
+    if not signed_token:
+        logger.warning(f"Payment success attempt without token from IP: {get_client_ip(request)}")
+        error_message = "Invalid payment link."
+    else:
+        try:
+            # Verify the signed token (CRIT-04)
+            booking_id = booking_signer.unsign(signed_token)
+            logger.debug(f"payment_success view reached. Verified Booking ID: {booking_id}")
+            
+            booking = Booking.objects.get(id=int(booking_id))
+            
+            # Verify this is a legitimate payment completion
+            # The booking should have a stripe_session_id and be awaiting payment
+            if not booking.stripe_session_id:
+                logger.warning(f"Payment success attempt without stripe session: {booking_id}")
+                error_message = "Invalid payment session."
+            else:
+                should_send_email = False
                 
-                # Verify this is a legitimate payment completion
-                # The booking should have a stripe_session_id and be awaiting payment
-                if not booking.stripe_session_id:
-                    logger.warning(f"Payment success attempt without stripe session: {booking_id}")
-                    error_message = "Invalid payment session."
-                else:
-                    should_send_email = False
-                    
-                    # Only confirm if it was awaiting payment
-                    if booking.status == 'awaiting_payment':
-                        booking.status = 'confirmed'
-                        booking.save()
+                # Only confirm if it was awaiting payment
+                if booking.status == 'awaiting_payment':
+                    booking.status = 'confirmed'
+                    booking.save()
+                    should_send_email = True
+                    logger.info(f"Booking {booking_id} confirmed via payment success view.")
+                elif booking.status == 'confirmed':
+                    # If confirmed but no receipt PDF, try sending again
+                    if not booking.receipt_pdf:
                         should_send_email = True
-                        logger.info(f"Booking {booking_id} confirmed via payment success view.")
-                    elif booking.status == 'confirmed':
-                        # If confirmed but no receipt PDF, try sending again
-                        if not booking.receipt_pdf:
-                            should_send_email = True
-                            logger.debug(f"Booking {booking_id} already confirmed but PDF missing. Retrying email.")
-                        else:
-                            success_message = "Booking confirmed. Receipt already sent."
+                        logger.debug(f"Booking {booking_id} already confirmed but PDF missing. Retrying email.")
+                    else:
+                        success_message = "Booking confirmed. Receipt already sent."
 
-                    if should_send_email:
-                        logger.debug(f"Sending receipt email for booking {booking_id}...")
-                        try:
-                            send_receipt_email(booking)
-                            success_message = "Receipt sent successfully!"
-                        except Exception as e:
-                            logger.error(f"Error sending receipt email for booking {booking_id}: {e}")
-                            error_message = f"Booking confirmed, but failed to send email. Please contact support."
-                         
-            except Booking.DoesNotExist:
-                logger.warning(f"Payment success with non-existent booking: {booking_id}")
-                # Don't reveal if booking exists or not
-                error_message = "Unable to process request. Please contact support."
-            except Exception as e:
-                logger.error(f"Error in payment_success view: {e}")
-                error_message = "An error occurred. Please contact support."
+                if should_send_email:
+                    logger.debug(f"Sending receipt email for booking {booking_id}...")
+                    try:
+                        send_receipt_email(booking)
+                        success_message = "Receipt sent successfully!"
+                    except Exception as e:
+                        logger.error(f"Error sending receipt email for booking {booking_id}: {e}")
+                        error_message = "Booking confirmed, but failed to send email. Please contact support."
+                     
+        except BadSignature:
+            logger.warning(f"Invalid signed token in payment_success from IP: {get_client_ip(request)}")
+            error_message = "Invalid or expired payment link."
+        except Booking.DoesNotExist:
+            logger.warning(f"Payment success with non-existent booking from token")
+            # Don't reveal if booking exists or not
+            error_message = "Unable to process request. Please contact support."
+        except Exception as e:
+            logger.error(f"Error in payment_success view: {e}")
+            error_message = "An error occurred. Please contact support."
             
     context = get_common_context()
     context['error_message'] = error_message
     context['success_message'] = success_message
+    context['booking'] = booking
     return render(request, 'payment_success.html', context)
 
 def payment_cancel(request):
-    booking_id = request.GET.get('booking_id')
-    if booking_id and InputValidator.validate_positive_integer(booking_id):
+    """Handle payment cancellation with signed token verification."""
+    signed_token = request.GET.get('token')
+    
+    if signed_token:
         try:
+            # Verify the signed token (CRIT-05)
+            booking_id = booking_signer.unsign(signed_token)
             booking = Booking.objects.get(id=int(booking_id))
+            
             # Only cancel if it was awaiting payment
             if booking.status == 'awaiting_payment':
                 booking.status = 'canceled'
                 booking.save()
-                logger.info(f"Booking {booking_id} canceled by user.")
+                logger.info(f"Booking {booking_id} canceled by user via signed token.")
+        except BadSignature:
+            logger.warning(f"Invalid signed token in payment_cancel from IP: {get_client_ip(request)}")
         except Booking.DoesNotExist:
-            pass
+            logger.debug(f"Payment cancel for non-existent booking")
         except Exception as e:
             logger.error(f"Error in payment_cancel: {e}")
 
@@ -771,9 +828,11 @@ def signup(request):
 
 @csrf_exempt
 @require_POST
+@rate_limit(key='stripe_webhook', max_requests=100, window=60)
 def stripe_webhook(request):
     """
     Handle Stripe webhook events securely.
+    Rate limited to prevent abuse while allowing legitimate Stripe traffic.
     """
     payload = request.body
     sig_header = request.META.get('HTTP_STRIPE_SIGNATURE')
@@ -786,6 +845,7 @@ def stripe_webhook(request):
         logger.error("STRIPE_WEBHOOK_SECRET not configured")
         return HttpResponse(status=500)
     
+    stripe.api_key = settings.STRIPE_SECRET_KEY
     event = None
 
     try:

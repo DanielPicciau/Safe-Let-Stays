@@ -1,7 +1,9 @@
 from django.db import models
 from django.utils.text import slugify
 from django.urls import reverse
-import builtins
+import logging
+
+logger = logging.getLogger(__name__)
 
 class Property(models.Model):
     title = models.CharField(max_length=200)
@@ -62,7 +64,7 @@ class Property(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return self.title
+        return f"Property #{self.id}: {self.title}"
     
     def get_absolute_url(self):
         return reverse('property_detail', kwargs={'slug': self.slug})
@@ -104,11 +106,12 @@ class Booking(models.Model):
         ('other', 'Other'),
     ]
     
-    # Property reference
-    property = models.ForeignKey(
+    # Property reference (named booked_property to avoid shadowing builtin)
+    booked_property = models.ForeignKey(
         Property, 
         on_delete=models.CASCADE, 
-        related_name='bookings'
+        related_name='bookings',
+        db_column='property_id'  # Keep existing column name for compatibility
     )
 
     # User reference (optional, for logged in users)
@@ -206,14 +209,14 @@ class Booking(models.Model):
     class Meta:
         ordering = ['-check_in']
         indexes = [
-            models.Index(fields=['property', 'check_in']),
+            models.Index(fields=['booked_property', 'check_in']),
             models.Index(fields=['status', 'check_in']),
         ]
     
     def __str__(self):
-        return f"{self.property.title} - {self.guest_name} ({self.check_in} to {self.check_out})"
+        return f"Booking #{self.id}: {self.booked_property.title} - {self.guest_name} ({self.check_in} to {self.check_out})"
     
-    @builtins.property
+    @property
     def nights(self):
         """Calculate number of nights."""
         return (self.check_out - self.check_in).days
@@ -277,17 +280,25 @@ class Profile(models.Model):
 
     def __str__(self):
         if self.is_business_account and self.company_name:
-            return f"{self.user.username}'s Profile ({self.company_name})"
-        return f"{self.user.username}'s Profile"
+            return f"Profile #{self.id}: {self.user.username} ({self.company_name})"
+        return f"Profile #{self.id}: {self.user.username}"
+
 
 @receiver(post_save, sender=User)
-def create_user_profile(sender, instance, created, **kwargs):
-    if created:
-        Profile.objects.create(user=instance)
-
-@receiver(post_save, sender=User)
-def save_user_profile(sender, instance, **kwargs):
-    instance.profile.save()
+def create_or_update_user_profile(sender, instance, created, **kwargs):
+    """
+    Create or update user profile on User save.
+    Combined signal handler with proper error handling (CORR-04/CORR-08/LOW-07).
+    """
+    try:
+        if created:
+            Profile.objects.get_or_create(user=instance)
+        else:
+            # Only save if profile exists (avoids RelatedObjectDoesNotExist)
+            if hasattr(instance, 'profile'):
+                instance.profile.save()
+    except Exception as e:
+        logger.error(f"Error managing profile for user {instance.id}: {e}")
 
 
 # =============================================================================
@@ -324,7 +335,7 @@ class RecentSearch(models.Model):
         dates = ''
         if self.check_in and self.check_out:
             dates = f" ({self.check_in.strftime('%d %b')} - {self.check_out.strftime('%d %b')})"
-        return f"{self.location}{dates}"
+        return f"Search #{self.id}: {self.location}{dates}"
 
 
 # =============================================================================
@@ -356,4 +367,4 @@ class Destination(models.Model):
         ordering = ['order', 'name']
     
     def __str__(self):
-        return self.name
+        return f"Destination #{self.id}: {self.name}"

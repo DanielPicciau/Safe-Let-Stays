@@ -49,7 +49,8 @@ class PropertyModelTest(TestCase):
 
     def test_property_str_method(self):
         """Test the string representation."""
-        self.assertEqual(str(self.property), 'Test Sheffield Apartment')
+        expected = f"Property #{self.property.id}: Test Sheffield Apartment"
+        self.assertEqual(str(self.property), expected)
 
     def test_property_get_absolute_url(self):
         """Test the get_absolute_url method."""
@@ -83,7 +84,7 @@ class BookingModelTest(TestCase):
             capacity=4,
         )
         self.booking = Booking.objects.create(
-            property=self.property,
+            booked_property=self.property,
             user=self.user,
             guest_name='John Doe',
             guest_email='john@example.com',
@@ -110,7 +111,7 @@ class BookingModelTest(TestCase):
 
     def test_booking_str_method(self):
         """Test the string representation."""
-        expected = f"Test Property - John Doe ({self.booking.check_in} to {self.booking.check_out})"
+        expected = f"Booking #{self.booking.id}: Test Property - John Doe ({self.booking.check_in} to {self.booking.check_out})"
         self.assertEqual(str(self.booking), expected)
 
 

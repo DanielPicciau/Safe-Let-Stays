@@ -21,7 +21,18 @@ load_dotenv(BASE_DIR / '.env')
 
 # SECURITY: Use environment variable for SECRET_KEY
 # Generate with: python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
-SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'dev-secret-key-change-in-production')
+_secret_key = os.environ.get('DJANGO_SECRET_KEY')
+if not _secret_key:
+    import warnings
+    warnings.warn(
+        "DJANGO_SECRET_KEY environment variable not set. "
+        "Using an insecure auto-generated key. Set this in production!",
+        RuntimeWarning
+    )
+    # Generate a random key for development only - this changes on restart
+    from django.core.management.utils import get_random_secret_key
+    _secret_key = get_random_secret_key()
+SECRET_KEY = _secret_key
 
 DEBUG = os.environ.get('DEBUG', 'True').lower() in ('true', '1', 'yes')
 
@@ -322,3 +333,19 @@ DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'Safe Let Stays <danie
 SERVER_EMAIL = os.environ.get('SERVER_EMAIL', 'daniel@webflare.studio')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# =============================================================================
+# BUSINESS INFORMATION
+# =============================================================================
+SITE_NAME = os.environ.get('SITE_NAME', 'Safe Let Stays')
+BRAND_COLOR = os.environ.get('BRAND_COLOR', '#2E7D32')
+CONTACT_PHONE = os.environ.get('CONTACT_PHONE', '+44 114 123 4567')
+CONTACT_EMAIL = os.environ.get('CONTACT_EMAIL', 'hello@safeletstays.co.uk')
+BUSINESS_ADDRESS = os.environ.get('BUSINESS_ADDRESS', '123 Sheffield Street, Sheffield, S1 1AA')
+
+# =============================================================================
+# DATE FORMAT CONSTANTS
+# =============================================================================
+DATE_FORMAT_DISPLAY = '%d %b %Y'  # e.g., "17 Jan 2026"
+DATE_FORMAT_DISPLAY_FULL = '%A, %d %b %Y'  # e.g., "Friday, 17 Jan 2026"
+DATE_FORMAT_ISO = '%Y-%m-%d'  # e.g., "2026-01-17"

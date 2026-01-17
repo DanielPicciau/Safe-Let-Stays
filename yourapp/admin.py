@@ -30,9 +30,11 @@ class PropertyAdmin(admin.ModelAdmin):
 
 @admin.register(Booking)
 class BookingAdmin(admin.ModelAdmin):
-    list_display = ('property', 'guest_name', 'check_in', 'check_out', 'status', 'total_price')
+    # Updated to use booked_property after model field rename (LOW-01)
+    list_display = ('booked_property', 'guest_name', 'check_in', 'check_out', 'status', 'total_price')
     list_filter = ('status', 'check_in')
-    search_fields = ('guest_name', 'guest_email', 'booking_reference')
+    # Removed invalid 'booking_reference' field (CORR-01/INEFF-04) - field doesn't exist
+    search_fields = ('guest_name', 'guest_email', 'booked_property__title')
 
 
 @admin.register(Profile)

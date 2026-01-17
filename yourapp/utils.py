@@ -8,9 +8,14 @@ from io import BytesIO
 from django.core.files.base import ContentFile
 from django.conf import settings
 from django.core.mail import EmailMessage
+from django.utils.html import escape
+from django.contrib.staticfiles import finders
 import os
 from datetime import datetime
 import base64
+import logging
+
+logger = logging.getLogger(__name__)
 
 def generate_receipt_pdf(booking):
     """
@@ -31,12 +36,16 @@ def generate_receipt_pdf(booking):
     elements = []
     
     # --- Header ---
-    logo_path = os.path.join(settings.STATIC_ROOT, 'yourapp/images/SafeLetStays-New.png')
-    if not os.path.exists(logo_path):
-        logo_path = os.path.join(settings.BASE_DIR, 'static/yourapp/images/SafeLetStays-New.png')
+    # Use Django's static file finders for proper static file resolution (MED-06)
+    logo_path = finders.find('yourapp/images/SafeLetStays-New.png')
+    if not logo_path and settings.STATIC_ROOT:
+        # Fallback to STATIC_ROOT in production
+        logo_path = os.path.join(settings.STATIC_ROOT, 'yourapp/images/SafeLetStays-New.png')
+        if not os.path.exists(logo_path):
+            logo_path = None
 
     logo_img = None
-    if os.path.exists(logo_path):
+    if logo_path and os.path.exists(logo_path):
         try:
             img_reader = ImageReader(logo_path)
             img_width, img_height = img_reader.getSize()
@@ -120,7 +129,7 @@ def generate_receipt_pdf(booking):
     elements.append(Spacer(1, 5))
     
     stay_data = [
-        [Paragraph("<b>Property</b>", styles['Normal']), Paragraph(booking.property.title, styles['Normal'])],
+        [Paragraph("<b>Property</b>", styles['Normal']), Paragraph(booking.booked_property.title, styles['Normal'])],
         [Paragraph("<b>Check-in</b>", styles['Normal']), Paragraph(booking.check_in.strftime('%A, %d %b %Y'), styles['Normal'])],
         [Paragraph("<b>Check-out</b>", styles['Normal']), Paragraph(booking.check_out.strftime('%A, %d %b %Y'), styles['Normal'])],
         [Paragraph("<b>Duration</b>", styles['Normal']), Paragraph(f"{booking.nights} Nights", styles['Normal'])],
@@ -148,7 +157,7 @@ def generate_receipt_pdf(booking):
     acc_total = rate_val * booking.nights
     
     items_data.append([
-        f"Accommodation - {booking.property.title}",
+        f"Accommodation - {booking.booked_property.title}",
         f"{booking.nights} nights",
         rate_str,
         f"£{acc_total:.2f}"
@@ -211,31 +220,34 @@ def generate_receipt_pdf(booking):
 
 from mailjet_rest import Client
 import base64
-import sys
 
 def send_receipt_email(booking):
     """
     Send the receipt email to the guest using Mailjet API.
     """
-    print(f"DEBUG: [send_receipt_email] Called for Booking ID {booking.id}", file=sys.stderr)
+    logger.debug(f"send_receipt_email called for Booking ID {booking.id}")
 
     if not booking.receipt_pdf:
-        print(f"DEBUG: [send_receipt_email] PDF missing, generating...", file=sys.stderr)
+        logger.debug(f"PDF missing for booking {booking.id}, generating...")
         try:
             generate_receipt_pdf(booking)
-            print(f"DEBUG: [send_receipt_email] PDF generated successfully.", file=sys.stderr)
+            logger.debug(f"PDF generated successfully for booking {booking.id}")
         except Exception as e:
-            print(f"CRITICAL ERROR: [send_receipt_email] PDF generation failed: {e}", file=sys.stderr)
-            raise e
-        
+            logger.error(f"PDF generation failed for booking {booking.id}: {e}")
+            raise
+    
+    # Escape user-provided content for HTML safety
+    safe_guest_name = escape(booking.guest_name)
+    safe_property_title = escape(booking.booked_property.title)
+    
     subject = f"Booking Confirmation - Reference #{booking.id}"
-    body_text = f"Dear {booking.guest_name},\n\nThank you for booking with Safe Let Stays!\n\nYour booking for {booking.property.title} has been confirmed.\nPlease find your receipt and invoice attached to this email.\n\nBooking Reference: BOOK-{booking.id}\nCheck-in: {booking.check_in.strftime('%d %b %Y')}\nCheck-out: {booking.check_out.strftime('%d %b %Y')}\n\nWe look forward to hosting you.\n\nBest regards,\nThe Safe Let Stays Team"
+    body_text = f"Dear {booking.guest_name},\n\nThank you for booking with Safe Let Stays!\n\nYour booking for {booking.booked_property.title} has been confirmed.\nPlease find your receipt and invoice attached to this email.\n\nBooking Reference: BOOK-{booking.id}\nCheck-in: {booking.check_in.strftime('%d %b %Y')}\nCheck-out: {booking.check_out.strftime('%d %b %Y')}\n\nWe look forward to hosting you.\n\nBest regards,\nThe Safe Let Stays Team"
     
     body_html = f"""
     <h3>Booking Confirmation</h3>
-    <p>Dear {booking.guest_name},</p>
+    <p>Dear {safe_guest_name},</p>
     <p>Thank you for booking with Safe Let Stays!</p>
-    <p>Your booking for <strong>{booking.property.title}</strong> has been confirmed.<br>
+    <p>Your booking for <strong>{safe_property_title}</strong> has been confirmed.<br>
     Please find your receipt and invoice attached to this email.</p>
     <p><strong>Booking Reference:</strong> BOOK-{booking.id}<br>
     <strong>Check-in:</strong> {booking.check_in.strftime('%d %b %Y')}<br>
@@ -247,22 +259,22 @@ def send_receipt_email(booking):
     
     # Read PDF content
     try:
-        print(f"DEBUG: [send_receipt_email] Reading PDF file...", file=sys.stderr)
+        logger.debug(f"Reading PDF file for booking {booking.id}")
         booking.receipt_pdf.open('rb')
         pdf_content = booking.receipt_pdf.read()
         booking.receipt_pdf.close()
-        print(f"DEBUG: [send_receipt_email] PDF read successfully ({len(pdf_content)} bytes).", file=sys.stderr)
+        logger.debug(f"PDF read successfully ({len(pdf_content)} bytes)")
     except Exception as e:
-        print(f"CRITICAL ERROR: [send_receipt_email] Error reading PDF: {e}", file=sys.stderr)
-        raise e
+        logger.error(f"Error reading PDF for booking {booking.id}: {e}")
+        raise
 
-    print(f"DEBUG: [send_receipt_email] Preparing to send email to {booking.guest_email} via Mailjet API...", file=sys.stderr)
+    logger.debug(f"Preparing to send email to {booking.guest_email} via Mailjet API")
     
     api_key = settings.MAILJET_API_KEY
     api_secret = settings.MAILJET_API_SECRET
     
     if not api_key or not api_secret:
-        print("CRITICAL ERROR: Mailjet API Key or Secret is missing in settings!", file=sys.stderr)
+        logger.error("Mailjet API Key or Secret is missing in settings")
         raise ValueError("Mailjet API credentials missing")
 
     try:
@@ -296,19 +308,17 @@ def send_receipt_email(booking):
           ]
         }
         
-        print(f"DEBUG: [send_receipt_email] Sending request to Mailjet...", file=sys.stderr)
+        logger.debug(f"Sending request to Mailjet for booking {booking.id}")
         result = mailjet.send.create(data=data)
-        print(f"DEBUG: [send_receipt_email] Mailjet Response Status: {result.status_code}", file=sys.stderr)
-        print(f"DEBUG: [send_receipt_email] Mailjet Response: {result.json()}", file=sys.stderr)
+        logger.debug(f"Mailjet Response Status: {result.status_code}")
         
         if result.status_code != 200:
-             raise Exception(f"Mailjet API Error: {result.json()}")
+            logger.error(f"Mailjet API Error for booking {booking.id}: {result.json()}")
+            raise Exception(f"Mailjet API Error: {result.json()}")
              
-        print(f"SUCCESS: [send_receipt_email] Email sent to {booking.guest_email}", file=sys.stderr)
+        logger.info(f"Email sent successfully to {booking.guest_email} for booking {booking.id}")
         
     except Exception as e:
-        print(f"CRITICAL ERROR: [send_receipt_email] Failed to send email: {e}", file=sys.stderr)
-        import traceback
-        traceback.print_exc(file=sys.stderr)
-        raise e
+        logger.error(f"Failed to send email for booking {booking.id}: {e}", exc_info=True)
+        raise
 
