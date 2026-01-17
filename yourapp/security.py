@@ -154,12 +154,13 @@ class SecurityHeadersMiddleware(MiddlewareMixin):
     """
     
     def process_response(self, request: HttpRequest, response: HttpResponse) -> HttpResponse:
-        # Content Security Policy (HIGH-02: Strengthened)
+        # Content Security Policy (HIGH-02)
         # Note: 'unsafe-inline' for styles is required for React inline styles
-        # 'unsafe-eval' is required for Babel standalone - consider pre-compiling in production
+        # 'unsafe-eval' is required for Babel standalone (client-side JSX compilation)
+        # TODO: Pre-compile JSX to remove need for unsafe-eval in production
         csp_directives = [
             "default-src 'self'",
-            "script-src 'self' https://js.stripe.com https://fonts.googleapis.com https://unpkg.com",
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://fonts.googleapis.com https://unpkg.com",
             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
             "font-src 'self' https://fonts.gstatic.com data:",
             "img-src 'self' data: https: blob:",
@@ -172,16 +173,8 @@ class SecurityHeadersMiddleware(MiddlewareMixin):
             "upgrade-insecure-requests",
         ]
         
-        # In development, allow unsafe-eval for Babel standalone
-        if settings.DEBUG:
-            csp_directives[1] = "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://fonts.googleapis.com https://unpkg.com"
-        
-        # Apply CSP (in production, consider using report-only first)
-        if not settings.DEBUG:
-            response['Content-Security-Policy'] = "; ".join(csp_directives)
-        else:
-            # Report-only in development for testing
-            response['Content-Security-Policy-Report-Only'] = "; ".join(csp_directives)
+        # Apply CSP header
+        response['Content-Security-Policy'] = "; ".join(csp_directives)
         
         # Prevent MIME type sniffing
         response['X-Content-Type-Options'] = 'nosniff'
