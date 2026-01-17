@@ -1810,27 +1810,86 @@
 }
 
 /* ============================================================================
-   DESKTOP SEARCH BAR - Docking animation into navbar
+   DESKTOP SEARCH BAR - True morphing animation into navbar
    ============================================================================ */
 
-/* Desktop: search bar fades out when docked */
 @media (min-width: 769px) {
     .airbnb-search.desktop-search {
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                    position 0s,
+                    top 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                    left 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                    max-width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     }
     
-    /* When search is docked (scrolled), hide the hero search bar */
-    .hero__search-wrapper.search-docked .airbnb-search.desktop-search {
+    /* When docked, transform into compact navbar search */
+    .airbnb-search.desktop-search.is-docked {
+        position: fixed;
+        top: 12px;
+        left: 50%;
+        transform: translateX(-50%);
+        max-width: 420px;
+        z-index: 1001;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        cursor: pointer;
+    }
+    
+    .airbnb-search.desktop-search.is-docked:hover {
+        box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        border-color: var(--border);
+    }
+    
+    /* Compact the search bar content when docked */
+    .airbnb-search.desktop-search.is-docked .airbnb-search-bar {
+        padding: 0.25rem;
+    }
+    
+    /* Hide field labels when docked */
+    .airbnb-search.desktop-search.is-docked .airbnb-field-label {
         opacity: 0;
-        transform: translateY(-20px) scale(0.95);
-        pointer-events: none;
+        height: 0;
+        margin: 0;
+        overflow: hidden;
     }
     
-    .hero__search-wrapper:not(.search-docked) .airbnb-search.desktop-search {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-        pointer-events: auto;
-        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s;
+    /* Compact fields when docked */
+    .airbnb-search.desktop-search.is-docked .airbnb-field {
+        padding: 0.5rem 1rem;
+        cursor: pointer;
+    }
+    
+    /* Make field values more compact */
+    .airbnb-search.desktop-search.is-docked .airbnb-field-value {
+        font-size: 0.8125rem;
+        font-weight: 500;
+    }
+    
+    /* Shorter dividers when docked */
+    .airbnb-search.desktop-search.is-docked .airbnb-divider {
+        height: 20px;
+    }
+    
+    /* Smaller search button when docked */
+    .airbnb-search.desktop-search.is-docked .airbnb-search-btn {
+        height: 36px;
+        min-width: 36px;
+        padding: 0 0.75rem;
+        border-radius: 18px;
+    }
+    
+    /* Hide search button text when docked */
+    .airbnb-search.desktop-search.is-docked .airbnb-search-btn-text {
+        display: none;
+    }
+    
+    /* Hide any expanded panels when docked */
+    .airbnb-search.desktop-search.is-docked .airbnb-panel {
+        max-height: 0 !important;
+        opacity: 0 !important;
+        padding: 0 !important;
+        border: none !important;
     }
 }
 
