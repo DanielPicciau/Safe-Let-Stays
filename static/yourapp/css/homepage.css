@@ -2604,18 +2604,20 @@ h1, h2, h3, h4, h5, h6 {
         color: var(--text-main);
     }
     
-    /* Mobile Nav */
-    .header__nav {
-        background: var(--bg-card);
-    }
-    
-    .nav-link {
-        border-bottom-color: var(--border);
-    }
-    
-    .header__ctas .btn--outline {
-        color: var(--text-main);
-        border-color: var(--border);
+    /* Mobile Nav - only apply background when nav is in mobile mode */
+    @media (max-width: 768px) {
+        .header__nav {
+            background: var(--bg-card);
+        }
+        
+        .nav-link {
+            border-bottom-color: var(--border);
+        }
+        
+        .header__ctas .btn--outline {
+            color: var(--text-main);
+            border-color: var(--border);
+        }
     }
     
     /* Modal */
