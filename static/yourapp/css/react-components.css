@@ -2097,10 +2097,19 @@
         display: flex !important;
         flex-direction: column !important;
         overflow: hidden !important;
+        /* Animation - start off-screen at bottom */
+        transform: translateY(100%);
+        opacity: 0;
+        transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1), 
+                    opacity 0.25s ease;
+        pointer-events: none;
     }
     
     .mobile-search-modal.open {
         display: flex !important;
+        transform: translateY(0);
+        opacity: 1;
+        pointer-events: auto;
     }
     
     /* Prevent body scroll when modal is open */
@@ -2176,6 +2185,18 @@
         padding: 1.5rem;
         padding-bottom: 100px;
         -webkit-overflow-scrolling: touch;
+    }
+    
+    /* Content animation when modal opens */
+    .mobile-search-modal .mobile-modal-content {
+        opacity: 0;
+        transform: translateY(20px);
+        transition: opacity 0.3s ease 0.15s, transform 0.3s ease 0.15s;
+    }
+    
+    .mobile-search-modal.open .mobile-modal-content {
+        opacity: 1;
+        transform: translateY(0);
     }
     
     /* Search Card (Where panel) */
