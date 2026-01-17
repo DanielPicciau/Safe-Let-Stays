@@ -150,7 +150,7 @@ const Header = ({ activePage }) => {
     const [menuOpen, setMenuOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
     const [searchDocked, setSearchDocked] = useState(false);
-    const [searchSummary, setSearchSummary] = useState('Where to?');
+    const [searchSummary, setSearchSummary] = useState('Anywhere · Any week · Add guests');
     const siteData = useSiteData();
 
     useEffect(() => {
