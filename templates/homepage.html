@@ -238,6 +238,7 @@ SAFE LET STAYS — HOMEPAGE TEMPLATE (REACT INTEGRATED)
     <script type="text/babel">
     {% verbatim %}
         const { useState, useRef, useEffect } = React;
+        const { createPortal } = ReactDOM;
         const { PropertyCard, BenefitCard, SearchFilter, Icons, SiteContext } = window.SafeLetComponents || {};
         
         // Utility functions for date handling
@@ -651,8 +652,9 @@ SAFE LET STAYS — HOMEPAGE TEMPLATE (REACT INTEGRATED)
                         </div>
                     </button>
                     
-                    {/* Mobile Full-Screen Modal */}
-                    <div className={`mobile-search-modal ${mobileModalOpen ? 'open' : ''}`}>
+                    {/* Mobile Full-Screen Modal - Portaled to body */}
+                    {mobileModalOpen && createPortal(
+                    <div className="mobile-search-modal open">
                         {/* Modal Header */}
                         <div className="mobile-modal-header">
                             <button
@@ -892,7 +894,7 @@ SAFE LET STAYS — HOMEPAGE TEMPLATE (REACT INTEGRATED)
                                 Search
                             </button>
                         </div>
-                    </div>
+                    </div>, document.body)}
                     
                     {/* Desktop Search */}
                     <div className={`airbnb-search desktop-search ${isExpanded ? 'expanded' : ''}`} ref={formRef}>
