@@ -584,43 +584,49 @@ SAFE LET STAYS — HOMEPAGE TEMPLATE (REACT INTEGRATED)
                 const header = document.getElementById('header');
                 if (!searchWrapper || !header) return;
                 
-                // Store original dimensions
-                let mobileOriginalRect = null;
-                let desktopOriginalRect = null;
+                // Store original dimensions - captured once and kept fixed
+                let mobileOriginalTop = null;
+                let desktopOriginalTop = null;
                 let isCurrentlyDocked = false;
                 let ticking = false;
+                let hasInitialized = false;
                 
                 const isMobile = () => window.innerWidth <= 768;
                 
                 const captureOriginalPosition = () => {
-                    // Mobile
+                    // Only capture if not already initialized or on resize when undocked
+                    if (hasInitialized && isCurrentlyDocked) return;
+                    
+                    // Mobile - capture position relative to document
                     if (mobileSearchTrigger) {
                         const rect = mobileSearchTrigger.getBoundingClientRect();
-                        mobileOriginalRect = {
-                            top: rect.top + window.scrollY,
-                            left: rect.left,
-                            width: rect.width,
-                            height: rect.height
-                        };
+                        mobileOriginalTop = rect.top + window.scrollY;
                     }
-                    // Desktop - only capture when not docked to get original position
+                    // Desktop - capture position relative to document
                     if (desktopSearchBar && !desktopSearchBar.classList.contains('is-docked')) {
                         const rect = desktopSearchBar.getBoundingClientRect();
-                        desktopOriginalRect = {
-                            top: rect.top + window.scrollY,
-                            left: rect.left,
-                            width: rect.width,
-                            height: rect.height
-                        };
+                        desktopOriginalTop = rect.top + window.scrollY;
                     }
+                    
+                    hasInitialized = true;
                 };
                 
-                // Capture on load
-                setTimeout(captureOriginalPosition, 100);
+                // Capture on load - must be at scroll position 0 for accurate measurement
+                const initialCapture = () => {
+                    if (window.scrollY === 0) {
+                        captureOriginalPosition();
+                    } else {
+                        // If page loaded scrolled, scroll to top briefly to capture, then restore
+                        // Or just capture with offset adjustment
+                        captureOriginalPosition();
+                    }
+                };
+                setTimeout(initialCapture, 100);
                 
-                // Recapture on resize
+                // Recapture on resize only when at top and not docked
                 const handleResize = () => {
-                    if (!isCurrentlyDocked) {
+                    if (!isCurrentlyDocked && window.scrollY < 50) {
+                        hasInitialized = false; // Allow recapture
                         captureOriginalPosition();
                     }
                 };
@@ -630,17 +636,18 @@ SAFE LET STAYS — HOMEPAGE TEMPLATE (REACT INTEGRATED)
                     const scrollY = window.scrollY;
                     const headerHeight = header.offsetHeight;
                     
-                    // Choose the appropriate reference element based on viewport
-                    const originalRect = isMobile() ? mobileOriginalRect : desktopOriginalRect;
+                    // Choose the appropriate original top position based on viewport
+                    const originalTop = isMobile() ? mobileOriginalTop : desktopOriginalTop;
                     
-                    if (!originalRect) {
+                    if (!originalTop) {
                         captureOriginalPosition();
                         ticking = false;
                         return;
                     }
                     
                     // Calculate the scroll position where search bar would hit the header
-                    const dockScrollThreshold = originalRect.top - headerHeight - 30;
+                    // This threshold stays fixed - it's the original position minus header height
+                    const dockScrollThreshold = originalTop - headerHeight - 30;
                     
                     const shouldDock = scrollY >= dockScrollThreshold && dockScrollThreshold > 0;
                     
@@ -681,9 +688,6 @@ SAFE LET STAYS — HOMEPAGE TEMPLATE (REACT INTEGRATED)
                             if (desktopSearchBar) {
                                 desktopSearchBar.classList.remove('is-docked');
                             }
-                            
-                            // Recapture original position after unmorphing
-                            setTimeout(captureOriginalPosition, 600);
                             
                             // Notify header
                             window.dispatchEvent(new CustomEvent('searchDockChange', {
