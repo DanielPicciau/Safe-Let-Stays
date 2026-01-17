@@ -461,29 +461,26 @@ h1, h2, h3, h4, h5, h6 {
 
 .hero__bg-video {
     position: fixed;
-    top: 0;
+    top: calc(-1 * env(safe-area-inset-top, 0px));
     left: 0;
     right: 0;
     bottom: 0;
     width: 100vw;
-    height: 100vh;
-    height: 100dvh;
+    height: calc(100vh + env(safe-area-inset-top, 0px));
+    height: calc(100dvh + env(safe-area-inset-top, 0px));
     object-fit: cover;
     z-index: -2;
-    /* Extend into safe areas on iOS */
-    margin: 0;
-    padding: 0;
 }
 
 .hero__overlay {
     position: fixed;
-    top: 0;
+    top: calc(-1 * env(safe-area-inset-top, 0px));
     left: 0;
     right: 0;
     bottom: 0;
     width: 100vw;
-    height: 100vh;
-    height: 100dvh;
+    height: calc(100vh + env(safe-area-inset-top, 0px));
+    height: calc(100dvh + env(safe-area-inset-top, 0px));
     background: linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.7) 100%);
     z-index: -1;
 }
