@@ -234,8 +234,9 @@
     
     .properties-grid-3col > *,
     .properties-grid-2col > * {
-        flex: 0 0 calc(50% - 0.375rem);
-        min-width: calc(50% - 0.375rem);
+        flex: 0 0 70%;
+        min-width: 70%;
+        max-width: 70%;
         scroll-snap-align: start;
     }
     
