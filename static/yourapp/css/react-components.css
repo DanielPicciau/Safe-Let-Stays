@@ -2091,7 +2091,8 @@
     
     .mobile-modal-close {
         position: absolute;
-        left: 1rem;
+        right: 1rem;
+        left: auto;
         width: 32px;
         height: 32px;
         border-radius: 50%;

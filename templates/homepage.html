@@ -521,8 +521,17 @@ SAFE LET STAYS — HOMEPAGE TEMPLATE (REACT INTEGRATED)
             const inputRef = useRef(null);
             const mobileInputRef = useRef(null);
             
-            const destinations = window.DESTINATIONS || [];
+            const rawDestinations = window.DESTINATIONS || [];
             const recentSearches = window.RECENT_SEARCHES || [];
+            
+            // Default destinations if none from database
+            const defaultDestinations = [
+                { name: 'Sheffield', subtitle: 'All properties in Sheffield', icon_name: 'city', icon_color: '#3B82F6', filter_area: 'Sheffield' },
+                { name: 'Hillsborough', subtitle: 'Near Sheffield Wednesday FC', icon_name: 'stadium', icon_color: '#2E7D32', filter_area: 'Hillsborough' },
+                { name: 'City Centre', subtitle: 'Heart of Sheffield', icon_name: 'city', icon_color: '#8B5CF6', filter_area: 'City Centre' },
+            ];
+            
+            const destinations = rawDestinations.length > 0 ? rawDestinations : defaultDestinations;
             
             // Filter destinations based on input
             const filteredDestinations = location.trim() 
