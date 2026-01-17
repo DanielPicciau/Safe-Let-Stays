@@ -157,12 +157,12 @@ class SecurityHeadersMiddleware(MiddlewareMixin):
         # Content Security Policy
         csp_directives = [
             "default-src 'self'",
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://fonts.googleapis.com",
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://fonts.googleapis.com https://unpkg.com",
             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
             "font-src 'self' https://fonts.gstatic.com data:",
             "img-src 'self' data: https: blob:",
             "frame-src 'self' https://js.stripe.com https://hooks.stripe.com",
-            "connect-src 'self' https://api.stripe.com https://fonts.googleapis.com",
+            "connect-src 'self' https://api.stripe.com https://fonts.googleapis.com https://unpkg.com",
             "base-uri 'self'",
             "form-action 'self' https://checkout.stripe.com",
             "frame-ancestors 'none'",
