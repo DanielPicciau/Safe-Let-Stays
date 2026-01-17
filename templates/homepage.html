@@ -486,10 +486,11 @@ SAFE LET STAYS — HOMEPAGE TEMPLATE (REACT INTEGRATED)
                     <div className="cal-days">
                         {days.map((dayInfo, idx) => {
                             const disabled = isDisabled(dayInfo.date);
-                            const rangeStart = isRangeStart(dayInfo.date);
-                            const rangeEnd = isRangeEnd(dayInfo.date);
-                            const inRange = isInRange(dayInfo.date);
-                            const todayClass = isToday(dayInfo.date);
+                            // Don't apply range styling to outside days (days from adjacent months shown in grid)
+                            const rangeStart = !dayInfo.outside && isRangeStart(dayInfo.date);
+                            const rangeEnd = !dayInfo.outside && isRangeEnd(dayInfo.date);
+                            const inRange = !dayInfo.outside && isInRange(dayInfo.date);
+                            const todayClass = !dayInfo.outside && isToday(dayInfo.date);
                             
                             let className = 'cal-day';
                             if (dayInfo.outside) className += ' outside';
