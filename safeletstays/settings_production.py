@@ -299,6 +299,22 @@ ADMIN_URL = os.environ.get('ADMIN_URL', 'admin/')  # Change this in production!
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # =============================================================================
+# BUSINESS INFORMATION
+# =============================================================================
+SITE_NAME = os.environ.get('SITE_NAME', 'Safe Let Stays')
+BRAND_COLOR = os.environ.get('BRAND_COLOR', '#2E7D32')
+CONTACT_PHONE = os.environ.get('CONTACT_PHONE', '+44 114 123 4567')
+CONTACT_EMAIL = os.environ.get('CONTACT_EMAIL', 'hello@safeletstays.co.uk')
+BUSINESS_ADDRESS = os.environ.get('BUSINESS_ADDRESS', '123 Sheffield Street, Sheffield, S1 1AA')
+
+# =============================================================================
+# DATE FORMAT CONSTANTS
+# =============================================================================
+DATE_FORMAT_DISPLAY = '%d %b %Y'  # e.g., "17 Jan 2026"
+DATE_FORMAT_DISPLAY_FULL = '%A, %d %b %Y'  # e.g., "Friday, 17 Jan 2026"
+DATE_FORMAT_ISO = '%Y-%m-%d'  # e.g., "2026-01-17"
+
+# =============================================================================
 # STRIPE INTEGRATION
 # =============================================================================
 
