@@ -1112,17 +1112,6 @@ SAFE LET STAYS — HOMEPAGE TEMPLATE (REACT INTEGRATED)
                     <div 
                         className={`airbnb-search desktop-search ${isExpanded ? 'expanded' : ''} ${isDocked ? 'is-docked' : ''}`} 
                         ref={formRef}
-                        onClick={(e) => {
-                            // If docked and clicking anywhere on the search bar, scroll to top
-                            if (isDocked) {
-                                e.stopPropagation();
-                                window.scrollTo({ top: 0, behavior: 'smooth' });
-                                // After scroll completes, open location panel
-                                setTimeout(() => {
-                                    setActivePanel('location');
-                                }, 500);
-                            }
-                        }}
                     >
                         {/* Main Search Bar */}
                         <div className="airbnb-search-bar">
@@ -1130,10 +1119,7 @@ SAFE LET STAYS — HOMEPAGE TEMPLATE (REACT INTEGRATED)
                             <button
                                 type="button"
                                 className={`airbnb-field ${activePanel === 'location' ? 'active' : ''}`}
-                                onClick={(e) => {
-                                    if (isDocked) return; // Let parent handler take over
-                                    setActivePanel(activePanel === 'location' ? null : 'location');
-                                }}
+                                onClick={() => setActivePanel(activePanel === 'location' ? null : 'location')}
                             >
                                 <span className="airbnb-field-label">Where</span>
                                 <span className="airbnb-field-value">
@@ -1147,10 +1133,7 @@ SAFE LET STAYS — HOMEPAGE TEMPLATE (REACT INTEGRATED)
                             <button
                                 type="button"
                                 className={`airbnb-field ${activePanel === 'dates' ? 'active' : ''}`}
-                                onClick={(e) => {
-                                    if (isDocked) return; // Let parent handler take over
-                                    setActivePanel(activePanel === 'dates' ? null : 'dates');
-                                }}
+                                onClick={() => setActivePanel(activePanel === 'dates' ? null : 'dates')}
                             >
                                 <span className="airbnb-field-label">When</span>
                                 <span className="airbnb-field-value">
@@ -1168,10 +1151,7 @@ SAFE LET STAYS — HOMEPAGE TEMPLATE (REACT INTEGRATED)
                         <button
                             type="button"
                             className={`airbnb-field ${activePanel === 'guests' ? 'active' : ''}`}
-                            onClick={(e) => {
-                                if (isDocked) return; // Let parent handler take over
-                                setActivePanel(activePanel === 'guests' ? null : 'guests');
-                            }}
+                            onClick={() => setActivePanel(activePanel === 'guests' ? null : 'guests')}
                         >
                             <span className="airbnb-field-label">Who</span>
                             <span className="airbnb-field-value">
@@ -1184,10 +1164,7 @@ SAFE LET STAYS — HOMEPAGE TEMPLATE (REACT INTEGRATED)
                         </button>
                         
                         {/* Search Button */}
-                            <button type="button" onClick={(e) => {
-                                if (isDocked) return; // Let parent handler take over
-                                handleSearch();
-                            }} className="airbnb-search-btn">
+                            <button type="button" onClick={handleSearch} className="airbnb-search-btn">
                                 <SearchIcon />
                                 <span className="airbnb-search-btn-text">Search</span>
                             </button>
