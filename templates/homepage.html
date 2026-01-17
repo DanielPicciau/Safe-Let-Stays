@@ -519,6 +519,7 @@ SAFE LET STAYS — HOMEPAGE TEMPLATE (REACT INTEGRATED)
             const [location, setLocation] = useState('');
             const [activePanel, setActivePanel] = useState(null); // 'dates', 'location', 'guests', or null
             const [mobileModalOpen, setMobileModalOpen] = useState(false);
+            const [mobileModalVisible, setMobileModalVisible] = useState(false); // For animation
             const [mobileActiveSection, setMobileActiveSection] = useState('where'); // 'where', 'when', 'who'
             const [showAllDestinations, setShowAllDestinations] = useState(false);
             const formRef = useRef(null);
@@ -574,6 +575,32 @@ SAFE LET STAYS — HOMEPAGE TEMPLATE (REACT INTEGRATED)
                     setTimeout(() => mobileInputRef.current?.focus(), 100);
                 }
             }, [mobileModalOpen, mobileActiveSection]);
+            
+            // Handle modal animation timing
+            useEffect(() => {
+                if (mobileModalOpen) {
+                    // Opening: show modal first, then add open class for animation
+                    setMobileModalVisible(true);
+                    // Small delay to ensure DOM is ready before animating
+                    requestAnimationFrame(() => {
+                        requestAnimationFrame(() => {
+                            document.querySelector('.mobile-search-modal')?.classList.add('open');
+                        });
+                    });
+                } else {
+                    // Closing: remove open class first, then hide modal after animation
+                    const modal = document.querySelector('.mobile-search-modal');
+                    if (modal) {
+                        modal.classList.remove('open');
+                        // Wait for animation to complete before unmounting
+                        setTimeout(() => {
+                            setMobileModalVisible(false);
+                        }, 350);
+                    } else {
+                        setMobileModalVisible(false);
+                    }
+                }
+            }, [mobileModalOpen]);
             
             // Manage body scroll when mobile modal is open
             useEffect(() => {
@@ -656,8 +683,8 @@ SAFE LET STAYS — HOMEPAGE TEMPLATE (REACT INTEGRATED)
                     </button>
                     
                     {/* Mobile Full-Screen Modal - Portaled to body */}
-                    {mobileModalOpen && createPortal(
-                    <div className="mobile-search-modal open">
+                    {mobileModalVisible && createPortal(
+                    <div className="mobile-search-modal">
                         {/* Modal Header */}
                         <div className="mobile-modal-header">
                             <button
