@@ -395,18 +395,20 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Hidden by default - ONLY show when header has search-docked class on desktop */
 .header__desktop-docked-search {
-    display: none !important;
+    display: block;
     visibility: hidden;
     opacity: 0;
     pointer-events: none;
+    transform: scale(0.9) translateY(-10px);
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Show on desktop when scrolled past search */
 .header.search-docked .header__desktop-docked-search {
-    display: block !important;
     visibility: visible;
     opacity: 1;
     pointer-events: auto;
+    transform: scale(1) translateY(0);
 }
 
 /* Hide on mobile always */

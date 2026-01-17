@@ -577,25 +577,37 @@ SAFE LET STAYS — HOMEPAGE TEMPLATE (REACT INTEGRATED)
                 : filteredDestinations.slice(0, 4);
             
             // Scroll-based search bar morphing into navbar
-            // Mobile only: Scroll-based search bar docking into navbar
+            // Both mobile and desktop: Scroll-based search bar docking into navbar
             useEffect(() => {
                 const searchWrapper = document.querySelector('.hero__search-wrapper');
                 const mobileSearchTrigger = document.querySelector('.mobile-search-trigger');
+                const searchBar = document.querySelector('.airbnb-search.desktop-search');
                 const header = document.getElementById('header');
                 if (!searchWrapper || !header) return;
                 
                 // Store original dimensions
                 let mobileOriginalRect = null;
+                let desktopOriginalRect = null;
                 let isCurrentlyDocked = false;
                 let ticking = false;
                 
                 const isMobile = () => window.innerWidth <= 768;
                 
                 const captureOriginalPosition = () => {
-                    // Mobile only
+                    // Mobile
                     if (mobileSearchTrigger) {
                         const rect = mobileSearchTrigger.getBoundingClientRect();
                         mobileOriginalRect = {
+                            top: rect.top + window.scrollY,
+                            left: rect.left,
+                            width: rect.width,
+                            height: rect.height
+                        };
+                    }
+                    // Desktop
+                    if (searchBar) {
+                        const rect = searchBar.getBoundingClientRect();
+                        desktopOriginalRect = {
                             top: rect.top + window.scrollY,
                             left: rect.left,
                             width: rect.width,
@@ -616,32 +628,20 @@ SAFE LET STAYS — HOMEPAGE TEMPLATE (REACT INTEGRATED)
                 window.addEventListener('resize', handleResize);
                 
                 const updateMorphPosition = () => {
-                    // Only apply on mobile
-                    if (!isMobile()) {
-                        // Reset state if switching from mobile to desktop while docked
-                        if (isCurrentlyDocked) {
-                            isCurrentlyDocked = false;
-                            setIsDocked(false);
-                            searchWrapper.classList.remove('search-docked');
-                            window.dispatchEvent(new CustomEvent('searchDockChange', {
-                                detail: { docked: false, summary: 'Where to?' }
-                            }));
-                        }
-                        ticking = false;
-                        return;
-                    }
-                    
                     const scrollY = window.scrollY;
                     const headerHeight = header.offsetHeight;
                     
-                    if (!mobileOriginalRect) {
+                    // Use appropriate original rect based on screen size
+                    const originalRect = isMobile() ? mobileOriginalRect : desktopOriginalRect;
+                    
+                    if (!originalRect) {
                         captureOriginalPosition();
                         ticking = false;
                         return;
                     }
                     
                     // Calculate the scroll position where search bar would hit the header
-                    const dockScrollThreshold = mobileOriginalRect.top - headerHeight - 20;
+                    const dockScrollThreshold = originalRect.top - headerHeight - 20;
                     
                     const shouldDock = scrollY >= dockScrollThreshold && dockScrollThreshold > 0;
                     
@@ -649,14 +649,25 @@ SAFE LET STAYS — HOMEPAGE TEMPLATE (REACT INTEGRATED)
                         isCurrentlyDocked = shouldDock;
                         setIsDocked(shouldDock);
                         
-                        // Compute summary for mobile
+                        // Compute summary
                         let summaryParts = [];
                         if (location) summaryParts.push(location);
-                        else summaryParts.push('Where to?');
-                        const summary = summaryParts[0];
+                        else summaryParts.push('Anywhere');
+                        if (checkIn && checkOut) {
+                            summaryParts.push(`${formatDate(checkIn, 'MMM d')} - ${formatDate(checkOut, 'MMM d')}`);
+                        } else {
+                            summaryParts.push('Any week');
+                        }
+                        if (guests > 0) {
+                            summaryParts.push(`${guests} guest${guests > 1 ? 's' : ''}`);
+                        } else {
+                            summaryParts.push('Add guests');
+                        }
+                        const summary = summaryParts.join(' · ');
                         
                         if (shouldDock) {
                             searchWrapper.classList.add('search-docked');
+                            if (searchBar) searchBar.classList.add('morphing');
                             
                             // Notify header
                             window.dispatchEvent(new CustomEvent('searchDockChange', {
@@ -664,6 +675,7 @@ SAFE LET STAYS — HOMEPAGE TEMPLATE (REACT INTEGRATED)
                             }));
                         } else {
                             searchWrapper.classList.remove('search-docked');
+                            if (searchBar) searchBar.classList.remove('morphing');
                             
                             // Recapture original position after unmorphing
                             setTimeout(captureOriginalPosition, 600);
@@ -685,6 +697,16 @@ SAFE LET STAYS — HOMEPAGE TEMPLATE (REACT INTEGRATED)
                     }
                 };
                 
+                // Handle click on morphed search bar to scroll back up
+                const handleMorphedClick = (e) => {
+                    if (searchBar && searchBar.classList.contains('morphing')) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }
+                };
+                if (searchBar) searchBar.addEventListener('click', handleMorphedClick, true);
+                
                 window.addEventListener('scroll', handleScroll, { passive: true });
                 // Initial check
                 setTimeout(updateMorphPosition, 150);
@@ -692,8 +714,9 @@ SAFE LET STAYS — HOMEPAGE TEMPLATE (REACT INTEGRATED)
                 return () => {
                     window.removeEventListener('scroll', handleScroll);
                     window.removeEventListener('resize', handleResize);
+                    if (searchBar) searchBar.removeEventListener('click', handleMorphedClick, true);
                 };
-            }, [location]);
+            }, [location, checkIn, checkOut, guests]);
             
             // Listen for openHeroSearch event (when user clicks docked search on desktop)
             useEffect(() => {

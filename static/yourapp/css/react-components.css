@@ -1829,14 +1829,16 @@
    DESKTOP SEARCH BAR - No morphing animation (disabled)
    ============================================================================ */
 
-/* Desktop search stays in place, no morphing */
+/* Desktop search morphing animation */
 @media (min-width: 769px) {
     .airbnb-search.desktop-search {
-        /* No morphing - stays in hero */
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     }
     
     .airbnb-search.desktop-search.morphing {
-        /* Morphing class has no effect on desktop */
+        opacity: 0;
+        transform: scale(0.8) translateY(-20px);
+        pointer-events: none;
     }
 }
 
