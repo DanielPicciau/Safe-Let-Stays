@@ -383,22 +383,52 @@ h1, h2, h3, h4, h5, h6 {
     color: var(--secondary);
 }
 
-/* Hide nav items when search is docked (desktop) */
-.header.search-docked .nav-list,
-.header.search-docked .header__ctas {
-    opacity: 0;
-    transform: translateY(-15px);
-    pointer-events: none;
-    transition: opacity 0.35s ease, transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+/* Hide nav items when search is docked (desktop) - slide up and fade out */
+@media (min-width: 769px) {
+    .header.search-docked .nav-list,
+    .header.search-docked .header__ctas {
+        opacity: 0;
+        transform: translateY(-30px);
+        pointer-events: none;
+        transition: opacity 0.3s ease, transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    /* Also hide logo on desktop when docked so only search bar is visible */
+    .header.search-docked .header__nav {
+        opacity: 0;
+        transform: translateY(-30px);
+        pointer-events: none;
+        transition: opacity 0.3s ease, transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    /* Restore nav when search is not docked */
+    .header:not(.search-docked) .nav-list,
+    .header:not(.search-docked) .header__ctas,
+    .header:not(.search-docked) .header__nav {
+        opacity: 1;
+        transform: translateY(0);
+        pointer-events: auto;
+        transition: opacity 0.4s ease 0.25s, transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.25s;
+    }
 }
 
-/* Restore nav when search is not docked */
-.header:not(.search-docked) .nav-list,
-.header:not(.search-docked) .header__ctas {
-    opacity: 1;
-    transform: translateY(0);
-    pointer-events: auto;
-    transition: opacity 0.4s ease 0.2s, transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s;
+/* Mobile: Keep logo and hamburger visible */
+@media (max-width: 768px) {
+    .header.search-docked .nav-list,
+    .header.search-docked .header__ctas {
+        opacity: 0;
+        transform: translateY(-15px);
+        pointer-events: none;
+        transition: opacity 0.35s ease, transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .header:not(.search-docked) .nav-list,
+    .header:not(.search-docked) .header__ctas {
+        opacity: 1;
+        transform: translateY(0);
+        pointer-events: auto;
+        transition: opacity 0.4s ease 0.2s, transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s;
+    }
 }
 
 /* ============================================================================
@@ -411,67 +441,83 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 @media (max-width: 768px) {
-    /* Mobile docked search button */
+    /* Mobile docked search button - DARK MODE STYLE */
     .header__mobile-search {
         display: flex;
         align-items: center;
-        gap: 0.5rem;
-        padding: 0.5rem 1rem;
-        background: rgba(255, 255, 255, 0.9);
-        border: 1px solid var(--border, #e5e7eb);
-        border-radius: 24px;
-        font-size: 0.875rem;
+        justify-content: center;
+        gap: 0.75rem;
+        padding: 0.875rem 1.5rem;
+        background: rgba(30, 30, 30, 0.95);
+        border: none;
+        border-radius: 28px;
+        font-size: 1rem;
         font-weight: 500;
-        color: var(--text-main, #1a1a1a);
+        color: #ffffff;
         cursor: pointer;
         opacity: 0;
-        transform: scale(0.9);
         pointer-events: none;
         transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
         position: absolute;
         left: 50%;
-        transform: translateX(-50%) scale(0.9);
+        top: 50%;
+        transform: translate(-50%, -50%) scale(0.8);
         white-space: nowrap;
-        max-width: 200px;
-        overflow: hidden;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        min-width: 180px;
+        max-width: 280px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        z-index: 10;
     }
     
     .header__mobile-search svg {
-        width: 16px;
-        height: 16px;
+        width: 18px;
+        height: 18px;
         flex-shrink: 0;
-        color: var(--primary, #2E7D32);
+        color: #ffffff;
     }
     
     .header__mobile-search span {
         overflow: hidden;
         text-overflow: ellipsis;
+        color: #ffffff;
     }
     
     /* Show mobile search when docked */
     .header.search-docked .header__mobile-search {
         opacity: 1;
-        transform: translateX(-50%) scale(1);
+        transform: translate(-50%, -50%) scale(1);
         pointer-events: auto;
     }
     
     .header.search-docked .header__mobile-search:active {
-        transform: translateX(-50%) scale(0.95);
+        transform: translate(-50%, -50%) scale(0.95);
+        background: rgba(50, 50, 50, 0.95);
     }
     
-    /* Logo shifts left when docked */
+    /* Logo shifts left and fades when docked */
     .header.search-docked .logo-link {
-        transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        transform: translateX(-20px);
+        opacity: 0;
+        pointer-events: none;
+        transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
     }
     
-    .header.search-docked .logo-text {
-        font-size: 1.125rem;
+    .header:not(.search-docked) .logo-link {
+        transform: translateX(0);
+        opacity: 1;
+        pointer-events: auto;
+        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.15s;
     }
     
-    /* Menu toggle shifts right when docked - already on the right, just ensure spacing */
+    /* Menu toggle shifts right when docked */
     .header.search-docked .mobile-menu-toggle {
+        transform: translateX(10px);
         transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .header:not(.search-docked) .mobile-menu-toggle {
+        transform: translateX(0);
+        transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.15s;
     }
     
     /* Hide the original mobile search trigger when docked */

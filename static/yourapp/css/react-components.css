@@ -1830,15 +1830,16 @@
 
 .airbnb-search.desktop-search.morphing {
     position: fixed !important;
-    top: calc(10px + env(safe-area-inset-top)) !important;
+    top: calc(12px + env(safe-area-inset-top)) !important;
     left: 50% !important;
     transform: translateX(-50%) !important;
-    z-index: 1001 !important;
+    z-index: 10001 !important;
     max-width: 420px;
     width: 420px;
     box-shadow: 0 2px 12px rgba(0,0,0,0.15);
     margin: 0;
     border: 1px solid var(--border, #e5e7eb);
+    background: rgba(255, 255, 255, 0.95);
 }
 
 /* When morphed, simplify the search bar appearance */
@@ -1894,7 +1895,7 @@
 .airbnb-search.desktop-search.morphing:hover {
     box-shadow: 0 4px 20px rgba(0,0,0,0.2);
     border-color: var(--primary-light, #4CAF50);
-    transform: translateX(-50%) scale(1.02) !important;
+    cursor: pointer;
 }
 
 /* Click the morphed bar to scroll back up */
