@@ -83,7 +83,7 @@ test-cov:
 	coverage html
 
 security:
-	python security_audit.py
+	python scripts/data/security_audit.py
 
 # =============================================================================
 # Code Quality Commands

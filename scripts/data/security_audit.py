@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
 Security Audit Script for Safe Let Stays
-Run with: python security_audit.py
+Run with: python scripts/data/security_audit.py
 
 This script checks for common security issues and misconfigurations.
 """

@@ -7,7 +7,7 @@ INSTRUCTIONS:
 2. In PythonAnywhere Web tab, set:
    - Source code: /home/YOUR_USERNAME/safeletstays
    - Working directory: /home/YOUR_USERNAME/safeletstays
-   - WSGI configuration file: Click to edit and paste contents of wsgi_pythonanywhere.py
+   - WSGI configuration file: Click to edit and paste contents of scripts/deploy/wsgi_pythonanywhere.py
 3. Set virtualenv path if using one
 4. Configure static files (see STATIC/MEDIA section below)
 5. Reload web app

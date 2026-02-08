@@ -5,7 +5,7 @@
 | File | Purpose |
 |------|---------|
 | `settings_production.py` | Production Django settings (DEBUG=False, security settings) |
-| `wsgi_pythonanywhere.py` | WSGI config to paste into PythonAnywhere |
+| `scripts/deploy/wsgi_pythonanywhere.py` | WSGI config to paste into PythonAnywhere |
 | `requirements.txt` | Python package list for installation |
 
 ---

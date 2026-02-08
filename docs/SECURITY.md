@@ -230,7 +230,7 @@ python manage.py test yourapp.tests_security
 
 ### Security Audit
 ```bash
-python security_audit.py
+python scripts/data/security_audit.py
 ```
 
 ---
@@ -281,7 +281,7 @@ print(get_random_secret_key())
 - [ ] Set all SECURE_* settings
 - [ ] Review CSRF_TRUSTED_ORIGINS
 - [ ] Run `python manage.py check --deploy`
-- [ ] Run `python security_audit.py`
+- [ ] Run `python scripts/data/security_audit.py`
 - [ ] Set proper file permissions
 - [ ] Configure log rotation
 

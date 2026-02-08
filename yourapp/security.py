@@ -158,6 +158,7 @@ class SecurityHeadersMiddleware(MiddlewareMixin):
         # Note: 'unsafe-inline' for styles is required for React inline styles
         # 'unsafe-eval' is required for Babel standalone (client-side JSX compilation)
         # TODO: Pre-compile JSX to remove need for unsafe-eval in production
+        from django.conf import settings as django_settings
         csp_directives = [
             "default-src 'self'",
             "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://fonts.googleapis.com https://unpkg.com",
@@ -170,8 +171,10 @@ class SecurityHeadersMiddleware(MiddlewareMixin):
             "form-action 'self' https://checkout.stripe.com",
             "frame-ancestors 'none'",
             "object-src 'none'",
-            "upgrade-insecure-requests",
         ]
+        # Only upgrade insecure requests in production (HTTPS), not in local dev (HTTP)
+        if not django_settings.DEBUG:
+            csp_directives.append("upgrade-insecure-requests")
         
         # Apply CSP header
         response['Content-Security-Policy'] = "; ".join(csp_directives)

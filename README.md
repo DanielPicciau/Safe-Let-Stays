@@ -95,9 +95,10 @@ Copy `.env.example` to `.env` and configure:
 ## 📁 Project Structure
 
 ```
-safeletstays/
+Safe-Let-Stays/
 ├── manage.py                 # Django management script
 ├── requirements.txt          # Python dependencies
+├── Makefile                 # Development commands
 ├── .env.example             # Environment template
 ├── safeletstays/            # Django project settings
 │   ├── settings.py          # Development settings
@@ -112,7 +113,11 @@ safeletstays/
 │   └── utils.py             # Utility functions
 ├── templates/               # HTML templates
 ├── static/                  # Static assets
-└── media/                   # User uploads
+├── scripts/                 # Utility & deployment scripts
+│   ├── deploy/              # Deployment & server scripts
+│   └── data/                # Data population & audit scripts
+├── docs/                    # Project documentation
+└── logs/                    # Application logs (gitignored)
 ```
 
 ## 🔒 Security
@@ -126,14 +131,14 @@ This project implements comprehensive security measures:
 - **Session Security**: Secure cookie configuration
 - **HTTPS Enforcement**: In production mode
 
-See [SECURITY.md](SECURITY.md) for detailed security documentation.
+See [SECURITY.md](docs/SECURITY.md) for detailed security documentation.
 
 ## 🚀 Deployment
 
 ### PythonAnywhere
 
-1. See [PYTHONANYWHERE_SETUP.md](PYTHONANYWHERE_SETUP.md) for detailed instructions
-2. See [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md) for step-by-step deployment
+1. See [PYTHONANYWHERE_SETUP.md](docs/PYTHONANYWHERE_SETUP.md) for detailed instructions
+2. See [DEPLOYMENT_GUIDE.md](docs/DEPLOYMENT_GUIDE.md) for step-by-step deployment
 
 ### Quick Deploy Commands
 
@@ -155,7 +160,7 @@ python manage.py test
 python manage.py test yourapp.tests_security
 
 # Run security audit
-python security_audit.py
+python scripts/data/security_audit.py
 ```
 
 ## 📧 Email Configuration
